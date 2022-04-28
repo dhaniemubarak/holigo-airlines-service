@@ -14,7 +14,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ResponseScheduleDto implements Serializable {
+public class ResponseScheduleDto {
     private String error_code;
     private String error_msg;
     private String mmid;
@@ -27,5 +27,5 @@ public class ResponseScheduleDto implements Serializable {
     private String adt;
     private String chd;
     private String inf;
-    private JsonNode schedule;
+    private RetrossScheduleDto schedule;
 }

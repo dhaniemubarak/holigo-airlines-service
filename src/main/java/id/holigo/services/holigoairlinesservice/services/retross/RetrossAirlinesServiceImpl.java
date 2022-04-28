@@ -24,9 +24,13 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
 
     @Override
     public ResponseScheduleDto getSchedule(RequestScheduleDto requestScheduleDto) throws JsonProcessingException {
+        requestScheduleDto.setMmid("retross_01");
+        requestScheduleDto.setRqid("T35Hd6624jbadlA2hbfSFsg356gDPfgr6d4P1N02");
+        requestScheduleDto.setApp("information");
+        requestScheduleDto.setAction("get_schedule");
         log.info("Calling get schedule with request -> {}", requestScheduleDto.getMmid());
 //
-        ResponseScheduleDto responseScheduleDto = new ResponseScheduleDto();
+        ResponseScheduleDto responseScheduleDto;
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.getSchedule(requestScheduleDto);
 //
         responseScheduleDto = objectMapper.readValue(responseEntity.getBody(), ResponseScheduleDto.class);

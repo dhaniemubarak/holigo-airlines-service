@@ -23,18 +23,19 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-public class AirlinesAvailabilities {
+@Entity(name = "airlines_availabilities")
+public class AirlinesAvailability {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
 
     @Column(columnDefinition = "varchar(20)")
     private String airlinesName;
+
+    @Column(columnDefinition = "varchar(20)")
+    private String flightNumber;
 
     @Column(columnDefinition = "varchar(4)")
     private String originAirportId;
@@ -49,6 +50,8 @@ public class AirlinesAvailabilities {
     private Date arrivalDate;
 
     private Time arrivalTime;
+
+    private Integer duration;
 
     private Integer hpAmount;
 

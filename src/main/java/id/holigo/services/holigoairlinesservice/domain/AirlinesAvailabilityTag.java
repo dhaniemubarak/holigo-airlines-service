@@ -16,8 +16,8 @@ import java.sql.Timestamp;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-public class AirlinesAvailabilitiesTag {
+@Entity(name = "airlines_availability_tags")
+public class AirlinesAvailabilityTag {
 
     @Id
     @Column(columnDefinition = "varchar(5)")
