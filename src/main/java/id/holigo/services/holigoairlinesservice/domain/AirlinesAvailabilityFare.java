@@ -1,17 +1,24 @@
 package id.holigo.services.holigoairlinesservice.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity(name = "airlines_availability_fares")
 public class AirlinesAvailabilityFare {
 
     @Id
@@ -21,9 +28,9 @@ public class AirlinesAvailabilityFare {
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
 
-    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
-    @Type(type = "org.hibernate.type.UUIDCharType")
-    private String airlinesAvailabilityId;
+//    @ManyToOne
+//    @JoinColumn(name = "airlines_availability_id")
+//    private AirlinesAvailability airlinesAvailability;
 
     @Column(length = 10, columnDefinition = "varchar(10)")
     private String subclass;

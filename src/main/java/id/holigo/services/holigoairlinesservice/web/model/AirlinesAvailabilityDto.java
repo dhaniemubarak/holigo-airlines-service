@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.util.List;
@@ -17,7 +16,9 @@ import java.util.UUID;
 @NoArgsConstructor
 public class AirlinesAvailabilityDto {
 
-    private UUID id;
+//    private UUID id;
+
+    private String airlinesCode;
 
     private String airlinesName;
 
@@ -39,9 +40,9 @@ public class AirlinesAvailabilityDto {
 
     private Integer transit;
 
-    private Integer hpAmount;
+    private String imageUrl;
 
-    private BigDecimal fareAmount;
+    private AirlinesAvailabilityFareDto fare;
 
     private List<AirlinesAvailabilityTagsDto> tags;
 }

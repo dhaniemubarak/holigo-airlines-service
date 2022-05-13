@@ -9,17 +9,17 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class RetrossFareDto {
+@NoArgsConstructor
+public class AirlinesAvailabilityFareDto {
 
-    private String subClass;
+    private BigDecimal ntaAmount;
 
-    private Integer seatAvb;
+    private BigDecimal fareAmount;
 
-    private BigDecimal nta;
+    private String subclass;
 
-    private BigDecimal totalFare;
+    private Integer seatAvailable;
 
-    private String selectedIdDep;
+    private String selectedId;
 }
