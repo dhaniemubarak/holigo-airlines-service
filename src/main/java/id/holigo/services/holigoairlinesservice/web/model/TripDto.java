@@ -5,17 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ListAvailabilityDto {
-
+public class TripDto {
     private InquiryDto inquiry;
-
-    private List<AirlinesAvailabilityDto> departures;
-
-    private List<AirlinesAvailabilityDto> returns;
+    private AirlinesAvailabilityDto trip;
 }

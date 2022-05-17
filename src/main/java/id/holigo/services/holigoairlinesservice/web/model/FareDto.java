@@ -11,11 +11,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ListAvailabilityDto {
-
-    private InquiryDto inquiry;
-
-    private List<AirlinesAvailabilityDto> departures;
-
-    private List<AirlinesAvailabilityDto> returns;
+public class FareDto {
+    List<TripDto> trips;
 }

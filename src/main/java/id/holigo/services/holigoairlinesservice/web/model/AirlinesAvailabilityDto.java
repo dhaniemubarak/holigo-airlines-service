@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,8 +16,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AirlinesAvailabilityDto {
-
-//    private UUID id;
 
     private String airlinesCode;
 
@@ -44,5 +43,5 @@ public class AirlinesAvailabilityDto {
 
     private AirlinesAvailabilityFareDto fare;
 
-    private List<AirlinesAvailabilityTagsDto> tags;
+    private List<AirlinesAvailabilityTagsDto> tags = new ArrayList<>();
 }

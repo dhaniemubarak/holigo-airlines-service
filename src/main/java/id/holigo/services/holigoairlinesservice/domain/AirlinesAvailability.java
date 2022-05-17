@@ -19,13 +19,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "airlines_availabilities")
+@Entity(name = "airlines_availabilities")
 @IdClass(AirlinesScheduleId.class)
 public class AirlinesAvailability {
-//    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
-//    @Type(type = "org.hibernate.type.UUIDCharType")
-//    private UUID id;
 
     @Id
     private String airlinesCode;
