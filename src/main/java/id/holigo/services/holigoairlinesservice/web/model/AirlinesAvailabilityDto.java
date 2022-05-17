@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -41,5 +42,5 @@ public class AirlinesAvailabilityDto {
 
     private AirlinesAvailabilityFareDto fare;
 
-    private List<AirlinesAvailabilityTagsDto> tags;
+    private List<AirlinesAvailabilityTagsDto> tags = new ArrayList<>();
 }

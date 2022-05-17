@@ -16,8 +16,7 @@ import java.sql.Timestamp;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "airlines_availabilities")
+@Entity(name = "airlines_availabilities")
 @IdClass(AirlinesScheduleId.class)
 public class AirlinesAvailability {
 
