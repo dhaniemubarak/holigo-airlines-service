@@ -5,15 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -23,9 +20,6 @@ import java.util.UUID;
 @Table(name = "airlines_availabilities")
 @IdClass(AirlinesScheduleId.class)
 public class AirlinesAvailability {
-//    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
-//    @Type(type = "org.hibernate.type.UUIDCharType")
-//    private UUID id;
 
     @Id
     private String airlinesCode;

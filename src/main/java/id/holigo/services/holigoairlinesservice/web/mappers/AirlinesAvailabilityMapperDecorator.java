@@ -46,7 +46,6 @@ public abstract class AirlinesAvailabilityMapperDecorator
         int transit = retrossDepartureDto.getFlights().size() - 1;
         Map<String, String> airlines = getAirlines(retrossDepartureDto.getFlights().get(0).getFlightNumber().substring(0, 2));
         AirlinesAvailabilityDto airlinesAvailabilityDto = new AirlinesAvailabilityDto();
-//        airlinesAvailabilityDto.setId(UUID.randomUUID());
         airlinesAvailabilityDto.setAirlinesCode(airlines.get("code"));
         airlinesAvailabilityDto.setAirlinesName(airlines.get("name"));
         airlinesAvailabilityDto.setImageUrl(airlines.get("imageUrl"));

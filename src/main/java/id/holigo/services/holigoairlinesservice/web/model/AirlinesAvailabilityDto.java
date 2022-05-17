@@ -8,15 +8,12 @@ import lombok.Setter;
 import java.sql.Date;
 import java.sql.Time;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class AirlinesAvailabilityDto {
-
-//    private UUID id;
 
     private String airlinesCode;
 
