@@ -13,7 +13,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class InquiryDto implements Serializable {
+public class InquiryDto {
 
     private UUID id;
 

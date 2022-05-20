@@ -1,27 +1,23 @@
 package id.holigo.services.holigoairlinesservice.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
-import java.awt.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity(name = "inquiries")
-public class Inquiry {
+@Entity(name = "contact_persons")
+public class ContactPerson {
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -29,21 +25,19 @@ public class Inquiry {
     @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
-    @OneToMany(mappedBy = "inquiry")
-    private List<AirlinesFinalFare> airlinesFinalFares;
-    private String airlinesCode;
-    private String originAirportId;
-    private String destinationAirportId;
-    private Date departureDate;
-    private Date returnDate;
-    @Enumerated(EnumType.STRING)
-    private TripType tripType;
-    private Integer adultAmount;
-    private Integer childAmount;
-    private Integer infantAmount;
-    private String seatClass;
+
+    @Column(columnDefinition = "varchar(100)", nullable = false, length = 100)
+    private String name;
+
+    private String email;
+
+    @Column(length = 20, nullable = false)
+    private String phoneNumber;
+
     @CreationTimestamp
     private Timestamp createdAt;
+
     @UpdateTimestamp
     private Timestamp updatedAt;
+
 }

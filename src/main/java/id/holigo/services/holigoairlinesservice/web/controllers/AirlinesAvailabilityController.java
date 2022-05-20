@@ -10,22 +10,16 @@ import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesAvailability
 import id.holigo.services.holigoairlinesservice.web.mappers.InquiryMapper;
 import id.holigo.services.holigoairlinesservice.web.model.InquiryDto;
 import id.holigo.services.holigoairlinesservice.web.model.ListAvailabilityDto;
-import id.holigo.services.holigoairlinesservice.web.model.RequestScheduleDto;
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.sql.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-@Slf4j
+@RequiredArgsConstructor
 @RestController
 public class AirlinesAvailabilityController {
 
@@ -66,70 +60,38 @@ public class AirlinesAvailabilityController {
     }
 
     @GetMapping("/api/v1/airlines/availabilities")
-    public ResponseEntity<ListAvailabilityDto> getAvailabilities(
-            @RequestParam("airlinesCode") String airlinesCode,
-            @RequestParam("originAirportId") String originAirportId,
-            @RequestParam("destinationAirportId") String destinationAirportId,
-            @RequestParam("departureDate") Date departureDate,
-            @RequestParam(name = "returnDate", required = false) Date returnDate,
-            @RequestParam("tripType") String tripType,
-            @RequestParam("adultAmount") int adultAmount,
-            @RequestParam("childAmount") int childAmount,
-            @RequestParam("infantAmount") int infantAmount,
-            @RequestParam("seatClass") String seatClass
-    ) {
-        log.info(departureDate.toString());
+    public ResponseEntity<ListAvailabilityDto> getAvailabilities(InquiryDto inquiryDto) {
         Inquiry inquiry;
-        Optional<Inquiry> fetchInquiry = inquiryRepository.getInquiry(airlinesCode, originAirportId, destinationAirportId,
-                departureDate.toString(), returnDate != null ? returnDate.toString() : null, tripType, adultAmount, childAmount, infantAmount, seatClass);
-        if (fetchInquiry.isPresent()) {
-            log.info("PRESENT");
-            inquiry = fetchInquiry.get();
-        } else {
-            log.info("NOT PRESENT");
-            Inquiry createInquiry = new Inquiry();
-            createInquiry.setAirlinesCode(airlinesCode);
-            createInquiry.setAdultAmount(adultAmount);
-            createInquiry.setChildAmount(childAmount);
-            createInquiry.setDepartureDate(departureDate);
-            createInquiry.setDestinationAirportId(destinationAirportId);
-            createInquiry.setInfantAmount(infantAmount);
-            createInquiry.setReturnDate(returnDate);
-            createInquiry.setSeatClass(seatClass);
-            createInquiry.setTripType(tripType);
-            createInquiry.setOriginAirportId(originAirportId);
-            inquiry = inquiryRepository.save(createInquiry);
-        }
+        Optional<Inquiry> fetchInquiry = inquiryRepository.getInquiry(inquiryDto.getAirlinesCode(),
+                inquiryDto.getOriginAirportId(), inquiryDto.getDestinationAirportId(), inquiryDto.getDepartureDate().toString(),
+                inquiryDto.getReturnDate() != null ? inquiryDto.getReturnDate().toString() : null, inquiryDto.getTripType(),
+                inquiryDto.getAdultAmount(), inquiryDto.getChildAmount(), inquiryDto.getInfantAmount(), inquiryDto.getSeatClass());
 
+        if (fetchInquiry.isPresent()) {
+            inquiry = fetchInquiry.get();
+            inquiryDto.setId(inquiry.getId());
+        } else {
+            inquiry = inquiryRepository.save(inquiryMapper.inquiryDtoToInquiry(inquiryDto));
+            inquiryDto.setId(inquiry.getId());
+        }
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
-        listAvailabilityDto.setInquiry(inquiryMapper.inquiryToInquiryDto(inquiry));
+        listAvailabilityDto.setInquiry(inquiryDto);
         List<AirlinesAvailability> airlinesAvailabilities = airlinesAvailabilityRepository.getAirlinesAvailability(
-                airlinesCode, originAirportId, destinationAirportId, departureDate.toString()
+                inquiry.getAirlinesCode(), inquiry.getOriginAirportId(), inquiry.getDestinationAirportId(),
+                inquiry.getDepartureDate().toString()
         );
         if (airlinesAvailabilities.size() > 0) {
-            log.info("GET");
             listAvailabilityDto.setDepartures(airlinesAvailabilities.stream().map(airlinesAvailabilityMapper::airlinesAvailabilityToAirlinesAvailabilityDto).toList());
             return new ResponseEntity<>(listAvailabilityDto, HttpStatus.OK);
         }
         // if not available flights
-        RequestScheduleDto requestScheduleDto = RequestScheduleDto.builder()
-                .ac(airlinesCode)
-                .org(originAirportId)
-                .des(destinationAirportId)
-                .tgl_dep(departureDate.toString())
-                .tgl_ret(returnDate != null ? returnDate.toString() : null)
-                .flight(tripType)
-                .adt(adultAmount)
-                .chd(childAmount)
-                .inf(infantAmount)
-                .cabin(seatClass).build();
-        log.info("requestAirlinesDto -> {}", requestScheduleDto);
+
         try {
-            listAvailabilityDto = airlinesService.getAvailabilities(requestScheduleDto);
+            listAvailabilityDto.setDepartures(airlinesService.getAvailabilities(inquiryDto).getDepartures());
         } catch (JsonProcessingException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        if (listAvailabilityDto == null) {
+        if (listAvailabilityDto.getDepartures() == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 

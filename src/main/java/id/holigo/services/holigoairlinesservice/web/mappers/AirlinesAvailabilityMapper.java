@@ -15,15 +15,35 @@ import org.mapstruct.Mapping;
 @DecoratedWith(AirlinesAvailabilityMapperDecorator.class)
 public interface AirlinesAvailabilityMapper {
 
+    @Mapping(target = "transit", ignore = true)
+    @Mapping(target = "tags", ignore = true)
+    @Mapping(target = "originAirportId", ignore = true)
+    @Mapping(target = "imageUrl", ignore = true)
+    @Mapping(target = "flightNumber", ignore = true)
+    @Mapping(target = "fare", ignore = true)
+    @Mapping(target = "duration", ignore = true)
+    @Mapping(target = "destinationAirportId", ignore = true)
+    @Mapping(target = "departureTime", ignore = true)
+    @Mapping(target = "departureDate", ignore = true)
+    @Mapping(target = "arrivalTime", ignore = true)
+    @Mapping(target = "arrivalDate", ignore = true)
+    @Mapping(target = "airlinesName", ignore = true)
+    @Mapping(target = "airlinesCode", ignore = true)
     AirlinesAvailabilityDto retrossDepartureDtoDtoToAirlinesAvailabilityDto(
             RetrossDepartureDto retrossDepartureDto);
 
+    @Mapping(target = "returns", ignore = true)
+    @Mapping(target = "inquiry", ignore = true)
+    @Mapping(target = "departures", ignore = true)
     ListAvailabilityDto responseScheduleDtoToListAvailabilityDto(
             ResponseScheduleDto responseScheduleDto);
 
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "fare", ignore = true)
     AirlinesAvailability airlinesAvailabilityDtoToAirlinesAvailability(AirlinesAvailabilityDto airlinesAvailabilityDto);
 
+    @Mapping(target = "tags", ignore = true)
     @Mapping(target = "fare", ignore = true)
     AirlinesAvailabilityDto airlinesAvailabilityToAirlinesAvailabilityDto(AirlinesAvailability airlinesAvailability);
 }

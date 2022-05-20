@@ -1,6 +1,7 @@
 package id.holigo.services.holigoairlinesservice.services.retross;
 
 import feign.Headers;
+import id.holigo.services.holigoairlinesservice.web.model.RequestFareDto;
 import id.holigo.services.holigoairlinesservice.web.model.RequestScheduleDto;
 import id.holigo.services.holigoairlinesservice.web.model.ResponseScheduleDto;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -17,5 +18,8 @@ public interface RetrossAirlinesServiceFeignClient {
 
     @RequestMapping(method = RequestMethod.POST, value = GET_SCHEDULE)
     ResponseEntity<String> getSchedule(@RequestBody RequestScheduleDto requestScheduleDto);
+
+    @RequestMapping(method = RequestMethod.POST, value = GET_SCHEDULE)
+    ResponseEntity<String> getFare(@RequestBody RequestFareDto requestFareDto);
 
 }

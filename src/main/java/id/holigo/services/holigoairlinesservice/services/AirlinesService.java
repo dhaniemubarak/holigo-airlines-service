@@ -1,14 +1,15 @@
 package id.holigo.services.holigoairlinesservice.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import id.holigo.services.holigoairlinesservice.web.model.ListAvailabilityDto;
-import id.holigo.services.holigoairlinesservice.web.model.RequestScheduleDto;
-
-import java.util.List;
+import id.holigo.services.holigoairlinesservice.web.model.*;
 
 public interface AirlinesService {
 
-    ListAvailabilityDto getAvailabilities(RequestScheduleDto requestScheduleDto) throws JsonProcessingException;
+    ListAvailabilityDto getAvailabilities(InquiryDto inquiryDto) throws JsonProcessingException;
+
+    AirlinesFinalFareDto createFinalFares(TripDto tripDto, Long userId) throws JsonProcessingException;
+
+    AirlinesTransactionDto createTransaction(AirlinesBookDto airlinesBookDto, Long userId);
 
     void saveAvailabilities(ListAvailabilityDto listAvailabilityDto);
 }

@@ -1,7 +1,8 @@
-package id.holigo.services.holigoairlinesservice.services.retross;
+package services.retross;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import id.holigo.services.holigoairlinesservice.services.retross.RetrossAirlinesService;
 import id.holigo.services.holigoairlinesservice.web.model.RequestScheduleDto;
 import id.holigo.services.holigoairlinesservice.web.model.ResponseScheduleDto;
 import id.holigo.services.holigoairlinesservice.web.model.RetrossFlightDto;
@@ -37,7 +38,7 @@ class RetrossAirlinesServiceTest {
         requestScheduleDto.setOrg("CGK");
         requestScheduleDto.setDes("DPS");
         requestScheduleDto.setFlight("O");
-        requestScheduleDto.setTgl_dep("2022-04-25");
+        requestScheduleDto.setTgl_dep("2022-05-25");
         requestScheduleDto.setAdt(1);
         requestScheduleDto.setChd(0);
         requestScheduleDto.setInf(0);
