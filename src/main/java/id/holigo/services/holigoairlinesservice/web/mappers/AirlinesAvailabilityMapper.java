@@ -15,6 +15,7 @@ import org.mapstruct.Mapping;
 @DecoratedWith(AirlinesAvailabilityMapperDecorator.class)
 public interface AirlinesAvailabilityMapper {
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "transit", ignore = true)
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "originAirportId", ignore = true)
@@ -41,6 +42,7 @@ public interface AirlinesAvailabilityMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "fare", ignore = true)
+    @Mapping(target = "itineraries", ignore = true)
     AirlinesAvailability airlinesAvailabilityDtoToAirlinesAvailability(AirlinesAvailabilityDto airlinesAvailabilityDto);
 
     @Mapping(target = "tags", ignore = true)

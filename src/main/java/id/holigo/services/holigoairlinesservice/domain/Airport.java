@@ -19,11 +19,17 @@ public class Airport {
     @Column(length = 3, columnDefinition = "varchar(4)", nullable = false)
     private String id;
 
+    @Column(length = 100, columnDefinition = "varchar(100)")
+    private String name;
+
     @Column(columnDefinition = "tinyint(1)", nullable = false)
     private Boolean isInternational;
 
     @Column(columnDefinition = "tinyint(1)", nullable = false)
     private Boolean isDomestic;
+
+    @Column(columnDefinition = "tinyint(1)", nullable = false)
+    private Boolean isActive;
 
     @Column(length = 50, columnDefinition = "varchar(50)")
     private String city;

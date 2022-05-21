@@ -3,10 +3,7 @@ package id.holigo.services.holigoairlinesservice.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.common.model.PaymentStatusEnum;
 import id.holigo.services.holigoairlinesservice.domain.*;
-import id.holigo.services.holigoairlinesservice.repositories.AirlinesAvailabilityRepository;
-import id.holigo.services.holigoairlinesservice.repositories.AirlinesFinalFareRepository;
-import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
-import id.holigo.services.holigoairlinesservice.repositories.ContactPersonRepository;
+import id.holigo.services.holigoairlinesservice.repositories.*;
 //import id.holigo.services.holigoairlinesservice.services.fare.FareService;
 import id.holigo.services.holigoairlinesservice.services.retross.RetrossAirlinesService;
 import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
@@ -16,7 +13,11 @@ import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesTransactionM
 import id.holigo.services.holigoairlinesservice.web.mappers.ContactPersonMapper;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.SessionFactoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.provider.HibernateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,8 @@ public class AirlinesServiceImpl implements AirlinesService {
     private AirlinesTransactionMapper airlinesTransactionMapper;
 
     private AirlinesTransactionRepository airlinesTransactionRepository;
+
+    private AirlinesAvailabilityItineraryRepository airlinesAvailabilityItineraryRepository;
 
 
     @Autowired
@@ -98,6 +101,11 @@ public class AirlinesServiceImpl implements AirlinesService {
         this.airlinesTransactionRepository = airlinesTransactionRepository;
     }
 
+    @Autowired
+    public void setAirlinesAvailabilityItineraryRepository(AirlinesAvailabilityItineraryRepository airlinesAvailabilityItineraryRepository) {
+        this.airlinesAvailabilityItineraryRepository = airlinesAvailabilityItineraryRepository;
+    }
+
     @Override
     public ListAvailabilityDto getAvailabilities(InquiryDto inquiryDto) throws JsonProcessingException {
         RequestScheduleDto requestScheduleDto = RequestScheduleDto.builder()
@@ -126,7 +134,7 @@ public class AirlinesServiceImpl implements AirlinesService {
         if (!responseFareDto.getError_code().equals("000")) {
             return null;
         }
-        AirlinesFinalFare airlinesFinalFare = airlinesFareMapper.responseFareDtoToAirlinesFinalFare(responseFareDto,tripDto, userId);
+        AirlinesFinalFare airlinesFinalFare = airlinesFareMapper.responseFareDtoToAirlinesFinalFare(responseFareDto, tripDto, userId);
         airlinesFinalFare.setIsIdentityNumberRequired(isIdentityNumberRequired(tripDto));
         return airlinesFareMapper.airlinesFinalFareToAirlinesFinalFareDto(airlinesFinalFare);
     }
@@ -169,12 +177,14 @@ public class AirlinesServiceImpl implements AirlinesService {
         return airlinesTransactionMapper.airlinesTransactionToAirlinesTransactionDto(savedAirlinesTransaction);
     }
 
+    @Transactional
     @Override
     public void saveAvailabilities(ListAvailabilityDto listAvailabilityDto) {
 
         List<AirlinesAvailability> airlinesAvailabilities = listAvailabilityDto.getDepartures().stream().map(airlinesAvailabilityMapper::airlinesAvailabilityDtoToAirlinesAvailability).toList();
 
         airlinesAvailabilityRepository.saveAll(airlinesAvailabilities);
+
     }
 
 
