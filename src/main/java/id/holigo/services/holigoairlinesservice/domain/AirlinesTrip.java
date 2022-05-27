@@ -11,7 +11,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,8 +33,11 @@ public class AirlinesTrip {
     @ManyToOne
     private AirlinesTransaction transaction;
 
-    @OneToMany(mappedBy = "trip")
-    private List<AirlinesTripItinerary> itineraries;
+    @Column(columnDefinition = "varchar(20)")
+    private String flightNumber;
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    private List<AirlinesTripItinerary> itineraries = new ArrayList<>();
 
     @OneToMany(mappedBy = "trip")
     private List<AirlinesTripPassenger> passengers;
@@ -39,11 +45,42 @@ public class AirlinesTrip {
     @Column(columnDefinition = "varchar(4)", length = 4, nullable = false)
     private String airlinesCode;
 
+    @Transient
     @OneToOne
     private Airport originAirport;
 
+    @Transient
     @OneToOne
     private Airport destinationAirport;
+
+    @Column(columnDefinition = "varchar(4)")
+    private String originAirportId;
+
+    @Column(columnDefinition = "varchar(4)")
+    private String destinationAirportId;
+
+    private Date departureDate;
+
+    private Time departureTime;
+
+    private Date arrivalDate;
+
+    private Time arrivalTime;
+
+    private Integer duration;
+
+    private String imageUrl;
+
+    private Integer transit;
+
+    @Column(length = 4, columnDefinition = "tinyint(2) default 1", nullable = false)
+    private Integer adultAmount;
+
+    @Column(length = 2, columnDefinition = "tinyint(2) default 0", nullable = false)
+    private Integer childAmount;
+
+    @Column(length = 2, columnDefinition = "tinyint(2) default 0", nullable = false)
+    private Integer infantAmount;
 
     @Column(columnDefinition = "tinyint(1) default 0", nullable = false)
     private Boolean isPriceIncluded;
@@ -104,6 +141,15 @@ public class AirlinesTrip {
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    public void setItineraries(List<AirlinesTripItinerary> itineraries) {
+        this.itineraries = itineraries;
+    }
+
+    public void addToItineraries(AirlinesTripItinerary airlinesTripItinerary) {
+        airlinesTripItinerary.setTrip(this);
+        this.itineraries.add(airlinesTripItinerary);
+    }
 
 
 }

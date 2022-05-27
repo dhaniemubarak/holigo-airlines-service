@@ -1,8 +1,12 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
+import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTrip;
 import lombok.*;
 
+import javax.persistence.CascadeType;
+import javax.persistence.OneToMany;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,5 +29,5 @@ public class AirlinesFinalFareDto {
 
     private Boolean isIdentityNumberRequired;
 
-    private List<TripDto> trips;
+    private List<AirlinesFinalFareTripDto> trips = new ArrayList<>();
 }

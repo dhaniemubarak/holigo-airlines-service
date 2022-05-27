@@ -2,10 +2,18 @@ package id.holigo.services.holigoairlinesservice.web.model;
 
 import id.holigo.services.holigoairlinesservice.domain.PassengerTitle;
 import id.holigo.services.holigoairlinesservice.domain.PassengerType;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.UUID;
+
+@Getter
+@Setter
 
 public class PassengerDto implements Serializable {
+
+    private UUID id;
 
     private PassengerType type;
 
@@ -16,4 +24,8 @@ public class PassengerDto implements Serializable {
     private String phoneNumber;
 
     private String identityNumber;
+
+    private String baggageCode;
+
+    private String seatCode;
 }

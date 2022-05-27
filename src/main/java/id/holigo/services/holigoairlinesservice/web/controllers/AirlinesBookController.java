@@ -1,6 +1,8 @@
 package id.holigo.services.holigoairlinesservice.web.controllers;
 
+import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
+import id.holigo.services.holigoairlinesservice.services.AirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,24 +18,24 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 public class AirlinesBookController {
 
-    private AirlinesService airlinesService;
+    private AirlinesTransactionService airlinesTransactionService;
 
     private final static String PATH = "/api/v1/airlines/book";
 
     private final static String TRANSACTION_PATH = "/api/v1/transactions/{id}";
 
     @Autowired
-    public void setAirlinesService(AirlinesService airlinesService) {
-        this.airlinesService = airlinesService;
+    public void setAirlinesTransactionService(AirlinesTransactionService airlinesTransactionService) {
+        this.airlinesTransactionService = airlinesTransactionService;
     }
 
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createBook(@RequestBody AirlinesBookDto airlinesBookDto,
                                                  @RequestHeader("user-id") Long userId) {
-        AirlinesTransactionDto airlinesTransactionDto = airlinesService.createTransaction(airlinesBookDto, userId);
+        AirlinesTransaction airlinesTransaction = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setLocation(UriComponentsBuilder.fromPath(TRANSACTION_PATH)
-                .buildAndExpand(airlinesTransactionDto.getId().toString()).toUri());
+                .buildAndExpand(airlinesTransaction.getId().toString()).toUri());
         return new ResponseEntity<>(httpHeaders, HttpStatus.CREATED);
     }
 

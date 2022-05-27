@@ -33,6 +33,9 @@ public class Passenger {
 
     private String identityNumber;
 
+    @Column(length = 20, columnDefinition = "varchar(20)")
+    private String phoneNumber;
+
     @CreationTimestamp
     private Timestamp createdAt;
 

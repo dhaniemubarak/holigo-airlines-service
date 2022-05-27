@@ -1,5 +1,6 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,13 +14,18 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class RetrossFareDto {
 
+    @JsonProperty("SubClass")
     private String subClass;
 
+    @JsonProperty("SeatAvb")
     private Integer seatAvb;
 
+    @JsonProperty("NTA")
     private BigDecimal nta;
 
+    @JsonProperty("TotalFare")
     private BigDecimal totalFare;
 
+    @JsonProperty("selectedIDdep")
     private String selectedIdDep;
 }

@@ -1,13 +1,11 @@
 package id.holigo.services.holigoairlinesservice.web.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFare;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesFinalFareRepository;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
-import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesFareMapper;
-import id.holigo.services.holigoairlinesservice.web.model.FareDto;
+import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesFinalFareMapper;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesFinalFareDto;
-import id.holigo.services.holigoairlinesservice.web.model.TripDto;
+import id.holigo.services.holigoairlinesservice.web.model.RequestFinalFareDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +23,7 @@ public class AirlinesFareController {
     private AirlinesFinalFareRepository airlinesFinalFareRepository;
     private AirlinesService airlinesService;
 
-    private AirlinesFareMapper airlinesFareMapper;
+    private AirlinesFinalFareMapper airlinesFinalFareMapper;
 
     public static final String PATH = "/api/v1/airlines/fares";
 
@@ -40,34 +38,26 @@ public class AirlinesFareController {
     }
 
     @Autowired
-    public void setAirlinesFareMapper(AirlinesFareMapper airlinesFareMapper) {
-        this.airlinesFareMapper = airlinesFareMapper;
+    public void setAirlinesFareMapper(AirlinesFinalFareMapper airlinesFinalFareMapper) {
+        this.airlinesFinalFareMapper = airlinesFinalFareMapper;
     }
 
 
     @PostMapping(PATH)
-    public ResponseEntity<HttpStatus> createFare(@RequestBody AirlinesFinalFareDto airlinesFinalFareDto, @RequestHeader("user-id") Long userId) {
+    public ResponseEntity<HttpStatus> createFare(@RequestBody RequestFinalFareDto requestFinalFareDto, @RequestHeader("user-id") Long userId) {
         log.info("Fare running");
-        AirlinesFinalFareDto finalFareForResponse = null;
-        for (int i = 0; i < airlinesFinalFareDto.getTrips().size(); i++) {
-            TripDto tripDto = airlinesFinalFareDto.getTrips().get(i);
-            try {
-                finalFareForResponse = airlinesService.createFinalFares(tripDto, userId);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        if (finalFareForResponse == null) {
+        AirlinesFinalFare airlinesFinalFare = airlinesService.createFinalFares(requestFinalFareDto, userId);
+        if (airlinesFinalFare == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setLocation(UriComponentsBuilder.fromPath(PATH + "/{id}").buildAndExpand(finalFareForResponse.getId()).toUri());
+        httpHeaders.setLocation(UriComponentsBuilder.fromPath(PATH + "/{id}").buildAndExpand(airlinesFinalFare.getId()).toUri());
         return new ResponseEntity<>(httpHeaders, HttpStatus.CREATED);
     }
 
 
     @GetMapping(PATH + "/{id}")
     public ResponseEntity<AirlinesFinalFareDto> getFare(@PathVariable("id") UUID id) {
-        return new ResponseEntity<>(airlinesFareMapper.airlinesFinalFareToAirlinesFinalFareDto(airlinesFinalFareRepository.getById(id)), HttpStatus.OK);
+        return new ResponseEntity<>(airlinesFinalFareMapper.airlinesFinalFareToAirlinesFinalFareDto(airlinesFinalFareRepository.getById(id)), HttpStatus.OK);
     }
 }

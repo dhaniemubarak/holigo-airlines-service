@@ -1,7 +1,6 @@
 package id.holigo.services.holigoairlinesservice.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -10,11 +9,16 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Entity(name = "airlines_final_fares")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AirlinesFinalFare {
 
     @Id
@@ -23,9 +27,6 @@ public class AirlinesFinalFare {
     @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
-
-    @ManyToOne
-    private Inquiry inquiry;
 
     private Long userId;
 
@@ -84,4 +85,7 @@ public class AirlinesFinalFare {
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    @OneToMany(mappedBy = "finalFare", cascade = CascadeType.ALL)
+    private List<AirlinesFinalFareTrip> trips = new ArrayList<>();
 }

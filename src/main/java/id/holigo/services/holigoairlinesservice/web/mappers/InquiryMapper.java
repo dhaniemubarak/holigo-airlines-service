@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper
 public interface InquiryMapper {
 
+    @Mapping(target = "userId", ignore = true)
     InquiryDto inquiryToInquiryDto(Inquiry inquiry);
 
     @Mapping(target = "updatedAt", ignore = true)

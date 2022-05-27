@@ -5,17 +5,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class AirlinesAvailabilityFareDto {
+@AllArgsConstructor
+public class AirlinesAvailabilityPriceDto implements Serializable {
 
-    private BigDecimal ntaAmount;
+    private BigDecimal normalFare;
 
-    private BigDecimal nraAmount;
+    private BigDecimal hpAmount;
 
     private BigDecimal fareAmount;
 

@@ -1,22 +1,21 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
-import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
+import id.holigo.services.holigoairlinesservice.domain.Airport;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Time;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class AirlinesAvailabilityDto {
+@AllArgsConstructor
+public class AirlinesFinalFareTripItineraryDto implements Serializable {
 
     private UUID id;
 
@@ -28,7 +27,11 @@ public class AirlinesAvailabilityDto {
 
     private String originAirportId;
 
+    private Airport originAirport;
+
     private String destinationAirportId;
+
+    private Airport destinationAirport;
 
     private Date departureDate;
 
@@ -40,15 +43,7 @@ public class AirlinesAvailabilityDto {
 
     private Integer duration;
 
-    private Integer transit;
-
     private String imageUrl;
 
-    private AirlinesAvailabilityPriceDto fare;
-
-    private List<AirlinesAvailabilityTagsDto> tags = new ArrayList<>();
-
-    private List<AirlinesAvailabilityItineraryDto> itineraries = new ArrayList<>();
-
-    private List<AirlinesAvailabilityFareDto> fares = new ArrayList<>();
+    private Integer transit;
 }

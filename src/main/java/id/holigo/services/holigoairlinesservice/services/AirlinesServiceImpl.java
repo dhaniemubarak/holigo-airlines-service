@@ -1,35 +1,30 @@
 package id.holigo.services.holigoairlinesservice.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import id.holigo.services.common.model.PaymentStatusEnum;
+import id.holigo.services.common.model.FareDetailDto;
+import id.holigo.services.common.model.FareDto;
 import id.holigo.services.holigoairlinesservice.domain.*;
 import id.holigo.services.holigoairlinesservice.repositories.*;
-//import id.holigo.services.holigoairlinesservice.services.fare.FareService;
+import id.holigo.services.holigoairlinesservice.services.fare.FareService;
 import id.holigo.services.holigoairlinesservice.services.retross.RetrossAirlinesService;
-import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
-import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesAvailabilityMapper;
-import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesFareMapper;
-import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesTransactionMapper;
-import id.holigo.services.holigoairlinesservice.web.mappers.ContactPersonMapper;
+import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.SessionFactoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.provider.HibernateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jms.JMSException;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
 public class AirlinesServiceImpl implements AirlinesService {
+
+    private FareService fareService;
 
     private RetrossAirlinesService retrossAirlinesService;
 
@@ -39,7 +34,7 @@ public class AirlinesServiceImpl implements AirlinesService {
 
     private AirlinesAvailabilityMapper airlinesAvailabilityMapper;
 
-    private AirlinesFareMapper airlinesFareMapper;
+    private AirlinesFinalFareMapper airlinesFinalFareMapper;
 
 //    private FareService fareService;
 
@@ -51,8 +46,11 @@ public class AirlinesServiceImpl implements AirlinesService {
 
     private AirlinesTransactionRepository airlinesTransactionRepository;
 
-    private AirlinesAvailabilityItineraryRepository airlinesAvailabilityItineraryRepository;
+    private AirlinesFinalFareTripMapper airlinesFinalFareTripMapper;
 
+    private AirlinesFinalFareTripRepository airlinesFinalFareTripRepository;
+
+    private InquiryMapper inquiryMapper;
 
     @Autowired
     public void setRetrossAirlinesService(RetrossAirlinesService retrossAirlinesService) {
@@ -65,8 +63,8 @@ public class AirlinesServiceImpl implements AirlinesService {
     }
 
     @Autowired
-    public void setAirlinesFareMapper(AirlinesFareMapper airlinesFareMapper) {
-        this.airlinesFareMapper = airlinesFareMapper;
+    public void setAirlinesFareMapper(AirlinesFinalFareMapper airlinesFinalFareMapper) {
+        this.airlinesFinalFareMapper = airlinesFinalFareMapper;
     }
 
     @Autowired
@@ -102,8 +100,23 @@ public class AirlinesServiceImpl implements AirlinesService {
     }
 
     @Autowired
-    public void setAirlinesAvailabilityItineraryRepository(AirlinesAvailabilityItineraryRepository airlinesAvailabilityItineraryRepository) {
-        this.airlinesAvailabilityItineraryRepository = airlinesAvailabilityItineraryRepository;
+    public void setAirlinesFinalFareTripMapper(AirlinesFinalFareTripMapper airlinesFinalFareTripMapper) {
+        this.airlinesFinalFareTripMapper = airlinesFinalFareTripMapper;
+    }
+
+    @Autowired
+    public void setAirlinesFinalFareTripRepository(AirlinesFinalFareTripRepository airlinesFinalFareTripRepository) {
+        this.airlinesFinalFareTripRepository = airlinesFinalFareTripRepository;
+    }
+
+    @Autowired
+    public void setInquiryMapper(InquiryMapper inquiryMapper) {
+        this.inquiryMapper = inquiryMapper;
+    }
+
+    @Autowired
+    public void setFareService(FareService fareService) {
+        this.fareService = fareService;
     }
 
     @Override
@@ -114,7 +127,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                 .des(inquiryDto.getDestinationAirportId())
                 .tgl_dep(inquiryDto.getDepartureDate().toString())
                 .tgl_ret(inquiryDto.getReturnDate() != null ? inquiryDto.getReturnDate().toString() : null)
-                .flight(inquiryDto.getTripType())
+                .flight(inquiryDto.getTripType().toString())
                 .adt(inquiryDto.getAdultAmount())
                 .chd(inquiryDto.getChildAmount())
                 .inf(inquiryDto.getInfantAmount())
@@ -123,58 +136,110 @@ public class AirlinesServiceImpl implements AirlinesService {
         if (responseScheduleDto.getSchedule() == null) {
             return null;
         }
-        return airlinesAvailabilityMapper.responseScheduleDtoToListAvailabilityDto(responseScheduleDto);
-    }
-
-    @Override
-    public AirlinesFinalFareDto createFinalFares(TripDto tripDto, Long userId) throws JsonProcessingException {
-
-        ResponseFareDto responseFareDto = retrossAirlinesService.getFare(tripDto);
-
-        if (!responseFareDto.getError_code().equals("000")) {
-            return null;
-        }
-        AirlinesFinalFare airlinesFinalFare = airlinesFareMapper.responseFareDtoToAirlinesFinalFare(responseFareDto, tripDto, userId);
-        airlinesFinalFare.setIsIdentityNumberRequired(isIdentityNumberRequired(tripDto));
-        return airlinesFareMapper.airlinesFinalFareToAirlinesFinalFareDto(airlinesFinalFare);
+        return airlinesAvailabilityMapper.responseScheduleDtoToListAvailabilityDto(responseScheduleDto, inquiryDto.getUserId());
     }
 
     @Transactional
     @Override
-    public AirlinesTransactionDto createTransaction(AirlinesBookDto airlinesBookDto, Long userId) {
-        // FInd fare id
-        AirlinesFinalFare airlinesFinalFare;
-        Optional<AirlinesFinalFare> fetchFinalFare = airlinesFinalFareRepository.findById(airlinesBookDto.getFareId());
-        if (fetchFinalFare.isPresent()) {
-            airlinesFinalFare = fetchFinalFare.get();
-        } else {
-            throw new NotFoundException("Flight not available");
+    public AirlinesFinalFare createFinalFares(RequestFinalFareDto requestFinalFareDto, Long userId) {
+
+        Set<AirlinesFinalFareTrip> airlinesFinalFareTrips = new HashSet<>();
+
+
+        for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
+            ResponseFareDto responseFareDto;
+            TripDto tripDto = requestFinalFareDto.getTrips().get(i);
+            AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
+                    .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
+            AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
+                    .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability);
+            airlinesFinalFareTrip.setAdultAmount(tripDto.getInquiry().getAdultAmount());
+            airlinesFinalFareTrip.setChildAmount(tripDto.getInquiry().getChildAmount());
+            airlinesFinalFareTrip.setInfantAmount(tripDto.getInquiry().getInfantAmount());
+            if (tripDto.getInquiry().getTripType() != TripType.R && i != 1) {
+                try {
+                    responseFareDto = retrossAirlinesService.getFare(tripDto);
+                    if (!responseFareDto.getError_code().equals("000")) {
+                        throw new Exception("Failed get final fare from airlines");
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                responseFareDto = ResponseFareDto.builder()
+                        .totalAmount(BigDecimal.valueOf(0.00))
+                        .ntaAmount(BigDecimal.valueOf(0.00))
+                        .build();
+            }
+            airlinesFinalFareTrip.setIsPriceIncluded(responseFareDto.getTotalAmount().equals(BigDecimal.valueOf(0.00)));
+            airlinesFinalFareTrip.setFareAmount(responseFareDto.getTotalAmount());
+            airlinesFinalFareTrip.setNtaAmount(responseFareDto.getNtaAmount());
+            airlinesFinalFareTrip.setNraAmount(airlinesFinalFareTrip.getFareAmount()
+                    .subtract(airlinesFinalFareTrip.getNtaAmount()));
+
+
+            FareDto fareDto = null;
+            try {
+                fareDto = fareService.getFareDetail(FareDetailDto.builder().ntaAmount(airlinesFinalFareTrip.getNtaAmount())
+                        .nraAmount(airlinesFinalFareTrip.getNraAmount()).productId(1).userId(userId).build());
+            } catch (JMSException | JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            airlinesFinalFareTrip.setAdminAmount(BigDecimal.valueOf(0.00));
+            airlinesFinalFareTrip.setCpAmount(fareDto.getCpAmount());
+            airlinesFinalFareTrip.setMpAmount(fareDto.getMpAmount());
+            airlinesFinalFareTrip.setIpAmount(fareDto.getIpAmount());
+            airlinesFinalFareTrip.setHpAmount(fareDto.getHpAmount());
+            airlinesFinalFareTrip.setHvAmount(fareDto.getHvAmount());
+            airlinesFinalFareTrip.setPrAmount(fareDto.getPrAmount());
+            airlinesFinalFareTrip.setIpcAmount(fareDto.getIpcAmount());
+            airlinesFinalFareTrip.setHpcAmount(fareDto.getHpcAmount());
+            airlinesFinalFareTrip.setPrcAmount(fareDto.getPrcAmount());
+            airlinesFinalFareTrip.setLossAmount(fareDto.getLossAmount());
+            airlinesFinalFareTrips.add(airlinesFinalFareTrip);
+
         }
 
-        // create contact person
-        ContactPerson savedContactPerson = contactPersonRepository
-                .save(contactPersonMapper.contactPersonDtoToContactPerson(
-                        airlinesBookDto.getContactPerson()));
+        AirlinesFinalFare airlinesFinalFare = AirlinesFinalFare.builder()
+                .fareAmount(BigDecimal.valueOf(0.00))
+                .adminAmount(BigDecimal.valueOf(0.00))
+                .ntaAmount(BigDecimal.valueOf(0.00))
+                .nraAmount(BigDecimal.valueOf(0.00))
+                .cpAmount(BigDecimal.valueOf(0.00))
+                .mpAmount(BigDecimal.valueOf(0.00))
+                .ipAmount(BigDecimal.valueOf(0.00))
+                .hpAmount(BigDecimal.valueOf(0.00))
+                .hvAmount(BigDecimal.valueOf(0.00))
+                .prAmount(BigDecimal.valueOf(0.00))
+                .ipcAmount(BigDecimal.valueOf(0.00))
+                .hpcAmount(BigDecimal.valueOf(0.00))
+                .prcAmount(BigDecimal.valueOf(0.00))
+                .lossAmount(BigDecimal.valueOf(0.00))
+                .build();
+        airlinesFinalFare.setUserId(userId);
+        airlinesFinalFare.setIsBookable(true);
+        airlinesFinalFareTrips.forEach(airlinesFinalFareTrip -> {
+            airlinesFinalFare.setFareAmount(airlinesFinalFare.getFareAmount().add(airlinesFinalFareTrip.getFareAmount()));
+            airlinesFinalFare.setAdminAmount(airlinesFinalFare.getAdminAmount().add(airlinesFinalFareTrip.getAdminAmount()));
+            airlinesFinalFare.setNtaAmount(airlinesFinalFare.getNtaAmount().add(airlinesFinalFareTrip.getNtaAmount()));
+            airlinesFinalFare.setNraAmount(airlinesFinalFare.getNraAmount().add(airlinesFinalFareTrip.getNraAmount()));
+            airlinesFinalFare.setCpAmount(airlinesFinalFare.getCpAmount().add(airlinesFinalFareTrip.getCpAmount()));
+            airlinesFinalFare.setMpAmount(airlinesFinalFare.getMpAmount().add(airlinesFinalFareTrip.getMpAmount()));
+            airlinesFinalFare.setIpAmount(airlinesFinalFare.getIpAmount().add(airlinesFinalFareTrip.getIpAmount()));
+            airlinesFinalFare.setHpAmount(airlinesFinalFare.getHpAmount().add(airlinesFinalFareTrip.getHpAmount()));
+            airlinesFinalFare.setHvAmount(airlinesFinalFare.getHvAmount().add(airlinesFinalFareTrip.getHvAmount()));
+            airlinesFinalFare.setPrAmount(airlinesFinalFare.getPrAmount().add(airlinesFinalFareTrip.getPrAmount()));
+            airlinesFinalFare.setIpcAmount(airlinesFinalFare.getIpcAmount().add(airlinesFinalFareTrip.getIpcAmount()));
+            airlinesFinalFare.setHpcAmount(airlinesFinalFare.getHpcAmount().add(airlinesFinalFareTrip.getHpcAmount()));
+            airlinesFinalFare.setPrcAmount(airlinesFinalFare.getPrcAmount().add(airlinesFinalFareTrip.getPrcAmount()));
+            airlinesFinalFare.setLossAmount(airlinesFinalFare.getLossAmount().add(airlinesFinalFareTrip.getLossAmount()));
+        });
+        AirlinesFinalFare savedAirlinesFinalFare = airlinesFinalFareRepository.save(airlinesFinalFare);
+        airlinesFinalFareTrips.forEach(airlinesFinalFareTrip -> airlinesFinalFareTrip.setFinalFare(savedAirlinesFinalFare));
 
-        // Create airlines transaction
-        AirlinesTransaction airlinesTransaction = airlinesFareMapper.airlinesFinalFareToAirlinesTransaction(airlinesFinalFare);
-        airlinesTransaction.setContactPerson(savedContactPerson);
-
-        // SET EXPIRED
-        airlinesTransaction.setExpiredAt(Timestamp.valueOf(LocalDateTime.now().plusMinutes(30L)));
-        airlinesTransaction.setDiscountAmount(BigDecimal.valueOf(0.00));
-        airlinesTransaction.setPaymentStatus(PaymentStatusEnum.SELECTING_PAYMENT);
-        AirlinesTransaction savedAirlinesTransaction = airlinesTransactionRepository.save(airlinesTransaction);
-
-        // create trip
-
-        // create itinerary
-
-        // create passengers
-
-        // create transaction in transaction service
-
-        return airlinesTransactionMapper.airlinesTransactionToAirlinesTransactionDto(savedAirlinesTransaction);
+        airlinesFinalFareTripRepository.saveAll(airlinesFinalFareTrips);
+        return savedAirlinesFinalFare;
     }
 
     @Transactional
@@ -185,13 +250,5 @@ public class AirlinesServiceImpl implements AirlinesService {
 
         airlinesAvailabilityRepository.saveAll(airlinesAvailabilities);
 
-    }
-
-
-    private Boolean isIdentityNumberRequired(TripDto tripDto) {
-        return switch (tripDto.getInquiry().getAirlinesCode()) {
-            case "JT", "SJ" -> true;
-            default -> false;
-        };
     }
 }

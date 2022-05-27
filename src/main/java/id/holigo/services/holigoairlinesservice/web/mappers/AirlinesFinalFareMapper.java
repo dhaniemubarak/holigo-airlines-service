@@ -9,10 +9,10 @@ import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@DecoratedWith(AirlinesFareMapperDecorator.class)
+@DecoratedWith(AirlinesFinalFareMapperDecorator.class)
 @Mapper
-public interface AirlinesFareMapper {
-    @Mapping(target = "inquiry", ignore = true)
+public interface AirlinesFinalFareMapper {
+    @Mapping(target = "trips", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "valueNote", ignore = true)
@@ -35,7 +35,6 @@ public interface AirlinesFareMapper {
     @Mapping(target = "fareAmount", ignore = true)
     AirlinesFinalFare responseFareDtoToAirlinesFinalFare(ResponseFareDto responseFareDto, TripDto tripDto, Long userId);
 
-    @Mapping(target = "trips", ignore = true)
     @Mapping(target = "note", ignore = true)
     AirlinesFinalFareDto airlinesFinalFareToAirlinesFinalFareDto(AirlinesFinalFare airlinesFinalFare);
 
@@ -47,9 +46,6 @@ public interface AirlinesFareMapper {
     @Mapping(target = "expiredAt", ignore = true)
     @Mapping(target = "discountAmount", ignore = true)
     @Mapping(target = "contactPerson", ignore = true)
-    @Mapping(target = "tripType", source = "inquiry.tripType")
-    @Mapping(target = "infantAmount", source = "inquiry.infantAmount")
-    @Mapping(target = "childAmount", source = "inquiry.childAmount")
-    @Mapping(target = "adultAmount", source = "inquiry.adultAmount")
+    @Mapping(target = "tripType", ignore = true)
     AirlinesTransaction airlinesFinalFareToAirlinesTransaction(AirlinesFinalFare airlinesFinalFare);
 }

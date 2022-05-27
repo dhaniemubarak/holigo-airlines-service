@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Slf4j
 public abstract class AirlinesAvailabilityFareMapperDecorator implements AirlinesAvailabilityFareMapper {
@@ -20,7 +21,11 @@ public abstract class AirlinesAvailabilityFareMapperDecorator implements Airline
 
     @Override
     public AirlinesAvailabilityFareDto retrossFareToAirlinesAvailabilityFareDto(RetrossFareDto fare) {
-        return airlinesAvailabilityFareMapper.retrossFareToAirlinesAvailabilityFareDto(fare);
+        AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = this.airlinesAvailabilityFareMapper.retrossFareToAirlinesAvailabilityFareDto(fare);
+        airlinesAvailabilityFareDto.setFareAmount(airlinesAvailabilityFareDto.getFareAmount().setScale(2, RoundingMode.UP));
+        airlinesAvailabilityFareDto.setNtaAmount(airlinesAvailabilityFareDto.getNtaAmount().setScale(2, RoundingMode.UP));
+        airlinesAvailabilityFareDto.setNraAmount(airlinesAvailabilityFareDto.getFareAmount().subtract(airlinesAvailabilityFareDto.getNtaAmount()).setScale(2, RoundingMode.UP));
+        return airlinesAvailabilityFareDto;
     }
 
     @Override

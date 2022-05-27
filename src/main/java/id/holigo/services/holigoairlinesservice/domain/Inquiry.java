@@ -29,8 +29,6 @@ public class Inquiry {
     @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
-    @OneToMany(mappedBy = "inquiry")
-    private List<AirlinesFinalFare> airlinesFinalFares;
     private String airlinesCode;
     private String originAirportId;
     private String destinationAirportId;

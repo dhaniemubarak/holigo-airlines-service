@@ -1,14 +1,17 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class ResponseFareDto {
+@Builder
+public class ResponseFareDto implements Serializable {
 
     private String error_code;
     private String error_msg;

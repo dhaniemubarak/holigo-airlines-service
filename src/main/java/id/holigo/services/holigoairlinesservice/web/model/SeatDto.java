@@ -1,27 +1,22 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class AirlinesAvailabilityFareDto {
+@AllArgsConstructor
+public class SeatDto implements Serializable {
 
-    private BigDecimal ntaAmount;
+    private String code;
 
-    private BigDecimal nraAmount;
-
+    @JsonProperty("fare")
     private BigDecimal fareAmount;
-
-    private String subclass;
-
-    private Integer seatAvailable;
-
-    private String selectedId;
 }

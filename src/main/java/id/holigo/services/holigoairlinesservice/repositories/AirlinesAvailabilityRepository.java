@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface AirlinesAvailabilityRepository extends JpaRepository<AirlinesAvailability, AirlinesScheduleId> {
 
@@ -22,4 +23,10 @@ public interface AirlinesAvailabilityRepository extends JpaRepository<AirlinesAv
             @Param("originAirportId") String originAirportId,
             @Param("destinationAirportId") String destinationAirportId,
             @Param("departureDate") String departureDate);
+
+    @Query(
+            nativeQuery = true,
+            value = "SELECT * FROM airlines_availabilities WHERE id= :id LIMIT 1"
+    )
+    AirlinesAvailability getAirlinesAvailabilityById(String id);
 }

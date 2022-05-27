@@ -28,9 +28,8 @@ public class AirlinesAvailabilityFare {
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
 
-//    @ManyToOne
-//    @JoinColumn(name = "airlines_availability_id")
-//    private AirlinesAvailability airlinesAvailability;
+    @ManyToOne(cascade = CascadeType.ALL)
+    private AirlinesAvailability airlinesAvailability;
 
     @Column(length = 10, columnDefinition = "varchar(10)")
     private String subclass;
@@ -42,6 +41,8 @@ public class AirlinesAvailabilityFare {
     private BigDecimal ntaAmount;
 
     private BigDecimal nraAmount;
+
+    private String selectedId;
 
     @CreationTimestamp
     private Timestamp createdAt;

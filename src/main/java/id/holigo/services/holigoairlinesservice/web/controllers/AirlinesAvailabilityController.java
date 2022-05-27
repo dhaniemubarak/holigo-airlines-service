@@ -8,6 +8,7 @@ import id.holigo.services.holigoairlinesservice.repositories.InquiryRepository;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
 import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesAvailabilityMapper;
 import id.holigo.services.holigoairlinesservice.web.mappers.InquiryMapper;
+import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDto;
 import id.holigo.services.holigoairlinesservice.web.model.InquiryDto;
 import id.holigo.services.holigoairlinesservice.web.model.ListAvailabilityDto;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,11 +64,12 @@ public class AirlinesAvailabilityController {
     }
 
     @GetMapping("/api/v1/airlines/availabilities")
-    public ResponseEntity<ListAvailabilityDto> getAvailabilities(InquiryDto inquiryDto) {
+    public ResponseEntity<ListAvailabilityDto> getAvailabilities(InquiryDto inquiryDto, @RequestHeader("user-id") Long userId) {
+        inquiryDto.setUserId(userId);
         Inquiry inquiry;
         Optional<Inquiry> fetchInquiry = inquiryRepository.getInquiry(inquiryDto.getAirlinesCode(),
                 inquiryDto.getOriginAirportId(), inquiryDto.getDestinationAirportId(), inquiryDto.getDepartureDate().toString(),
-                inquiryDto.getReturnDate() != null ? inquiryDto.getReturnDate().toString() : null, inquiryDto.getTripType(),
+                inquiryDto.getReturnDate() != null ? inquiryDto.getReturnDate().toString() : null, inquiryDto.getTripType().toString(),
                 inquiryDto.getAdultAmount(), inquiryDto.getChildAmount(), inquiryDto.getInfantAmount(), inquiryDto.getSeatClass());
 
         if (fetchInquiry.isPresent()) {
@@ -97,6 +102,12 @@ public class AirlinesAvailabilityController {
 
         airlinesService.saveAvailabilities(listAvailabilityDto);
 
+        List<AirlinesAvailabilityDto> availabilityDto = new ArrayList<>();
+        listAvailabilityDto.getDepartures().forEach(departure -> {
+            departure.setFares(null);
+            availabilityDto.add(departure);
+        });
+        listAvailabilityDto.setDepartures(availabilityDto);
 
         return new ResponseEntity<>(listAvailabilityDto, HttpStatus.OK);
     }

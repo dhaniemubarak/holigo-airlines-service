@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -32,7 +31,10 @@ public class AirlinesAvailability {
     @Id
     private String airlinesCode;
 
-    @OneToMany(mappedBy = "airlinesAvailability",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "airlinesAvailability", cascade = CascadeType.ALL)
+    private List<AirlinesAvailabilityFare> fares = new ArrayList<>();
+
+    @OneToMany(mappedBy = "airlinesAvailability", cascade = CascadeType.ALL)
     private List<AirlinesAvailabilityItinerary> itineraries = new ArrayList<>();
 
     @Id
@@ -69,21 +71,19 @@ public class AirlinesAvailability {
 
     private Integer transit;
 
-    @Lob
-    private String fare;
-
     @CreationTimestamp
     private Timestamp createdAt;
 
     @UpdateTimestamp
     private Timestamp updatedAt;
 
-    protected void setItineraries(List<AirlinesAvailabilityItinerary> itineraries) {
-        this.itineraries = itineraries;
-    }
-
     public void addToItineraries(AirlinesAvailabilityItinerary itinerary) {
         itinerary.setAirlinesAvailability(this);
         this.itineraries.add(itinerary);
+    }
+
+    public void addToFares(AirlinesAvailabilityFare airlinesAvailabilityFare) {
+        airlinesAvailabilityFare.setAirlinesAvailability(this);
+        this.fares.add(airlinesAvailabilityFare);
     }
 }

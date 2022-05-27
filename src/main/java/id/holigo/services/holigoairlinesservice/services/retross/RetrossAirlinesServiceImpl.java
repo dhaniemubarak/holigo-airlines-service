@@ -16,9 +16,9 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
 
-    private static final String RETROSS_ID = "retross_01";
+    private static final String RETROSS_ID = "holigo";
 
-    private static final String RETROSS_PASSKEY = "T35Hd6624jbadlA2hbfSFsg356gDPfgr6d4P1N02";
+    private static final String RETROSS_PASSKEY = "H0LJSHRG3754875Y4698NKJWEF8UHIGO";
 
     @Autowired
     private RetrossAirlinesServiceFeignClient retrossAirlinesServiceFeignClient;
@@ -28,8 +28,8 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
 
     @Override
     public ResponseScheduleDto getSchedule(RequestScheduleDto requestScheduleDto) throws JsonProcessingException {
-        requestScheduleDto.setMmid("retross_01");
-        requestScheduleDto.setRqid("T35Hd6624jbadlA2hbfSFsg356gDPfgr6d4P1N02");
+        requestScheduleDto.setMmid(RETROSS_ID);
+        requestScheduleDto.setRqid(RETROSS_PASSKEY);
         requestScheduleDto.setApp("information");
         requestScheduleDto.setAction("get_schedule");
         log.info("Calling get schedule with request -> {}", requestScheduleDto.getMmid());
@@ -56,7 +56,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .des(tripDto.getInquiry().getDestinationAirportId())
                 .tgl_dep(tripDto.getInquiry().getDepartureDate().toString())
                 .tgl_ret(tripDto.getInquiry().getReturnDate() != null ? tripDto.getInquiry().getReturnDate().toString() : null)
-                .flight(tripDto.getInquiry().getTripType())
+                .flight(tripDto.getInquiry().getTripType().toString())
                 .adt(tripDto.getInquiry().getAdultAmount())
                 .chd(tripDto.getInquiry().getChildAmount())
                 .inf(tripDto.getInquiry().getInfantAmount())

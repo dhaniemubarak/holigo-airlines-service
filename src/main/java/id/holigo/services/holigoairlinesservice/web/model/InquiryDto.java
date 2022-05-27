@@ -1,5 +1,6 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
+import id.holigo.services.holigoairlinesservice.domain.TripType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,8 @@ public class InquiryDto {
 
     private UUID id;
 
+    private Long userId;
+
     private String airlinesCode;
 
     private String originAirportId;
@@ -27,7 +30,7 @@ public class InquiryDto {
 
     private Date returnDate;
 
-    private String tripType;
+    private TripType tripType;
 
     private Integer adultAmount;
 
