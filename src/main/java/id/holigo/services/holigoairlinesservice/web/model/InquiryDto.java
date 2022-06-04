@@ -14,7 +14,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class InquiryDto {
+public class InquiryDto implements Serializable {
 
     private UUID id;
 

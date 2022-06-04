@@ -36,6 +36,7 @@ public interface AirlinesFinalFareMapper {
     AirlinesFinalFare responseFareDtoToAirlinesFinalFare(ResponseFareDto responseFareDto, TripDto tripDto, Long userId);
 
     @Mapping(target = "note", ignore = true)
+    @Mapping(target = "trips", ignore = true)
     AirlinesFinalFareDto airlinesFinalFareToAirlinesFinalFareDto(AirlinesFinalFare airlinesFinalFare);
 
 

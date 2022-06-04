@@ -32,5 +32,5 @@ public class ResponseFareDto implements Serializable {
     @JsonProperty("NTA")
     private BigDecimal ntaAmount;
 
-    private RetrossScheduleDto schedule;
+    private RetrossFinalFareDto schedule;
 }

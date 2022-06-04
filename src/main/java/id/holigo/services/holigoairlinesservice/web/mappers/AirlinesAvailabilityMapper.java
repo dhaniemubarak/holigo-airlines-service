@@ -31,7 +31,7 @@ public interface AirlinesAvailabilityMapper {
     @Mapping(target = "arrivalDate", ignore = true)
     @Mapping(target = "airlinesName", ignore = true)
     @Mapping(target = "airlinesCode", ignore = true)
-    AirlinesAvailabilityDto retrossDepartureDtoDtoToAirlinesAvailabilityDto(
+    AirlinesAvailabilityDto retrossDepartureDtoToAirlinesAvailabilityDto(
             RetrossDepartureDto retrossDepartureDto, Long userId);
 
     @Mapping(target = "returns", ignore = true)

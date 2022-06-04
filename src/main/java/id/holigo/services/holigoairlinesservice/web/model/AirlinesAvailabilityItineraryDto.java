@@ -37,6 +37,8 @@ public class AirlinesAvailabilityItineraryDto implements Serializable {
 
     private Integer transit;
 
+    private Integer leg;
+
     private String imageUrl;
 
 }

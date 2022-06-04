@@ -32,7 +32,8 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         requestScheduleDto.setRqid(RETROSS_PASSKEY);
         requestScheduleDto.setApp("information");
         requestScheduleDto.setAction("get_schedule");
-        log.info("Calling get schedule with request -> {}", requestScheduleDto.getMmid());
+        ObjectMapper obj = new ObjectMapper();
+        log.info("Calling get schedule with request -> {}", obj.writeValueAsString(requestScheduleDto));
 //
         ResponseScheduleDto responseScheduleDto;
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.getSchedule(requestScheduleDto);

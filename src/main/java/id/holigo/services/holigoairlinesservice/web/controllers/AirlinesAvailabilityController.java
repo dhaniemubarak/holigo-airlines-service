@@ -3,9 +3,11 @@ package id.holigo.services.holigoairlinesservice.web.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.Inquiry;
+import id.holigo.services.holigoairlinesservice.domain.TripType;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesAvailabilityRepository;
 import id.holigo.services.holigoairlinesservice.repositories.InquiryRepository;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
+import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
 import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesAvailabilityMapper;
 import id.holigo.services.holigoairlinesservice.web.mappers.InquiryMapper;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDto;
@@ -67,48 +69,105 @@ public class AirlinesAvailabilityController {
     public ResponseEntity<ListAvailabilityDto> getAvailabilities(InquiryDto inquiryDto, @RequestHeader("user-id") Long userId) {
         inquiryDto.setUserId(userId);
         Inquiry inquiry;
+        List<AirlinesAvailabilityDto> availabilityDeparturesDto = new ArrayList<>();
         Optional<Inquiry> fetchInquiry = inquiryRepository.getInquiry(inquiryDto.getAirlinesCode(),
                 inquiryDto.getOriginAirportId(), inquiryDto.getDestinationAirportId(), inquiryDto.getDepartureDate().toString(),
                 inquiryDto.getReturnDate() != null ? inquiryDto.getReturnDate().toString() : null, inquiryDto.getTripType().toString(),
                 inquiryDto.getAdultAmount(), inquiryDto.getChildAmount(), inquiryDto.getInfantAmount(), inquiryDto.getSeatClass());
 
-        if (fetchInquiry.isPresent()) {
+        if (fetchInquiry.isEmpty()) {
+            try {
+                inquiry = inquiryRepository.save(inquiryMapper.inquiryDtoToInquiry(inquiryDto));
+                inquiryDto.setId(inquiry.getId());
+            } catch (Exception e) {
+                // TODO Need message
+                throw new AvailabilitiesException();
+            }
+
+        } else {
             inquiry = fetchInquiry.get();
             inquiryDto.setId(inquiry.getId());
-        } else {
-            inquiry = inquiryRepository.save(inquiryMapper.inquiryDtoToInquiry(inquiryDto));
-            inquiryDto.setId(inquiry.getId());
         }
+
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
         listAvailabilityDto.setInquiry(inquiryDto);
-        List<AirlinesAvailability> airlinesAvailabilities = airlinesAvailabilityRepository.getAirlinesAvailability(
+
+        List<AirlinesAvailability> airlinesAvailabilityDepartures = airlinesAvailabilityRepository.getAirlinesAvailability(
                 inquiry.getAirlinesCode(), inquiry.getOriginAirportId(), inquiry.getDestinationAirportId(),
                 inquiry.getDepartureDate().toString()
         );
-        if (airlinesAvailabilities.size() > 0) {
-            listAvailabilityDto.setDepartures(airlinesAvailabilities.stream().map(airlinesAvailabilityMapper::airlinesAvailabilityToAirlinesAvailabilityDto).toList());
-            return new ResponseEntity<>(listAvailabilityDto, HttpStatus.OK);
-        }
-        // if not available flights
 
-        try {
-            listAvailabilityDto.setDepartures(airlinesService.getAvailabilities(inquiryDto).getDepartures());
-        } catch (JsonProcessingException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (listAvailabilityDto.getDepartures() == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (airlinesAvailabilityDepartures.size() > 0) {
+            listAvailabilityDto.setDepartures(airlinesAvailabilityDepartures.stream().map(airlinesAvailabilityMapper::airlinesAvailabilityToAirlinesAvailabilityDto).toList());
         }
 
-        airlinesService.saveAvailabilities(listAvailabilityDto);
+        if (inquiry.getTripType() == TripType.R) {
+            List<AirlinesAvailability> airlinesAvailabilityReturns = airlinesAvailabilityRepository.getAirlinesAvailability(
+                    inquiry.getAirlinesCode(), inquiry.getDestinationAirportId(), inquiry.getOriginAirportId(),
+                    inquiry.getReturnDate().toString()
+            );
 
-        List<AirlinesAvailabilityDto> availabilityDto = new ArrayList<>();
+            if (airlinesAvailabilityReturns.size() > 0) {
+                listAvailabilityDto.setReturns(airlinesAvailabilityReturns.stream().map(airlinesAvailabilityMapper::airlinesAvailabilityToAirlinesAvailabilityDto).toList());
+            }
+            if (airlinesAvailabilityDepartures.isEmpty() && airlinesAvailabilityReturns.isEmpty()) {
+
+                try {
+                    listAvailabilityDto = airlinesService.getAvailabilities(inquiryDto);
+                } catch (JsonProcessingException e) {
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+                if (listAvailabilityDto.getDepartures() == null || listAvailabilityDto.getReturns() == null) {
+                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                }
+            } else {
+                if (airlinesAvailabilityDepartures.isEmpty()) {
+                    inquiryDto.setReturnDate(null);
+                    inquiryDto.setTripType(TripType.O);
+                    try {
+                        listAvailabilityDto.setDepartures(airlinesService.getAvailabilities(inquiryDto).getDepartures());
+                    } catch (JsonProcessingException e) {
+                        throw new AvailabilitiesException();
+                    }
+
+                }
+                if (airlinesAvailabilityReturns.isEmpty()) {
+                    inquiryDto.setOriginAirportId(inquiry.getDestinationAirportId());
+                    inquiryDto.setDestinationAirportId(inquiry.getOriginAirportId());
+                    inquiryDto.setDepartureDate(inquiry.getReturnDate());
+                    inquiryDto.setReturnDate(null);
+                    inquiryDto.setTripType(TripType.O);
+                    try {
+                        listAvailabilityDto.setReturns(airlinesService.getAvailabilities(inquiryDto).getDepartures());
+                    } catch (JsonProcessingException e) {
+                        throw new AvailabilitiesException();
+                    }
+                }
+            }
+        } else if (airlinesAvailabilityDepartures.isEmpty()) {
+            try {
+                listAvailabilityDto = airlinesService.getAvailabilities(inquiryDto);
+            } catch (JsonProcessingException e) {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            if (listAvailabilityDto.getDepartures() == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        }
+
         listAvailabilityDto.getDepartures().forEach(departure -> {
             departure.setFares(null);
-            availabilityDto.add(departure);
+            availabilityDeparturesDto.add(departure);
         });
-        listAvailabilityDto.setDepartures(availabilityDto);
-
+        listAvailabilityDto.setDepartures(availabilityDeparturesDto);
+        if (listAvailabilityDto.getReturns() != null) {
+            List<AirlinesAvailabilityDto> availabilityReturnsDto = new ArrayList<>();
+            listAvailabilityDto.getReturns().forEach(departure -> {
+                departure.setFares(null);
+                availabilityReturnsDto.add(departure);
+            });
+            listAvailabilityDto.setReturns(availabilityReturnsDto);
+        }
         return new ResponseEntity<>(listAvailabilityDto, HttpStatus.OK);
     }
 }

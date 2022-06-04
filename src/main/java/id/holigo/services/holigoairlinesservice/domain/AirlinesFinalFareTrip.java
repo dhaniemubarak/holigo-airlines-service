@@ -115,6 +115,24 @@ public class AirlinesFinalFareTrip {
 
     private String supplierId;
 
+    @Lob
+    private String fares;
+
+    @Lob
+    private String addons;
+
+    @Lob
+    private String baggage;
+
+    @Lob
+    private String meal;
+
+    @Lob
+    private String medical;
+
+    @Lob
+    private String seat;
+
     public void addToItineraries(AirlinesFinalFareTripItinerary itinerary) {
         itinerary.setTrip(this);
         this.itineraries.add(itinerary);

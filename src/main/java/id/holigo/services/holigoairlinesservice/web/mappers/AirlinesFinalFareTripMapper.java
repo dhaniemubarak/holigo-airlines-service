@@ -3,6 +3,7 @@ package id.holigo.services.holigoairlinesservice.web.mappers;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTrip;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDto;
+import id.holigo.services.holigoairlinesservice.web.model.AirlinesFinalFareTripDto;
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,6 +12,11 @@ import org.mapstruct.Mapping;
 @Mapper(uses = AirlinesFinalFareTripItineraryMapper.class)
 public interface AirlinesFinalFareTripMapper {
 
+    @Mapping(target = "seat", ignore = true)
+    @Mapping(target = "medical", ignore = true)
+    @Mapping(target = "meal", ignore = true)
+    @Mapping(target = "baggage", ignore = true)
+    @Mapping(target = "addons", ignore = true)
     @Mapping(target = "supplierId", ignore = true)
     @Mapping(target = "isPriceIncluded", ignore = true)
     @Mapping(target = "isInternational", ignore = true)
@@ -34,7 +40,15 @@ public interface AirlinesFinalFareTripMapper {
     @Mapping(target = "fareAmount", ignore = true)
     @Mapping(target = "cpAmount", ignore = true)
     @Mapping(target = "adminAmount", ignore = true)
+    @Mapping(target = "fares", ignore = true)
     AirlinesFinalFareTrip airlinesAvailabilityToAirlinesFinalFareTrip(AirlinesAvailability airlinesAvailability);
+
+
+    @Mapping(target = "baggage", ignore = true)
+    @Mapping(target = "meal", ignore = true)
+    @Mapping(target = "medical", ignore = true)
+    @Mapping(target = "seat", ignore = true)
+    AirlinesFinalFareTripDto airlinesFinalFareTripToAirlinesFinalFareTripDto(AirlinesFinalFareTrip airlinesFinalFareTrip);
 
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "fares", ignore = true)

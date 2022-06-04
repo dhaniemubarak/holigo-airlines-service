@@ -1,25 +1,25 @@
 package id.holigo.services.holigoairlinesservice.web.mappers;
 
 
-import id.holigo.services.common.model.FareDto;
-import id.holigo.services.holigoairlinesservice.components.Airlines;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
-import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFare;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTrip;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTripItinerary;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDto;
-import id.holigo.services.holigoairlinesservice.web.model.ResponseFareDto;
+import id.holigo.services.holigoairlinesservice.web.model.AirlinesFinalFareTripDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public abstract class AirlinesFinalFareTripMapperDecorator
         implements AirlinesFinalFareTripMapper {
     private AirlinesFinalFareTripMapper airlinesFinalFareTripMapper;
 
     private AirlinesFinalFareTripItineraryMapper airlinesFinalFareTripItineraryMapper;
+
+    private ObjectMapper objectMapper;
 
 
     @Autowired
@@ -32,6 +32,11 @@ public abstract class AirlinesFinalFareTripMapperDecorator
         this.airlinesFinalFareTripItineraryMapper = airlinesFinalFareTripItineraryMapper;
     }
 
+    @Autowired
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     public AirlinesFinalFareTrip airlinesAvailabilityToAirlinesFinalFareTrip(AirlinesAvailability airlinesAvailability) {
         AirlinesFinalFareTrip airlinesFinalFareTrip = this.airlinesFinalFareTripMapper
@@ -40,6 +45,29 @@ public abstract class AirlinesFinalFareTripMapperDecorator
                 .map(airlinesFinalFareTripItineraryMapper::airlinesAvailabilityItineraryToAirlinesFinalFareTripItinerary).toList();
         itineraries.forEach(airlinesFinalFareTrip::addToItineraries);
         return airlinesFinalFareTrip;
+    }
+
+    @Override
+    public AirlinesFinalFareTripDto airlinesFinalFareTripToAirlinesFinalFareTripDto(AirlinesFinalFareTrip airlinesFinalFareTrip) {
+        AirlinesFinalFareTripDto airlinesFinalFareTripDto = this.airlinesFinalFareTripMapper.airlinesFinalFareTripToAirlinesFinalFareTripDto(airlinesFinalFareTrip);
+        try {
+
+            if (airlinesFinalFareTrip.getBaggage() != null) {
+                airlinesFinalFareTripDto.setBaggage(objectMapper.readValue(airlinesFinalFareTrip.getBaggage(), JsonNode.class));
+            }
+            if (airlinesFinalFareTrip.getMeal() != null) {
+                airlinesFinalFareTripDto.setMeal(objectMapper.readValue(airlinesFinalFareTrip.getMeal(), JsonNode.class));
+            }
+            if (airlinesFinalFareTrip.getMedical() != null) {
+                airlinesFinalFareTripDto.setMedical(objectMapper.readValue(airlinesFinalFareTrip.getMedical(), JsonNode.class));
+            }
+            if (airlinesFinalFareTrip.getSeat() != null) {
+                airlinesFinalFareTripDto.setSeat(objectMapper.readValue(airlinesFinalFareTrip.getSeat(), JsonNode.class));
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return airlinesFinalFareTripDto;
     }
 
     @Override

@@ -10,10 +10,8 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.awt.*;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
+import java.sql.Date;
 import java.util.UUID;
 
 @Getter

@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.core.annotation.Order;
 
 import javax.persistence.*;
 import java.sql.Date;
@@ -35,6 +36,7 @@ public class AirlinesAvailability {
     private List<AirlinesAvailabilityFare> fares = new ArrayList<>();
 
     @OneToMany(mappedBy = "airlinesAvailability", cascade = CascadeType.ALL)
+    @OrderBy("leg")
     private List<AirlinesAvailabilityItinerary> itineraries = new ArrayList<>();
 
     @Id

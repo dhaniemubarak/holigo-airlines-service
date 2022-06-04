@@ -10,11 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AirlinesFinalFareMapperDecorator implements AirlinesFinalFareMapper {
 
     private AirlinesFinalFareMapper airlinesFinalFareMapper;
+
 
     private AirlinesFinalFareTripMapper airlinesFinalFareTripMapper;
 
@@ -35,7 +37,9 @@ public abstract class AirlinesFinalFareMapperDecorator implements AirlinesFinalF
 
     @Override
     public AirlinesFinalFareDto airlinesFinalFareToAirlinesFinalFareDto(AirlinesFinalFare airlinesFinalFare) {
-        return this.airlinesFinalFareMapper.airlinesFinalFareToAirlinesFinalFareDto(airlinesFinalFare);
+        AirlinesFinalFareDto airlinesFinalFareDto = this.airlinesFinalFareMapper.airlinesFinalFareToAirlinesFinalFareDto(airlinesFinalFare);
+        airlinesFinalFareDto.setTrips(airlinesFinalFare.getTrips().stream().map(airlinesFinalFareTripMapper::airlinesFinalFareTripToAirlinesFinalFareTripDto).collect(Collectors.toList()));
+        return airlinesFinalFareDto;
     }
 
     @Override

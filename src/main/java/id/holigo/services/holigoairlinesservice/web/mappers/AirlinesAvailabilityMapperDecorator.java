@@ -58,7 +58,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
     }
 
     @Override
-    public AirlinesAvailabilityDto retrossDepartureDtoDtoToAirlinesAvailabilityDto(
+    public AirlinesAvailabilityDto retrossDepartureDtoToAirlinesAvailabilityDto(
             RetrossDepartureDto retrossDepartureDto, Long userId) {
         int flightCounter = retrossDepartureDto.getFlights().size();
         int duration = retrossDepartureDto.getFlights().stream()
@@ -108,7 +108,13 @@ public abstract class AirlinesAvailabilityMapperDecorator
         }
 
         airlinesAvailabilityDto.setFares(fares);
-        airlinesAvailabilityDto.setItineraries(retrossDepartureDto.getFlights().stream().map(airlinesAvailabilityItineraryMapper::retrossFlightDtoToAirlinesAvailabilityItineraryDto).collect(Collectors.toList()));
+        List<AirlinesAvailabilityItineraryDto> airlinesAvailabilityItineraryDtoList = new ArrayList<>();
+        for (int i = 0; i < retrossDepartureDto.getFlights().size(); i++) {
+            AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto = airlinesAvailabilityItineraryMapper.retrossFlightDtoToAirlinesAvailabilityItineraryDto(retrossDepartureDto.getFlights().get(i));
+            airlinesAvailabilityItineraryDto.setLeg(i + 1);
+            airlinesAvailabilityItineraryDtoList.add(airlinesAvailabilityItineraryDto);
+        }
+        airlinesAvailabilityDto.setItineraries(airlinesAvailabilityItineraryDtoList);
         return airlinesAvailabilityDto;
     }
 
@@ -118,22 +124,22 @@ public abstract class AirlinesAvailabilityMapperDecorator
         List<AirlinesAvailabilityDto> airlinesAvailabilityDtoList = new ArrayList<>();
         for (int i = 0; i < responseScheduleDto.getSchedule().getDepartures().size(); i++) {
             RetrossDepartureDto retrossDepartureDto = responseScheduleDto.getSchedule().getDepartures().get(i);
-            airlinesAvailabilityDtoList.add(retrossDepartureDtoDtoToAirlinesAvailabilityDto(
+            airlinesAvailabilityDtoList.add(retrossDepartureDtoToAirlinesAvailabilityDto(
                     retrossDepartureDto, userId
             ));
-//            JsonNode fare = retrossDepartureDto.getFares().get(0).get(0);
-//            RetrossFareDto fareDto = new RetrossFareDto();
-//            fareDto.setSubClass(fare.get("SubClass").asText());
-//            fareDto.setSeatAvb(fare.get("SeatAvb").asInt());
-//            fareDto.setNta(BigDecimal.valueOf(fare.get("NTA").asDouble()).setScale(2, RoundingMode.UP));
-//            fareDto.setTotalFare(BigDecimal.valueOf(fare.get("TotalFare").asDouble()).setScale(2, RoundingMode.UP));
-//            fareDto.setSelectedIdDep(fare.get("selectedIDdep").asText());
-//            AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper.retrossFareToAirlinesAvailabilityFareDto(fareDto);
-//            airlinesAvailabilityDtoList.get(i).setFare(airlinesAvailabilityFareDto);
-
         }
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
         listAvailabilityDto.setDepartures(airlinesAvailabilityDtoList);
+        if (responseScheduleDto.getSchedule().getReturns() != null) {
+            List<AirlinesAvailabilityDto> airlinesAvailabilityReturnsDtoList = new ArrayList<>();
+            for (int i = 0; i < responseScheduleDto.getSchedule().getReturns().size(); i++) {
+                RetrossDepartureDto retrossDepartureDto = responseScheduleDto.getSchedule().getReturns().get(i);
+                airlinesAvailabilityReturnsDtoList.add(retrossDepartureDtoToAirlinesAvailabilityDto(
+                        retrossDepartureDto, userId
+                ));
+            }
+            listAvailabilityDto.setReturns(airlinesAvailabilityReturnsDtoList);
+        }
         return listAvailabilityDto;
     }
 

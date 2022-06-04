@@ -71,6 +71,8 @@ public class AirlinesAvailabilityItinerary {
 
     private Integer transit;
 
+    private Integer leg;
+
     @CreationTimestamp
     private Timestamp createdAt;
 

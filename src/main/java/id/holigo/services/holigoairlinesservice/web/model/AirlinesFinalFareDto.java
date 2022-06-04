@@ -1,5 +1,6 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTrip;
 import lombok.*;
 

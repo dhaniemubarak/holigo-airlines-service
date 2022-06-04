@@ -88,4 +88,5 @@ public class AirlinesFinalFare {
 
     @OneToMany(mappedBy = "finalFare", cascade = CascadeType.ALL)
     private List<AirlinesFinalFareTrip> trips = new ArrayList<>();
+
 }

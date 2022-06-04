@@ -28,4 +28,7 @@ public class RetrossFareDto {
 
     @JsonProperty("selectedIDdep")
     private String selectedIdDep;
+
+    @JsonProperty("selectedIDret")
+    private String selectedIdRet;
 }

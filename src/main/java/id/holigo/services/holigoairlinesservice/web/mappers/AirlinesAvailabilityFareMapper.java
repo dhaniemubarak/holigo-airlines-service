@@ -13,7 +13,7 @@ public interface AirlinesAvailabilityFareMapper {
 
     @Mapping(target = "nraAmount", ignore = true)
     @Mapping(target = "subclass", source = "subClass")
-    @Mapping(target = "selectedId", source = "selectedIdDep")
+    @Mapping(target = "selectedId", ignore = true)
     @Mapping(target = "seatAvailable", source = "seatAvb")
     @Mapping(target = "ntaAmount", source = "nta")
     @Mapping(target = "fareAmount", source = "totalFare")

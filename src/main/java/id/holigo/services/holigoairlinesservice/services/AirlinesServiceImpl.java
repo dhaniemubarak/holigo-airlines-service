@@ -1,12 +1,14 @@
 package id.holigo.services.holigoairlinesservice.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.common.model.FareDetailDto;
 import id.holigo.services.common.model.FareDto;
 import id.holigo.services.holigoairlinesservice.domain.*;
 import id.holigo.services.holigoairlinesservice.repositories.*;
 import id.holigo.services.holigoairlinesservice.services.fare.FareService;
 import id.holigo.services.holigoairlinesservice.services.retross.RetrossAirlinesService;
+import id.holigo.services.holigoairlinesservice.web.exceptions.ConflictException;
 import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -34,23 +36,11 @@ public class AirlinesServiceImpl implements AirlinesService {
 
     private AirlinesAvailabilityMapper airlinesAvailabilityMapper;
 
-    private AirlinesFinalFareMapper airlinesFinalFareMapper;
-
-//    private FareService fareService;
-
-    private ContactPersonRepository contactPersonRepository;
-
-    private ContactPersonMapper contactPersonMapper;
-
-    private AirlinesTransactionMapper airlinesTransactionMapper;
-
-    private AirlinesTransactionRepository airlinesTransactionRepository;
-
     private AirlinesFinalFareTripMapper airlinesFinalFareTripMapper;
 
     private AirlinesFinalFareTripRepository airlinesFinalFareTripRepository;
 
-    private InquiryMapper inquiryMapper;
+    private ObjectMapper objectMapper;
 
     @Autowired
     public void setRetrossAirlinesService(RetrossAirlinesService retrossAirlinesService) {
@@ -60,11 +50,6 @@ public class AirlinesServiceImpl implements AirlinesService {
     @Autowired
     public void setAirlinesAvailabilityRepository(AirlinesAvailabilityRepository airlinesAvailabilityRepository) {
         this.airlinesAvailabilityRepository = airlinesAvailabilityRepository;
-    }
-
-    @Autowired
-    public void setAirlinesFareMapper(AirlinesFinalFareMapper airlinesFinalFareMapper) {
-        this.airlinesFinalFareMapper = airlinesFinalFareMapper;
     }
 
     @Autowired
@@ -80,26 +65,6 @@ public class AirlinesServiceImpl implements AirlinesService {
     }
 
     @Autowired
-    public void setContactPersonRepository(ContactPersonRepository contactPersonRepository) {
-        this.contactPersonRepository = contactPersonRepository;
-    }
-
-    @Autowired
-    public void setContactPersonMapper(ContactPersonMapper contactPersonMapper) {
-        this.contactPersonMapper = contactPersonMapper;
-    }
-
-    @Autowired
-    public void setAirlinesTransactionMapper(AirlinesTransactionMapper airlinesTransactionMapper) {
-        this.airlinesTransactionMapper = airlinesTransactionMapper;
-    }
-
-    @Autowired
-    public void setAirlinesTransactionRepository(AirlinesTransactionRepository airlinesTransactionRepository) {
-        this.airlinesTransactionRepository = airlinesTransactionRepository;
-    }
-
-    @Autowired
     public void setAirlinesFinalFareTripMapper(AirlinesFinalFareTripMapper airlinesFinalFareTripMapper) {
         this.airlinesFinalFareTripMapper = airlinesFinalFareTripMapper;
     }
@@ -110,13 +75,13 @@ public class AirlinesServiceImpl implements AirlinesService {
     }
 
     @Autowired
-    public void setInquiryMapper(InquiryMapper inquiryMapper) {
-        this.inquiryMapper = inquiryMapper;
+    public void setFareService(FareService fareService) {
+        this.fareService = fareService;
     }
 
     @Autowired
-    public void setFareService(FareService fareService) {
-        this.fareService = fareService;
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -136,7 +101,9 @@ public class AirlinesServiceImpl implements AirlinesService {
         if (responseScheduleDto.getSchedule() == null) {
             return null;
         }
-        return airlinesAvailabilityMapper.responseScheduleDtoToListAvailabilityDto(responseScheduleDto, inquiryDto.getUserId());
+        ListAvailabilityDto listAvailabilityDto = airlinesAvailabilityMapper.responseScheduleDtoToListAvailabilityDto(responseScheduleDto, inquiryDto.getUserId());
+        saveAvailabilities(listAvailabilityDto);
+        return listAvailabilityDto;
     }
 
     @Transactional
@@ -147,15 +114,11 @@ public class AirlinesServiceImpl implements AirlinesService {
 
 
         for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
+            String fares;
+            FareDto fareDto;
             ResponseFareDto responseFareDto;
             TripDto tripDto = requestFinalFareDto.getTrips().get(i);
-            AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
-                    .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
-            AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
-                    .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability);
-            airlinesFinalFareTrip.setAdultAmount(tripDto.getInquiry().getAdultAmount());
-            airlinesFinalFareTrip.setChildAmount(tripDto.getInquiry().getChildAmount());
-            airlinesFinalFareTrip.setInfantAmount(tripDto.getInquiry().getInfantAmount());
+
             if (tripDto.getInquiry().getTripType() != TripType.R && i != 1) {
                 try {
                     responseFareDto = retrossAirlinesService.getFare(tripDto);
@@ -163,7 +126,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                         throw new Exception("Failed get final fare from airlines");
                     }
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new ConflictException();
                 }
             } else {
                 responseFareDto = ResponseFareDto.builder()
@@ -171,21 +134,41 @@ public class AirlinesServiceImpl implements AirlinesService {
                         .ntaAmount(BigDecimal.valueOf(0.00))
                         .build();
             }
+            try {
+                fareDto = fareService.getFareDetail(FareDetailDto.builder().ntaAmount(responseFareDto.getNtaAmount())
+                        .nraAmount(responseFareDto.getTotalAmount().subtract(responseFareDto.getNtaAmount())).productId(1).userId(userId).build());
+                fares = objectMapper.writeValueAsString(responseFareDto.getSchedule().getDepartures().get(i).getFares());
+            } catch (JMSException | JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
+                    .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
+            AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
+                    .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability);
+            if (responseFareDto.getSchedule().getDepartures().get(i).getAddition() != null) {
+                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getBaggage() != null) {
+                    airlinesFinalFareTrip.setBaggage(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getBaggage().toString());
+                }
+
+                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMeal() != null) {
+                    airlinesFinalFareTrip.setMeal(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMeal().toString());
+                }
+                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMedical() != null) {
+                    airlinesFinalFareTrip.setMedical(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMedical().toString());
+                }
+                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getSeat() != null) {
+                    airlinesFinalFareTrip.setSeat(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getSeat().toString());
+                }
+            }
+            airlinesFinalFareTrip.setAdultAmount(tripDto.getInquiry().getAdultAmount());
+            airlinesFinalFareTrip.setChildAmount(tripDto.getInquiry().getChildAmount());
+            airlinesFinalFareTrip.setInfantAmount(tripDto.getInquiry().getInfantAmount());
+            airlinesFinalFareTrip.setFares(fares);
             airlinesFinalFareTrip.setIsPriceIncluded(responseFareDto.getTotalAmount().equals(BigDecimal.valueOf(0.00)));
             airlinesFinalFareTrip.setFareAmount(responseFareDto.getTotalAmount());
             airlinesFinalFareTrip.setNtaAmount(responseFareDto.getNtaAmount());
             airlinesFinalFareTrip.setNraAmount(airlinesFinalFareTrip.getFareAmount()
                     .subtract(airlinesFinalFareTrip.getNtaAmount()));
-
-
-            FareDto fareDto = null;
-            try {
-                fareDto = fareService.getFareDetail(FareDetailDto.builder().ntaAmount(airlinesFinalFareTrip.getNtaAmount())
-                        .nraAmount(airlinesFinalFareTrip.getNraAmount()).productId(1).userId(userId).build());
-            } catch (JMSException | JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-
             airlinesFinalFareTrip.setAdminAmount(BigDecimal.valueOf(0.00));
             airlinesFinalFareTrip.setCpAmount(fareDto.getCpAmount());
             airlinesFinalFareTrip.setMpAmount(fareDto.getMpAmount());
@@ -245,10 +228,9 @@ public class AirlinesServiceImpl implements AirlinesService {
     @Transactional
     @Override
     public void saveAvailabilities(ListAvailabilityDto listAvailabilityDto) {
-
-        List<AirlinesAvailability> airlinesAvailabilities = listAvailabilityDto.getDepartures().stream().map(airlinesAvailabilityMapper::airlinesAvailabilityDtoToAirlinesAvailability).toList();
-
-        airlinesAvailabilityRepository.saveAll(airlinesAvailabilities);
-
+        airlinesAvailabilityRepository.saveAll(listAvailabilityDto.getDepartures().stream().map(airlinesAvailabilityMapper::airlinesAvailabilityDtoToAirlinesAvailability).toList());
+        if (listAvailabilityDto.getReturns() != null) {
+            airlinesAvailabilityRepository.saveAll(listAvailabilityDto.getReturns().stream().map(airlinesAvailabilityMapper::airlinesAvailabilityDtoToAirlinesAvailability).toList());
+        }
     }
 }
