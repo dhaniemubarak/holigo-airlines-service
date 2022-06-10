@@ -1,5 +1,6 @@
 package id.holigo.services.holigoairlinesservice.domain;
 
+import id.holigo.services.common.model.TripType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

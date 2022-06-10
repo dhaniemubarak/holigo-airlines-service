@@ -2,6 +2,7 @@ package id.holigo.services.holigoairlinesservice.domain;
 
 
 import id.holigo.services.common.model.PaymentStatusEnum;
+import id.holigo.services.common.model.TripType;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;

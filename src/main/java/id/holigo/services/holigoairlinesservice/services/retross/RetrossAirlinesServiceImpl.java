@@ -3,13 +3,10 @@ package id.holigo.services.holigoairlinesservice.services.retross;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.holigoairlinesservice.web.model.*;
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 
 @Slf4j
@@ -32,8 +29,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         requestScheduleDto.setRqid(RETROSS_PASSKEY);
         requestScheduleDto.setApp("information");
         requestScheduleDto.setAction("get_schedule");
-        ObjectMapper obj = new ObjectMapper();
-        log.info("Calling get schedule with request -> {}", obj.writeValueAsString(requestScheduleDto));
+        log.info("Calling get schedule with request -> {}", objectMapper.writeValueAsString(requestScheduleDto));
 //
         ResponseScheduleDto responseScheduleDto;
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.getSchedule(requestScheduleDto);

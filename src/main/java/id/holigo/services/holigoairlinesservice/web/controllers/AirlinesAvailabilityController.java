@@ -3,7 +3,7 @@ package id.holigo.services.holigoairlinesservice.web.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.Inquiry;
-import id.holigo.services.holigoairlinesservice.domain.TripType;
+import id.holigo.services.common.model.TripType;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesAvailabilityRepository;
 import id.holigo.services.holigoairlinesservice.repositories.InquiryRepository;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;

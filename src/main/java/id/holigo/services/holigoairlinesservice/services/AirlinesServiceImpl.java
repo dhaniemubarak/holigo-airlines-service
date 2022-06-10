@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.common.model.FareDetailDto;
 import id.holigo.services.common.model.FareDto;
+import id.holigo.services.common.model.TripType;
 import id.holigo.services.holigoairlinesservice.domain.*;
 import id.holigo.services.holigoairlinesservice.repositories.*;
 import id.holigo.services.holigoairlinesservice.services.fare.FareService;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.jms.JMSException;
 import java.math.BigDecimal;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Slf4j

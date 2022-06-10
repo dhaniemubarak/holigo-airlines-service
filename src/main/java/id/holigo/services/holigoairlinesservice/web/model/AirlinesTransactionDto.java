@@ -1,7 +1,7 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
 import id.holigo.services.common.model.PaymentStatusEnum;
-import id.holigo.services.holigoairlinesservice.domain.TripType;
+import id.holigo.services.common.model.TripType;
 import lombok.Getter;
 import lombok.Setter;
 
