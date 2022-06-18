@@ -29,7 +29,7 @@ public class AirlinesTransaction {
 
     private Long userId;
 
-    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false)
+    @Column(length = 36, columnDefinition = "varchar(36)")
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID transactionId;
 

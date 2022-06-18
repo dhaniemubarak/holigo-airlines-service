@@ -8,6 +8,8 @@ import org.mapstruct.Mapping;
 @Mapper
 public interface AirlinesTripMapper {
 
+    @Mapping(target = "originAirport", ignore = true)
+    @Mapping(target = "destinationAirport", ignore = true)
     @Mapping(target = "transaction", ignore = true)
     @Mapping(target = "paymentStatus", ignore = true)
     @Mapping(target = "passengers", ignore = true)
