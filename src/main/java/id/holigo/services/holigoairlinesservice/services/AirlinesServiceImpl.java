@@ -17,10 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jms.JMSException;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -88,8 +87,8 @@ public class AirlinesServiceImpl implements AirlinesService {
     public ListAvailabilityDto getAvailabilities(InquiryDto inquiryDto) throws JsonProcessingException {
         RequestScheduleDto requestScheduleDto = RequestScheduleDto.builder()
                 .ac(inquiryDto.getAirlinesCode())
-                .org(inquiryDto.getOriginAirportId())
-                .des(inquiryDto.getDestinationAirportId())
+                .org(inquiryDto.getOriginAirport().getId())
+                .des(inquiryDto.getDestinationAirport().getId())
                 .tgl_dep(inquiryDto.getDepartureDate().toString())
                 .tgl_ret(inquiryDto.getReturnDate() != null ? inquiryDto.getReturnDate().toString() : null)
                 .flight(inquiryDto.getTripType().toString())
@@ -101,7 +100,7 @@ public class AirlinesServiceImpl implements AirlinesService {
         if (responseScheduleDto.getSchedule() == null) {
             return null;
         }
-        ListAvailabilityDto listAvailabilityDto = airlinesAvailabilityMapper.responseScheduleDtoToListAvailabilityDto(responseScheduleDto, inquiryDto.getUserId());
+        ListAvailabilityDto listAvailabilityDto = airlinesAvailabilityMapper.responseScheduleDtoToListAvailabilityDto(responseScheduleDto, inquiryDto);
         saveAvailabilities(listAvailabilityDto);
         return listAvailabilityDto;
     }
@@ -114,52 +113,88 @@ public class AirlinesServiceImpl implements AirlinesService {
 
 
         for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
-            String fares;
-            FareDto fareDto;
+            String fares = null;
+            FareDto fareDto = FareDto.builder()
+                    .ntaAmount(BigDecimal.valueOf(0.00))
+                    .nraAmount(BigDecimal.valueOf(0.00))
+                    .fareAmount(BigDecimal.valueOf(0.00))
+                    .cpAmount(BigDecimal.valueOf(0.00))
+                    .mpAmount(BigDecimal.valueOf(0.00))
+                    .ipAmount(BigDecimal.valueOf(0.00))
+                    .hpAmount(BigDecimal.valueOf(0.00))
+                    .hvAmount(BigDecimal.valueOf(0.00))
+                    .prAmount(BigDecimal.valueOf(0.00))
+                    .ipcAmount(BigDecimal.valueOf(0.00))
+                    .hpcAmount(BigDecimal.valueOf(0.00))
+                    .prcAmount(BigDecimal.valueOf(0.00))
+                    .lossAmount(BigDecimal.valueOf(0.00)).build();
             ResponseFareDto responseFareDto;
             TripDto tripDto = requestFinalFareDto.getTrips().get(i);
-
-            if (tripDto.getInquiry().getTripType() != TripType.R && i != 1) {
+            if ((tripDto.getInquiry().getTripType() != TripType.R && i != 1)
+                    || (tripDto.getInquiry().getTripType().equals(TripType.R) && i == 0)) {
+                Map<String, String> roundTrip = new HashMap<>();
+                if (tripDto.getInquiry().getTripType().equals(TripType.R)) {
+                    TripDto roundTripDto = requestFinalFareDto.getTrips().get(1);
+                    roundTrip.put("airlinesCode", roundTripDto.getTrip().getAirlinesCode());
+                    roundTrip.put("selectedId", roundTripDto.getTrip().getFare().getSelectedId());
+                }
                 try {
-                    responseFareDto = retrossAirlinesService.getFare(tripDto);
+                    responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip);
                     if (!responseFareDto.getError_code().equals("000")) {
                         throw new Exception("Failed get final fare from airlines");
                     }
                 } catch (Exception e) {
-                    throw new ConflictException();
+                    airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
+                            tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getOriginAirport().getId(), tripDto.getInquiry().getDestinationAirport().getId(),
+                            tripDto.getInquiry().getDepartureDate().toString()
+                    );
+                    if (tripDto.getInquiry().getTripType().equals(TripType.R)) {
+                        airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
+                                tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getDestinationAirport().getId(), tripDto.getInquiry().getOriginAirport().getId(),
+                                tripDto.getInquiry().getReturnDate().toString()
+                        );
+                    }
+                    throw new ConflictException(e.getMessage());
                 }
+
             } else {
                 responseFareDto = ResponseFareDto.builder()
                         .totalAmount(BigDecimal.valueOf(0.00))
                         .ntaAmount(BigDecimal.valueOf(0.00))
                         .build();
             }
-            try {
-                fareDto = fareService.getFareDetail(FareDetailDto.builder().ntaAmount(responseFareDto.getNtaAmount())
-                        .nraAmount(responseFareDto.getTotalAmount().subtract(responseFareDto.getNtaAmount())).productId(1).userId(userId).build());
-                fares = objectMapper.writeValueAsString(responseFareDto.getSchedule().getDepartures().get(i).getFares());
-            } catch (JMSException | JsonProcessingException e) {
-                throw new RuntimeException(e);
+            if (responseFareDto.getSchedule() != null) {
+                try {
+                    fareDto = fareService.getFareDetail(FareDetailDto.builder().ntaAmount(responseFareDto.getNtaAmount())
+                            .nraAmount(responseFareDto.getTotalAmount().subtract(responseFareDto.getNtaAmount())).productId(1).userId(userId).build());
+                    fares = objectMapper.writeValueAsString(responseFareDto.getSchedule().getDepartures().get(i).getFares());
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
             }
+
             AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
                     .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
             AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
                     .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability);
-            if (responseFareDto.getSchedule().getDepartures().get(i).getAddition() != null) {
-                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getBaggage() != null) {
-                    airlinesFinalFareTrip.setBaggage(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getBaggage().toString());
-                }
+//            if (responseFareDto.getSchedule() != null) {
+//                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition() != null) {
+//                    if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getBaggage() != null) {
+//                        airlinesFinalFareTrip.setBaggage(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getBaggage().toString());
+//                    }
+//
+//                    if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMeal() != null) {
+//                        airlinesFinalFareTrip.setMeal(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMeal().toString());
+//                    }
+//                    if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMedical() != null) {
+//                        airlinesFinalFareTrip.setMedical(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMedical().toString());
+//                    }
+//                    if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getSeat() != null) {
+//                        airlinesFinalFareTrip.setSeat(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getSeat().toString());
+//                    }
+//                }
+//            }
 
-                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMeal() != null) {
-                    airlinesFinalFareTrip.setMeal(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMeal().toString());
-                }
-                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMedical() != null) {
-                    airlinesFinalFareTrip.setMedical(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMedical().toString());
-                }
-                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getSeat() != null) {
-                    airlinesFinalFareTrip.setSeat(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getSeat().toString());
-                }
-            }
             airlinesFinalFareTrip.setAdultAmount(tripDto.getInquiry().getAdultAmount());
             airlinesFinalFareTrip.setChildAmount(tripDto.getInquiry().getChildAmount());
             airlinesFinalFareTrip.setInfantAmount(tripDto.getInquiry().getInfantAmount());

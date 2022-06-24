@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 @Mapper
 public interface AirlinesAvailabilityPriceMapper {
 
+    @Mapping(target = "hpcAmount", ignore = true)
     @Mapping(target = "normalFare", ignore = true)
     @Mapping(target = "hpAmount", ignore = true)
     AirlinesAvailabilityPriceDto airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(

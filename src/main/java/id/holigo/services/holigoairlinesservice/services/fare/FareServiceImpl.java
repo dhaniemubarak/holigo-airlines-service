@@ -9,14 +9,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 
 @Slf4j
 @RequiredArgsConstructor
-@Service
 public class FareServiceImpl implements FareService {
 
     private JmsTemplate jmsTemplate;
@@ -34,7 +32,7 @@ public class FareServiceImpl implements FareService {
     }
 
     @Override
-    public FareDto getFareDetail(FareDetailDto fareDetailDto) throws JMSException, JsonProcessingException {
+    public FareDto getFareDetail(FareDetailDto fareDetailDto) {
         log.info("JMS getFareDetail is running...");
         log.info("fareDetailDto -> {}", fareDetailDto);
         Message message = jmsTemplate.sendAndReceive(JmsConfig.GET_DETAIL_FARE_PRODUCT, session -> {
@@ -49,6 +47,10 @@ public class FareServiceImpl implements FareService {
         });
 
         assert message != null;
-        return objectMapper.readValue(message.getBody(String.class), FareDto.class);
+        try {
+            return objectMapper.readValue(message.getBody(String.class), FareDto.class);
+        } catch (JsonProcessingException | JMSException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

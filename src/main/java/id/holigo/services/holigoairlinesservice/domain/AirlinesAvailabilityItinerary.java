@@ -43,17 +43,15 @@ public class AirlinesAvailabilityItinerary {
     @Column(columnDefinition = "varchar(20)")
     private String flightNumber;
 
-    @Column(columnDefinition = "varchar(4)")
+    @Transient
     private String originAirportId;
 
-    @Transient
     @ManyToOne
     private Airport originAirport;
 
-    @Column(columnDefinition = "varchar(4)")
+    @Transient
     private String destinationAirportId;
 
-    @Transient
     @ManyToOne
     private Airport destinationAirport;
 

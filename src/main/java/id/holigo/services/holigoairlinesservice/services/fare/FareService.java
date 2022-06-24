@@ -8,5 +8,5 @@ import javax.jms.JMSException;
 
 public interface FareService {
 
-    FareDto getFareDetail(FareDetailDto fareDetailDto) throws JMSException, JsonProcessingException;
+    FareDto getFareDetail(FareDetailDto fareDetailDto);
 }

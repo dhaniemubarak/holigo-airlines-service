@@ -1,11 +1,7 @@
 package id.holigo.services.holigoairlinesservice.web.mappers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
-import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDto;
-import id.holigo.services.holigoairlinesservice.web.model.ListAvailabilityDto;
-import id.holigo.services.holigoairlinesservice.web.model.ResponseScheduleDto;
-import id.holigo.services.holigoairlinesservice.web.model.RetrossDepartureDto;
+import id.holigo.services.holigoairlinesservice.web.model.*;
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -32,13 +28,13 @@ public interface AirlinesAvailabilityMapper {
     @Mapping(target = "airlinesName", ignore = true)
     @Mapping(target = "airlinesCode", ignore = true)
     AirlinesAvailabilityDto retrossDepartureDtoToAirlinesAvailabilityDto(
-            RetrossDepartureDto retrossDepartureDto, Long userId);
+            RetrossDepartureDto retrossDepartureDto, InquiryDto inquiryDto);
 
     @Mapping(target = "returns", ignore = true)
     @Mapping(target = "inquiry", ignore = true)
     @Mapping(target = "departures", ignore = true)
     ListAvailabilityDto responseScheduleDtoToListAvailabilityDto(
-            ResponseScheduleDto responseScheduleDto, Long userId);
+            ResponseScheduleDto responseScheduleDto, InquiryDto inquiryDto);
 
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -46,7 +42,9 @@ public interface AirlinesAvailabilityMapper {
     @Mapping(target = "fares", ignore = true)
     AirlinesAvailability airlinesAvailabilityDtoToAirlinesAvailability(AirlinesAvailabilityDto airlinesAvailabilityDto);
 
+    @Mapping(target = "originAirport", ignore = true)
+    @Mapping(target = "destinationAirport", ignore = true)
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "fare", ignore = true)
-    AirlinesAvailabilityDto airlinesAvailabilityToAirlinesAvailabilityDto(AirlinesAvailability airlinesAvailability);
+    AirlinesAvailabilityDto airlinesAvailabilityToAirlinesAvailabilityDto(AirlinesAvailability airlinesAvailability, Long userId, Integer passengerAmount);
 }

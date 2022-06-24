@@ -19,7 +19,7 @@ public interface AirlinesAvailabilityFareMapper {
     @Mapping(target = "fareAmount", source = "totalFare")
     AirlinesAvailabilityFareDto retrossFareToAirlinesAvailabilityFareDto(RetrossFareDto fare);
 
-    AirlinesAvailabilityFareDto airlinesAvailabilityFareToAirlinesAvailabilityFareDto(AirlinesAvailabilityFareDto airlinesAvailabilityFareDto);
+    AirlinesAvailabilityFareDto airlinesAvailabilityFareToAirlinesAvailabilityFareDto(AirlinesAvailabilityFare airlinesAvailabilityFare);
 
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "id", ignore = true)

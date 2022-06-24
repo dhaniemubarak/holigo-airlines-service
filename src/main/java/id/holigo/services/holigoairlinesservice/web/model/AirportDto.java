@@ -11,6 +11,8 @@ public class AirportDto implements Serializable {
 
     private String id;
 
+    private String name;
+
     private Boolean isInternational;
 
     private Boolean isDomestic;

@@ -18,6 +18,8 @@ public class AirlinesAvailabilityPriceDto implements Serializable {
 
     private BigDecimal hpAmount;
 
+    private BigDecimal hpcAmount;
+
     private BigDecimal fareAmount;
 
     private String subclass;

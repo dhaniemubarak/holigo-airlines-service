@@ -38,4 +38,9 @@ public class RequestFareDto {
 
     @JsonProperty("selectedIDdep")
     private String selectedIdDep;
+
+    private String acRet;
+
+    @JsonProperty("selectedIDret")
+    private String selectedIdRet;
 }

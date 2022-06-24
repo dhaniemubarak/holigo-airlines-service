@@ -2,9 +2,11 @@ package id.holigo.services.holigoairlinesservice.web.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
+import id.holigo.services.holigoairlinesservice.domain.Airport;
 import id.holigo.services.holigoairlinesservice.domain.Inquiry;
 import id.holigo.services.common.model.TripType;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesAvailabilityRepository;
+import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
 import id.holigo.services.holigoairlinesservice.repositories.InquiryRepository;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
 import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
@@ -39,6 +41,8 @@ public class AirlinesAvailabilityController {
 
     private InquiryMapper inquiryMapper;
 
+    private AirportRepository airportRepository;
+
 
     @Autowired
     public void setAirlinesService(AirlinesService airlinesService) {
@@ -65,9 +69,13 @@ public class AirlinesAvailabilityController {
         this.inquiryMapper = inquiryMapper;
     }
 
+    @Autowired
+    public void setAirportRepository(AirportRepository airportRepository) {
+        this.airportRepository = airportRepository;
+    }
+
     @GetMapping("/api/v1/airlines/availabilities")
     public ResponseEntity<ListAvailabilityDto> getAvailabilities(InquiryDto inquiryDto, @RequestHeader("user-id") Long userId) {
-        inquiryDto.setUserId(userId);
         Inquiry inquiry;
         List<AirlinesAvailabilityDto> availabilityDeparturesDto = new ArrayList<>();
         Optional<Inquiry> fetchInquiry = inquiryRepository.getInquiry(inquiryDto.getAirlinesCode(),
@@ -77,8 +85,12 @@ public class AirlinesAvailabilityController {
 
         if (fetchInquiry.isEmpty()) {
             try {
-                inquiry = inquiryRepository.save(inquiryMapper.inquiryDtoToInquiry(inquiryDto));
-                inquiryDto.setId(inquiry.getId());
+                Inquiry inquiryObject = inquiryMapper.inquiryDtoToInquiry(inquiryDto);
+                Airport originAirport = airportRepository.getById(inquiryDto.getOriginAirportId());
+                Airport destinationAirport = airportRepository.getById(inquiryDto.getDestinationAirportId());
+                inquiryObject.setOriginAirport(originAirport);
+                inquiryObject.setDestinationAirport(destinationAirport);
+                inquiry = inquiryRepository.save(inquiryObject);
             } catch (Exception e) {
                 // TODO Need message
                 throw new AvailabilitiesException();
@@ -86,29 +98,34 @@ public class AirlinesAvailabilityController {
 
         } else {
             inquiry = fetchInquiry.get();
-            inquiryDto.setId(inquiry.getId());
         }
+        inquiryDto = inquiryMapper.inquiryToInquiryDto(inquiry);
+        inquiryDto.setUserId(userId);
 
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
         listAvailabilityDto.setInquiry(inquiryDto);
 
         List<AirlinesAvailability> airlinesAvailabilityDepartures = airlinesAvailabilityRepository.getAirlinesAvailability(
-                inquiry.getAirlinesCode(), inquiry.getOriginAirportId(), inquiry.getDestinationAirportId(),
+                inquiry.getAirlinesCode(), inquiry.getOriginAirport().getId(), inquiry.getDestinationAirport().getId(),
                 inquiry.getDepartureDate().toString()
         );
 
         if (airlinesAvailabilityDepartures.size() > 0) {
-            listAvailabilityDto.setDepartures(airlinesAvailabilityDepartures.stream().map(airlinesAvailabilityMapper::airlinesAvailabilityToAirlinesAvailabilityDto).toList());
+            listAvailabilityDto.setDepartures(airlinesAvailabilityDepartures.stream().map(airlinesAvailability -> {
+                return airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability, userId, inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount());
+            }).toList());
         }
 
         if (inquiry.getTripType() == TripType.R) {
             List<AirlinesAvailability> airlinesAvailabilityReturns = airlinesAvailabilityRepository.getAirlinesAvailability(
-                    inquiry.getAirlinesCode(), inquiry.getDestinationAirportId(), inquiry.getOriginAirportId(),
+                    inquiry.getAirlinesCode(), inquiry.getDestinationAirport().getId(), inquiry.getOriginAirport().getId(),
                     inquiry.getReturnDate().toString()
             );
 
             if (airlinesAvailabilityReturns.size() > 0) {
-                listAvailabilityDto.setReturns(airlinesAvailabilityReturns.stream().map(airlinesAvailabilityMapper::airlinesAvailabilityToAirlinesAvailabilityDto).toList());
+                listAvailabilityDto.setReturns(airlinesAvailabilityReturns.stream().map(airlinesAvailability -> {
+                    return airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability, userId, inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount());
+                }).toList());
             }
             if (airlinesAvailabilityDepartures.isEmpty() && airlinesAvailabilityReturns.isEmpty()) {
 
@@ -154,6 +171,8 @@ public class AirlinesAvailabilityController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
         }
+
+        listAvailabilityDto.setInquiry(inquiryDto);
 
         listAvailabilityDto.getDepartures().forEach(departure -> {
             departure.setFares(null);

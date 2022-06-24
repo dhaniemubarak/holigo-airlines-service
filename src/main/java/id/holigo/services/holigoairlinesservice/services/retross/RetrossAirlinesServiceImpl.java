@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 
 @Slf4j
 @Service
@@ -42,15 +44,15 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
     }
 
     @Override
-    public ResponseFareDto getFare(TripDto tripDto) throws JsonProcessingException {
+    public ResponseFareDto getFare(TripDto tripDto, Map<String, String> roundTrip) throws JsonProcessingException {
         RequestFareDto requestFareDto = RequestFareDto.builder()
                 .mmid(RETROSS_ID)
                 .rqid(RETROSS_PASSKEY)
                 .app("information")
                 .action("get_fare")
                 .acDep(tripDto.getInquiry().getAirlinesCode())
-                .org(tripDto.getInquiry().getOriginAirportId())
-                .des(tripDto.getInquiry().getDestinationAirportId())
+                .org(tripDto.getInquiry().getOriginAirport().getId())
+                .des(tripDto.getInquiry().getDestinationAirport().getId())
                 .tgl_dep(tripDto.getInquiry().getDepartureDate().toString())
                 .tgl_ret(tripDto.getInquiry().getReturnDate() != null ? tripDto.getInquiry().getReturnDate().toString() : null)
                 .flight(tripDto.getInquiry().getTripType().toString())
@@ -58,6 +60,10 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .chd(tripDto.getInquiry().getChildAmount())
                 .inf(tripDto.getInquiry().getInfantAmount())
                 .selectedIdDep(tripDto.getTrip().getFare().getSelectedId()).build();
+        if (roundTrip.containsKey("selectedId") && roundTrip.containsKey("airlinesCode")) {
+            requestFareDto.setSelectedIdRet(roundTrip.get("selectedId"));
+            requestFareDto.setAcRet(roundTrip.get("airlinesCode"));
+        }
         ResponseFareDto responseFareDto;
 
         log.info("Calling get fare with request -> {}", objectMapper.writeValueAsString(requestFareDto));

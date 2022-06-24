@@ -36,14 +36,11 @@ public abstract class AirlinesAvailabilityPriceMapperDecorator implements Airlin
                 .nraAmount(airlinesAvailabilityFareDto.getNraAmount())
                 .ntaAmount(airlinesAvailabilityFareDto.getNtaAmount()).build();
         FareDto fareDto;
-        try {
-            fareDto = fareService.getFareDetail(fareDetailDto);
-        } catch (JMSException | JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        fareDto = fareService.getFareDetail(fareDetailDto);
         assert fareDto != null;
         airlinesAvailabilityPriceDto.setNormalFare(airlinesAvailabilityFareDto.getFareAmount());
         airlinesAvailabilityPriceDto.setHpAmount(fareDto.getHpAmount());
+        airlinesAvailabilityPriceDto.setHpcAmount(fareDto.getHpcAmount());
         airlinesAvailabilityPriceDto.setFareAmount(fareDto.getFareAmount());
 
         return airlinesAvailabilityPriceDto;

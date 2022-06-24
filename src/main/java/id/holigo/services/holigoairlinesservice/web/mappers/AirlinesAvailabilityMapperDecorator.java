@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.holigoairlinesservice.components.Airlines;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
+import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
+import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,6 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AirlinesAvailabilityMapperDecorator
@@ -29,6 +30,10 @@ public abstract class AirlinesAvailabilityMapperDecorator
 
     private AirlinesAvailabilityPriceMapper airlinesAvailabilityPriceMapper;
 
+    private AirportRepository airportRepository;
+
+    private AirportMapper airportMapper;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -40,6 +45,16 @@ public abstract class AirlinesAvailabilityMapperDecorator
     @Autowired
     public void setAirlinesAvailabilityMapper(AirlinesAvailabilityMapper airlinesAvailabilityMapper) {
         this.airlinesAvailabilityMapper = airlinesAvailabilityMapper;
+    }
+
+    @Autowired
+    public void setAirportMapper(AirportMapper airportMapper) {
+        this.airportMapper = airportMapper;
+    }
+
+    @Autowired
+    public void setAirportRepository(AirportRepository airportRepository) {
+        this.airportRepository = airportRepository;
     }
 
     @Autowired
@@ -59,7 +74,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
 
     @Override
     public AirlinesAvailabilityDto retrossDepartureDtoToAirlinesAvailabilityDto(
-            RetrossDepartureDto retrossDepartureDto, Long userId) {
+            RetrossDepartureDto retrossDepartureDto, InquiryDto inquiryDto) {
         int flightCounter = retrossDepartureDto.getFlights().size();
         int duration = retrossDepartureDto.getFlights().stream()
                 .mapToInt(dto -> Integer.parseInt(dto.getDuration())).sum();
@@ -83,6 +98,15 @@ public abstract class AirlinesAvailabilityMapperDecorator
                 Time.valueOf(LocalTime.parse(retrossDepartureDto.getFlights().get(flightCounter - 1).getEta().substring(11, 16))));
         airlinesAvailabilityDto.setDuration(duration);
         airlinesAvailabilityDto.setTransit(transit);
+        if (Objects.equals(airlinesAvailabilityDto.getOriginAirportId(), inquiryDto.getOriginAirport().getId())) {
+            airlinesAvailabilityDto.setOriginAirport(inquiryDto.getOriginAirport());
+            airlinesAvailabilityDto.setDestinationAirport(inquiryDto.getDestinationAirport());
+        } else {
+            airlinesAvailabilityDto.setOriginAirport(inquiryDto.getDestinationAirport());
+            airlinesAvailabilityDto.setDestinationAirport(inquiryDto.getOriginAirport());
+        }
+
+
         List<AirlinesAvailabilityFareDto> fares = new ArrayList<>();
         for (JsonNode fare : retrossDepartureDto.getFares()) {
 
@@ -94,7 +118,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
                         // Check for promo, economy, business, and first class
                         airlinesAvailabilityDto.setFare(
                                 airlinesAvailabilityPriceMapper
-                                        .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, userId)
+                                        .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
                         );
                     }
                     fares.add(airlinesAvailabilityFareDto);
@@ -110,7 +134,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
         airlinesAvailabilityDto.setFares(fares);
         List<AirlinesAvailabilityItineraryDto> airlinesAvailabilityItineraryDtoList = new ArrayList<>();
         for (int i = 0; i < retrossDepartureDto.getFlights().size(); i++) {
-            AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto = airlinesAvailabilityItineraryMapper.retrossFlightDtoToAirlinesAvailabilityItineraryDto(retrossDepartureDto.getFlights().get(i));
+            AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto = airlinesAvailabilityItineraryMapper.retrossFlightDtoToAirlinesAvailabilityItineraryDto(retrossDepartureDto.getFlights().get(i), inquiryDto);
             airlinesAvailabilityItineraryDto.setLeg(i + 1);
             airlinesAvailabilityItineraryDtoList.add(airlinesAvailabilityItineraryDto);
         }
@@ -120,12 +144,12 @@ public abstract class AirlinesAvailabilityMapperDecorator
 
     @Override
     public ListAvailabilityDto responseScheduleDtoToListAvailabilityDto(
-            ResponseScheduleDto responseScheduleDto, Long userId) {
+            ResponseScheduleDto responseScheduleDto, InquiryDto inquiryDto) {
         List<AirlinesAvailabilityDto> airlinesAvailabilityDtoList = new ArrayList<>();
         for (int i = 0; i < responseScheduleDto.getSchedule().getDepartures().size(); i++) {
             RetrossDepartureDto retrossDepartureDto = responseScheduleDto.getSchedule().getDepartures().get(i);
             airlinesAvailabilityDtoList.add(retrossDepartureDtoToAirlinesAvailabilityDto(
-                    retrossDepartureDto, userId
+                    retrossDepartureDto, inquiryDto
             ));
         }
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
@@ -135,7 +159,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
             for (int i = 0; i < responseScheduleDto.getSchedule().getReturns().size(); i++) {
                 RetrossDepartureDto retrossDepartureDto = responseScheduleDto.getSchedule().getReturns().get(i);
                 airlinesAvailabilityReturnsDtoList.add(retrossDepartureDtoToAirlinesAvailabilityDto(
-                        retrossDepartureDto, userId
+                        retrossDepartureDto, inquiryDto
                 ));
             }
             listAvailabilityDto.setReturns(airlinesAvailabilityReturnsDtoList);
@@ -166,8 +190,14 @@ public abstract class AirlinesAvailabilityMapperDecorator
     }
 
     @Override
-    public AirlinesAvailabilityDto airlinesAvailabilityToAirlinesAvailabilityDto(AirlinesAvailability airlinesAvailability) {
-        return this.airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability);
+    public AirlinesAvailabilityDto airlinesAvailabilityToAirlinesAvailabilityDto(AirlinesAvailability airlinesAvailability, Long userId, Integer passengerAmount) {
+        AirlinesAvailabilityDto airlinesAvailabilityDto = this.airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability, userId, passengerAmount);
+        airlinesAvailabilityDto.setOriginAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailability.getOriginAirportId())));
+        airlinesAvailabilityDto.setDestinationAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailability.getDestinationAirportId())));
+        AirlinesAvailabilityFare airlinesAvailabilityFare = airlinesAvailability.getFares().stream().filter(fare -> fare.getSeatAvailable() > passengerAmount).findFirst().orElseThrow();
+        AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper.airlinesAvailabilityFareToAirlinesAvailabilityFareDto(airlinesAvailabilityFare);
+        airlinesAvailabilityDto.setFare(airlinesAvailabilityPriceMapper.airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, userId));
+        return airlinesAvailabilityDto;
     }
 
 

@@ -1,6 +1,7 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
+import id.holigo.services.holigoairlinesservice.domain.Airport;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,10 @@ public class AirlinesAvailabilityDto {
     private String airlinesName;
 
     private String flightNumber;
+
+    private AirportDto originAirport;
+
+    private AirportDto destinationAirport;
 
     private String originAirportId;
 

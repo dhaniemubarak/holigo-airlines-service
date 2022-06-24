@@ -24,6 +24,10 @@ public class InquiryDto implements Serializable {
 
     private String originAirportId;
 
+    private AirportDto originAirport;
+
+    private AirportDto destinationAirport;
+
     private String destinationAirportId;
 
     private Date departureDate;

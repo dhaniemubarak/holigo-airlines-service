@@ -1,6 +1,7 @@
 package id.holigo.services.holigoairlinesservice.web.mappers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityFareDto;
 import id.holigo.services.holigoairlinesservice.web.model.RetrossFareDto;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ public abstract class AirlinesAvailabilityFareMapperDecorator implements Airline
     }
 
     @Override
-    public AirlinesAvailabilityFareDto airlinesAvailabilityFareToAirlinesAvailabilityFareDto(AirlinesAvailabilityFareDto airlinesAvailabilityFareDto) {
-        return airlinesAvailabilityFareMapper.airlinesAvailabilityFareToAirlinesAvailabilityFareDto(airlinesAvailabilityFareDto);
+    public AirlinesAvailabilityFareDto airlinesAvailabilityFareToAirlinesAvailabilityFareDto(AirlinesAvailabilityFare airlinesAvailabilityFare) {
+        return airlinesAvailabilityFareMapper.airlinesAvailabilityFareToAirlinesAvailabilityFareDto(airlinesAvailabilityFare);
     }
 }

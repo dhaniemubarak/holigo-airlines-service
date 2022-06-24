@@ -29,8 +29,19 @@ public class Inquiry {
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
     private String airlinesCode;
+
+    @Transient
     private String originAirportId;
+
+    @ManyToOne
+    private Airport originAirport;
+
+    @Transient
     private String destinationAirportId;
+
+    @ManyToOne
+    private Airport destinationAirport;
+
     private Date departureDate;
     private Date returnDate;
     @Enumerated(EnumType.STRING)
