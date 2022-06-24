@@ -9,7 +9,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @DecoratedWith(AirlinesFinalFareTripMapperDecorator.class)
-@Mapper(uses = AirlinesFinalFareTripItineraryMapper.class)
+@Mapper(uses = {AirlinesFinalFareTripItineraryMapper.class, AirportMapper.class})
 public interface AirlinesFinalFareTripMapper {
 
     @Mapping(target = "seat", ignore = true)
@@ -41,6 +41,7 @@ public interface AirlinesFinalFareTripMapper {
     @Mapping(target = "cpAmount", ignore = true)
     @Mapping(target = "adminAmount", ignore = true)
     @Mapping(target = "fares", ignore = true)
+    @Mapping(target = "itineraries", ignore = true)
     AirlinesFinalFareTrip airlinesAvailabilityToAirlinesFinalFareTrip(AirlinesAvailability airlinesAvailability);
 
 
@@ -50,8 +51,4 @@ public interface AirlinesFinalFareTripMapper {
     @Mapping(target = "seat", ignore = true)
     AirlinesFinalFareTripDto airlinesFinalFareTripToAirlinesFinalFareTripDto(AirlinesFinalFareTrip airlinesFinalFareTrip);
 
-    @Mapping(target = "tags", ignore = true)
-    @Mapping(target = "fares", ignore = true)
-    @Mapping(target = "fare", ignore = true)
-    AirlinesAvailabilityDto airlinesFinalFareTripToAirlinesAvailabilityDto(AirlinesFinalFareTrip airlinesFinalFareTrip);
 }

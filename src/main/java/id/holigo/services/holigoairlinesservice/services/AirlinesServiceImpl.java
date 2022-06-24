@@ -110,10 +110,11 @@ public class AirlinesServiceImpl implements AirlinesService {
     public AirlinesFinalFare createFinalFares(RequestFinalFareDto requestFinalFareDto, Long userId) {
 
         Set<AirlinesFinalFareTrip> airlinesFinalFareTrips = new HashSet<>();
+        List<List<RetrossFinalFareDepartureDto>> retrossFinalFares = new ArrayList<>();
 
 
         for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
-            String fares = null;
+            String fares;
             FareDto fareDto = FareDto.builder()
                     .ntaAmount(BigDecimal.valueOf(0.00))
                     .nraAmount(BigDecimal.valueOf(0.00))
@@ -143,6 +144,10 @@ public class AirlinesServiceImpl implements AirlinesService {
                     if (!responseFareDto.getError_code().equals("000")) {
                         throw new Exception("Failed get final fare from airlines");
                     }
+                    retrossFinalFares.add(responseFareDto.getSchedule().getDepartures());
+                    if (tripDto.getInquiry().getTripType().equals(TripType.R)) {
+                        retrossFinalFares.add(responseFareDto.getSchedule().getReturns());
+                    }
                 } catch (Exception e) {
                     airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                             tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getOriginAirport().getId(), tripDto.getInquiry().getDestinationAirport().getId(),
@@ -157,20 +162,19 @@ public class AirlinesServiceImpl implements AirlinesService {
                     throw new ConflictException(e.getMessage());
                 }
 
-            } else {
-                responseFareDto = ResponseFareDto.builder()
-                        .totalAmount(BigDecimal.valueOf(0.00))
-                        .ntaAmount(BigDecimal.valueOf(0.00))
-                        .build();
             }
-            if (responseFareDto.getSchedule() != null) {
-                try {
-                    fareDto = fareService.getFareDetail(FareDetailDto.builder().ntaAmount(responseFareDto.getNtaAmount())
-                            .nraAmount(responseFareDto.getTotalAmount().subtract(responseFareDto.getNtaAmount())).productId(1).userId(userId).build());
-                    fares = objectMapper.writeValueAsString(responseFareDto.getSchedule().getDepartures().get(i).getFares());
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
+            try {
+                log.info("Loop getFareDetail -> {}", i);
+                fareDto = fareService.getFareDetail(FareDetailDto.builder()
+                        .ntaAmount(retrossFinalFares.get(i).get(0).getFares().get(0).getNta())
+                        .nraAmount(retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare()
+                                .subtract(retrossFinalFares.get(i).get(0).getFares().get(0).getNta()))
+                        .productId(1).userId(userId).build());
+                fares = objectMapper.writeValueAsString(retrossFinalFares.get(i).get(0).getFares());
+
+
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
             }
 
             AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
@@ -199,11 +203,10 @@ public class AirlinesServiceImpl implements AirlinesService {
             airlinesFinalFareTrip.setChildAmount(tripDto.getInquiry().getChildAmount());
             airlinesFinalFareTrip.setInfantAmount(tripDto.getInquiry().getInfantAmount());
             airlinesFinalFareTrip.setFares(fares);
-            airlinesFinalFareTrip.setIsPriceIncluded(responseFareDto.getTotalAmount().equals(BigDecimal.valueOf(0.00)));
-            airlinesFinalFareTrip.setFareAmount(responseFareDto.getTotalAmount());
-            airlinesFinalFareTrip.setNtaAmount(responseFareDto.getNtaAmount());
-            airlinesFinalFareTrip.setNraAmount(airlinesFinalFareTrip.getFareAmount()
-                    .subtract(airlinesFinalFareTrip.getNtaAmount()));
+            airlinesFinalFareTrip.setIsPriceIncluded(fareDto.getFareAmount().equals(BigDecimal.valueOf(0.00)));
+            airlinesFinalFareTrip.setFareAmount(fareDto.getFareAmount());
+            airlinesFinalFareTrip.setNtaAmount(fareDto.getNtaAmount());
+            airlinesFinalFareTrip.setNraAmount(fareDto.getNraAmount());
             airlinesFinalFareTrip.setAdminAmount(BigDecimal.valueOf(0.00));
             airlinesFinalFareTrip.setCpAmount(fareDto.getCpAmount());
             airlinesFinalFareTrip.setMpAmount(fareDto.getMpAmount());

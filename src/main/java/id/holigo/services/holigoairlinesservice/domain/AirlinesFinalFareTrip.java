@@ -37,10 +37,10 @@ public class AirlinesFinalFareTrip {
     private String airlinesName;
     @Column(columnDefinition = "varchar(20)")
     private String flightNumber;
-    @Column(columnDefinition = "varchar(4)")
-    private String originAirportId;
-    @Column(columnDefinition = "varchar(4)")
-    private String destinationAirportId;
+    @ManyToOne
+    private Airport originAirport;
+    @ManyToOne
+    private Airport destinationAirport;
     private Date departureDate;
     private Time departureTime;
     private Date arrivalDate;

@@ -25,13 +25,9 @@ public class AirlinesFinalFareTripItineraryDto implements Serializable {
 
     private String flightNumber;
 
-    private String originAirportId;
+    private AirportDto originAirport;
 
-    private Airport originAirport;
-
-    private String destinationAirportId;
-
-    private Airport destinationAirport;
+    private AirportDto destinationAirport;
 
     private Date departureDate;
 

@@ -70,9 +70,4 @@ public abstract class AirlinesFinalFareTripMapperDecorator
         return airlinesFinalFareTripDto;
     }
 
-    @Override
-    public AirlinesAvailabilityDto airlinesFinalFareTripToAirlinesAvailabilityDto(AirlinesFinalFareTrip airlinesFinalFareTrip) {
-        return this.airlinesFinalFareTripMapper.airlinesFinalFareTripToAirlinesAvailabilityDto(airlinesFinalFareTrip);
-    }
-
 }

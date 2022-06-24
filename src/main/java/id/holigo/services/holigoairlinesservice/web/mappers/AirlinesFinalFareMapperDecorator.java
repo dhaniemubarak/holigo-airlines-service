@@ -38,6 +38,7 @@ public abstract class AirlinesFinalFareMapperDecorator implements AirlinesFinalF
     @Override
     public AirlinesFinalFareDto airlinesFinalFareToAirlinesFinalFareDto(AirlinesFinalFare airlinesFinalFare) {
         AirlinesFinalFareDto airlinesFinalFareDto = this.airlinesFinalFareMapper.airlinesFinalFareToAirlinesFinalFareDto(airlinesFinalFare);
+
         airlinesFinalFareDto.setTrips(airlinesFinalFare.getTrips().stream().map(airlinesFinalFareTripMapper::airlinesFinalFareTripToAirlinesFinalFareTripDto).collect(Collectors.toList()));
         return airlinesFinalFareDto;
     }

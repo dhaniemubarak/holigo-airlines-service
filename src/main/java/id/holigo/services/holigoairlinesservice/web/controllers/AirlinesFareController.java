@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -58,6 +59,10 @@ public class AirlinesFareController {
 
     @GetMapping(PATH + "/{id}")
     public ResponseEntity<AirlinesFinalFareDto> getFare(@PathVariable("id") UUID id) {
-        return new ResponseEntity<>(airlinesFinalFareMapper.airlinesFinalFareToAirlinesFinalFareDto(airlinesFinalFareRepository.getById(id)), HttpStatus.OK);
+        Optional<AirlinesFinalFare> fetchAirlinesFinalFare = airlinesFinalFareRepository.findById(id);
+        if (fetchAirlinesFinalFare.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(airlinesFinalFareMapper.airlinesFinalFareToAirlinesFinalFareDto(fetchAirlinesFinalFare.get()), HttpStatus.OK);
     }
 }
