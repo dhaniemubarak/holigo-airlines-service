@@ -1,10 +1,8 @@
 package id.holigo.services.holigoairlinesservice.web.controllers;
 
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
-import id.holigo.services.holigoairlinesservice.services.AirlinesService;
 import id.holigo.services.holigoairlinesservice.services.AirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
-import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

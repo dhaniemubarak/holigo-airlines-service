@@ -46,7 +46,6 @@ public class AirlinesFareController {
 
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createFare(@RequestBody RequestFinalFareDto requestFinalFareDto, @RequestHeader("user-id") Long userId) {
-        log.info("Fare running");
         AirlinesFinalFare airlinesFinalFare = airlinesService.createFinalFares(requestFinalFareDto, userId);
         if (airlinesFinalFare == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

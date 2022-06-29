@@ -20,8 +20,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Entity(name = "airlines_trips")
-public class AirlinesTrip {
+@Entity(name = "airlines_transaction_trips")
+public class AirlinesTransactionTrip {
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -37,27 +37,19 @@ public class AirlinesTrip {
     private String flightNumber;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
-    private List<AirlinesTripItinerary> itineraries = new ArrayList<>();
+    private List<AirlinesTransactionTripItinerary> itineraries = new ArrayList<>();
 
     @OneToMany(mappedBy = "trip")
-    private List<AirlinesTripPassenger> passengers;
+    private List<AirlinesTransactionTripPassenger> passengers;
 
     @Column(columnDefinition = "varchar(4)", length = 4, nullable = false)
     private String airlinesCode;
 
-    @Transient
-    @OneToOne
+    @ManyToOne
     private Airport originAirport;
 
-    @Transient
-    @OneToOne
+    @ManyToOne
     private Airport destinationAirport;
-
-    @Column(columnDefinition = "varchar(4)")
-    private String originAirportId;
-
-    @Column(columnDefinition = "varchar(4)")
-    private String destinationAirportId;
 
     private Date departureDate;
 
@@ -142,13 +134,13 @@ public class AirlinesTrip {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
-    public void setItineraries(List<AirlinesTripItinerary> itineraries) {
+    public void setItineraries(List<AirlinesTransactionTripItinerary> itineraries) {
         this.itineraries = itineraries;
     }
 
-    public void addToItineraries(AirlinesTripItinerary airlinesTripItinerary) {
-        airlinesTripItinerary.setTrip(this);
-        this.itineraries.add(airlinesTripItinerary);
+    public void addToItineraries(AirlinesTransactionTripItinerary airlinesTransactionTripItinerary) {
+        airlinesTransactionTripItinerary.setTrip(this);
+        this.itineraries.add(airlinesTransactionTripItinerary);
     }
 
 

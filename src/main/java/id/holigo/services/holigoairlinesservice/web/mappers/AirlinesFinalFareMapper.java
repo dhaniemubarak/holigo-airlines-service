@@ -12,6 +12,7 @@ import org.mapstruct.Mapping;
 @DecoratedWith(AirlinesFinalFareMapperDecorator.class)
 @Mapper
 public interface AirlinesFinalFareMapper {
+    @Mapping(target = "isPhoneNumberRequired", ignore = true)
     @Mapping(target = "trips", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

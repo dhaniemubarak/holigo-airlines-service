@@ -38,6 +38,8 @@ public class AirlinesFinalFare {
 
     private Boolean isIdentityNumberRequired;
 
+    private Boolean isPhoneNumberRequired;
+
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal fareAmount;
 

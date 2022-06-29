@@ -15,8 +15,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Entity(name = "airlines_trip_itineraries")
-public class AirlinesTripItinerary {
+@Entity(name = "airlines_transaction_trip_itineraries")
+public class AirlinesTransactionTripItinerary {
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -26,7 +26,7 @@ public class AirlinesTripItinerary {
     private UUID id;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    private AirlinesTrip trip;
+    private AirlinesTransactionTrip trip;
 
     @Column(length = 10, columnDefinition = "varchar(10)")
     private String pnr;

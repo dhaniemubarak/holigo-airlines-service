@@ -23,7 +23,9 @@ public class PassengerDto implements Serializable {
 
     private String phoneNumber;
 
-    private String identityNumber;
+    private IdentityCardDto identityCard;
+
+    private PassportDto passport;
 
     private String baggageCode;
 

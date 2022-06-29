@@ -5,7 +5,7 @@ import id.holigo.services.holigoairlinesservice.web.model.PassengerDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(uses = {IdentityCardMapper.class, PassportMapper.class})
 public interface PassengerMapper {
 
     @Mapping(target = "updatedAt", ignore = true)

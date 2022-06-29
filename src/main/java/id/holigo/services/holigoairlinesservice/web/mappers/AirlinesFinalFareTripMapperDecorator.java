@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTrip;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTripItinerary;
+import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDto;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesFinalFareTripDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,14 @@ public abstract class AirlinesFinalFareTripMapperDecorator
 
     private AirlinesFinalFareTripItineraryMapper airlinesFinalFareTripItineraryMapper;
 
+    private AirportRepository airportRepository;
+
     private ObjectMapper objectMapper;
 
+    @Autowired
+    public void setAirportRepository(AirportRepository airportRepository) {
+        this.airportRepository = airportRepository;
+    }
 
     @Autowired
     public void setAirlinesFinalFareTripMapper(AirlinesFinalFareTripMapper airlinesFinalFareTripMapper) {
@@ -41,6 +48,8 @@ public abstract class AirlinesFinalFareTripMapperDecorator
     public AirlinesFinalFareTrip airlinesAvailabilityToAirlinesFinalFareTrip(AirlinesAvailability airlinesAvailability) {
         AirlinesFinalFareTrip airlinesFinalFareTrip = this.airlinesFinalFareTripMapper
                 .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability);
+        airlinesFinalFareTrip.setOriginAirport(airportRepository.getById(airlinesAvailability.getOriginAirportId()));
+        airlinesFinalFareTrip.setDestinationAirport(airportRepository.getById(airlinesAvailability.getDestinationAirportId()));
         List<AirlinesFinalFareTripItinerary> itineraries = airlinesAvailability.getItineraries().stream()
                 .map(airlinesFinalFareTripItineraryMapper::airlinesAvailabilityItineraryToAirlinesFinalFareTripItinerary).toList();
         itineraries.forEach(airlinesFinalFareTrip::addToItineraries);

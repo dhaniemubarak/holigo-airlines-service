@@ -40,7 +40,7 @@ public class AirlinesTransaction {
     private TripType tripType;
 
     @OneToMany(mappedBy = "transaction")
-    private List<AirlinesTrip> trips;
+    private List<AirlinesTransactionTrip> trips;
 
     private Boolean isBookable;
 

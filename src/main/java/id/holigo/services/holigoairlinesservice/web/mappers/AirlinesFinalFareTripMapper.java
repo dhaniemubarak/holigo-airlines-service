@@ -12,6 +12,8 @@ import org.mapstruct.Mapping;
 @Mapper(uses = {AirlinesFinalFareTripItineraryMapper.class, AirportMapper.class})
 public interface AirlinesFinalFareTripMapper {
 
+    @Mapping(target = "originAirport", ignore = true)
+    @Mapping(target = "destinationAirport", ignore = true)
     @Mapping(target = "seat", ignore = true)
     @Mapping(target = "medical", ignore = true)
     @Mapping(target = "meal", ignore = true)

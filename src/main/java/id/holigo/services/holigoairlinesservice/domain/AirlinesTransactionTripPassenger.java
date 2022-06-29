@@ -13,8 +13,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Entity(name = "passengers")
-public class Passenger {
+@Entity(name = "airlines_transaction_trip_passengers")
+public class AirlinesTransactionTripPassenger {
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -23,24 +23,13 @@ public class Passenger {
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    private PassengerType type;
+    @ManyToOne
+    private AirlinesTransactionTrip trip;
 
-    @Enumerated(EnumType.STRING)
-    private PassengerTitle title;
+    @ManyToOne
+    private Passenger passenger;
 
-    private String name;
-
-    @Column(length = 20, columnDefinition = "varchar(20)")
-    private String phoneNumber;
-
-
-    @OneToOne(cascade = CascadeType.ALL)
-    private IdentityCard identityCard;
-
-
-    @OneToOne(cascade = CascadeType.ALL)
-    private Passport passport;
+    private String ticketNumber;
 
     @CreationTimestamp
     private Timestamp createdAt;

@@ -240,6 +240,9 @@ public class AirlinesServiceImpl implements AirlinesService {
                 .build();
         airlinesFinalFare.setUserId(userId);
         airlinesFinalFare.setIsBookable(true);
+        // Check airlines code for identity number and phone number
+        airlinesFinalFare.setIsIdentityNumberRequired(true);
+        airlinesFinalFare.setIsPhoneNumberRequired(false);
         airlinesFinalFareTrips.forEach(airlinesFinalFareTrip -> {
             airlinesFinalFare.setFareAmount(airlinesFinalFare.getFareAmount().add(airlinesFinalFareTrip.getFareAmount()));
             airlinesFinalFare.setAdminAmount(airlinesFinalFare.getAdminAmount().add(airlinesFinalFareTrip.getAdminAmount()));

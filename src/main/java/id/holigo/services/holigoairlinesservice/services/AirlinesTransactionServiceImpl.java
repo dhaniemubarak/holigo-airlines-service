@@ -15,7 +15,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class AirlinesTransactionServiceImpl implements AirlinesTransactionService {
@@ -30,16 +29,16 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
 
     private AirlinesTransactionRepository airlinesTransactionRepository;
 
-    private AirlinesTripRepository airlinesTripRepository;
-    private AirlinesTripMapper airlinesTripMapper;
+    private AirlinesTransactionTripRepository airlinesTransactionTripRepository;
+    private AirlinesTransactionTripMapper airlinesTransactionTripMapper;
 
-    private AirlinesTripItineraryMapper airlinesTripItineraryMapper;
+    private AirlinesTransactionTripItineraryMapper airlinesTransactionTripItineraryMapper;
 
     private PassengerMapper passengerMapper;
 
     private PassengerRepository passengerRepository;
 
-    private AirlinesTripPassengerRepository airlinesTripPassengerRepository;
+    private AirlinesTransactionTripPassengerRepository airlinesTransactionTripPassengerRepository;
 
     @Autowired
     public void setAirlinesFinalFareRepository(AirlinesFinalFareRepository airlinesFinalFareRepository) {
@@ -67,18 +66,18 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
     }
 
     @Autowired
-    public void setAirlinesTripMapper(AirlinesTripMapper airlinesTripMapper) {
-        this.airlinesTripMapper = airlinesTripMapper;
+    public void setAirlinesTripMapper(AirlinesTransactionTripMapper airlinesTransactionTripMapper) {
+        this.airlinesTransactionTripMapper = airlinesTransactionTripMapper;
     }
 
     @Autowired
-    public void setAirlinesTripItineraryMapper(AirlinesTripItineraryMapper airlinesTripItineraryMapper) {
-        this.airlinesTripItineraryMapper = airlinesTripItineraryMapper;
+    public void setAirlinesTripItineraryMapper(AirlinesTransactionTripItineraryMapper airlinesTransactionTripItineraryMapper) {
+        this.airlinesTransactionTripItineraryMapper = airlinesTransactionTripItineraryMapper;
     }
 
     @Autowired
-    public void setAirlinesTripRepository(AirlinesTripRepository airlinesTripRepository) {
-        this.airlinesTripRepository = airlinesTripRepository;
+    public void setAirlinesTripRepository(AirlinesTransactionTripRepository airlinesTransactionTripRepository) {
+        this.airlinesTransactionTripRepository = airlinesTransactionTripRepository;
     }
 
     @Autowired
@@ -92,8 +91,8 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
     }
 
     @Autowired
-    public void setAirlinesTripPassengerRepository(AirlinesTripPassengerRepository airlinesTripPassengerRepository) {
-        this.airlinesTripPassengerRepository = airlinesTripPassengerRepository;
+    public void setAirlinesTripPassengerRepository(AirlinesTransactionTripPassengerRepository airlinesTransactionTripPassengerRepository) {
+        this.airlinesTransactionTripPassengerRepository = airlinesTransactionTripPassengerRepository;
     }
 
     @Transactional
@@ -130,33 +129,34 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
         // End of create passenger
 
         // create trip
-        List<AirlinesTrip> airlinesTrips = new ArrayList<>();
+        List<AirlinesTransactionTrip> airlinesTransactionTrips = new ArrayList<>();
         airlinesFinalFare.getTrips().forEach(airlinesFinalFareTrip -> {
-            AirlinesTrip airlinesTrip = airlinesTripMapper.airlinesFinalFareTripToAirlinesTrip(airlinesFinalFareTrip);
-            airlinesTrip.setPaymentStatus(PaymentStatusEnum.SELECTING_PAYMENT);
-            airlinesTrip.setOrderStatus(OrderStatusEnum.PROCESS_BOOK);
+            AirlinesTransactionTrip airlinesTransactionTrip = airlinesTransactionTripMapper.airlinesFinalFareTripToAirlinesTransactionTrip(airlinesFinalFareTrip);
+            airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.SELECTING_PAYMENT);
+            airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.PROCESS_BOOK);
+            airlinesTransactionTrip.setIsInternational(false);
             airlinesFinalFareTrip.getItineraries().forEach(airlinesFinalFareTripItinerary -> {
-                airlinesTrip.addToItineraries(airlinesTripItineraryMapper
+                airlinesTransactionTrip.addToItineraries(airlinesTransactionTripItineraryMapper
                         .airlinesFinalFareItineraryToAirlinesTripItinerary(airlinesFinalFareTripItinerary));
             });
-            airlinesTrip.setTransaction(savedAirlinesTransaction);
-            airlinesTrips.add(airlinesTrip);
+            airlinesTransactionTrip.setTransaction(savedAirlinesTransaction);
+            airlinesTransactionTrips.add(airlinesTransactionTrip);
         });
-        Iterable<AirlinesTrip> savedAirlinesTrips = airlinesTripRepository.saveAll(airlinesTrips);
+        Iterable<AirlinesTransactionTrip> savedAirlinesTrips = airlinesTransactionTripRepository.saveAll(airlinesTransactionTrips);
         // End of create trip
 
         // create trip passenger
-        List<AirlinesTripPassenger> airlinesTripPassengers = new ArrayList<>();
+        List<AirlinesTransactionTripPassenger> airlinesTransactionTripPassengers = new ArrayList<>();
         // create passengers
         savedAirlinesTrips.forEach(airlinesTrip -> {
             savedPassengers.forEach(passenger -> {
-                AirlinesTripPassenger airlinesTripPassenger = new AirlinesTripPassenger();
-                airlinesTripPassenger.setTrip(airlinesTrip);
-                airlinesTripPassenger.setPassenger(passenger);
-                airlinesTripPassengers.add(airlinesTripPassenger);
+                AirlinesTransactionTripPassenger airlinesTransactionTripPassenger = new AirlinesTransactionTripPassenger();
+                airlinesTransactionTripPassenger.setTrip(airlinesTrip);
+                airlinesTransactionTripPassenger.setPassenger(passenger);
+                airlinesTransactionTripPassengers.add(airlinesTransactionTripPassenger);
             });
         });
-        airlinesTripPassengerRepository.saveAll(airlinesTripPassengers);
+        airlinesTransactionTripPassengerRepository.saveAll(airlinesTransactionTripPassengers);
         // End of create trip passenger
 
         return savedAirlinesTransaction;

@@ -30,5 +30,7 @@ public class AirlinesFinalFareDto {
 
     private Boolean isIdentityNumberRequired;
 
+    private Boolean isPhoneNumberRequired;
+
     private List<AirlinesFinalFareTripDto> trips = new ArrayList<>();
 }

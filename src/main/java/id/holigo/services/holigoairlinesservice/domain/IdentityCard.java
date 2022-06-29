@@ -1,6 +1,8 @@
 package id.holigo.services.holigoairlinesservice.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -13,9 +15,10 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Entity(name = "passengers")
-public class Passenger {
-
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity(name = "identity_cards")
+public class IdentityCard {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -23,24 +26,10 @@ public class Passenger {
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    private PassengerType type;
+    @OneToOne
+    private Passenger passenger;
 
-    @Enumerated(EnumType.STRING)
-    private PassengerTitle title;
-
-    private String name;
-
-    @Column(length = 20, columnDefinition = "varchar(20)")
-    private String phoneNumber;
-
-
-    @OneToOne(cascade = CascadeType.ALL)
-    private IdentityCard identityCard;
-
-
-    @OneToOne(cascade = CascadeType.ALL)
-    private Passport passport;
+    private String idCardNumber;
 
     @CreationTimestamp
     private Timestamp createdAt;
