@@ -40,6 +40,7 @@ public class AirlinesTransaction {
     private TripType tripType;
 
     @OneToMany(mappedBy = "transaction")
+    @OrderBy("segment")
     private List<AirlinesTransactionTrip> trips;
 
     private Boolean isBookable;

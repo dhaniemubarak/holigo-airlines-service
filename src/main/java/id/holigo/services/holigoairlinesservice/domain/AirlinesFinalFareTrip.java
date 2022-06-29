@@ -30,6 +30,9 @@ public class AirlinesFinalFareTrip {
 
     @ManyToOne(cascade = CascadeType.ALL)
     private AirlinesFinalFare finalFare;
+
+    private Integer segment;
+
     private String airlinesCode;
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     private List<AirlinesFinalFareTripItinerary> itineraries = new ArrayList<>();

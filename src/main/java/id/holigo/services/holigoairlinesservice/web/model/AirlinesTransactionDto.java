@@ -24,15 +24,6 @@ public class AirlinesTransactionDto implements Serializable {
 
     private TripType tripType;
 
-//    @OneToMany(mappedBy = "transaction")
-//    private List<AirlinesTrip> trips;
-
-    private Integer adultAmount;
-
-    private Integer childAmount;
-
-    private Integer infantAmount;
-
     private Boolean isBookable;
 
     private Timestamp expiredAt;

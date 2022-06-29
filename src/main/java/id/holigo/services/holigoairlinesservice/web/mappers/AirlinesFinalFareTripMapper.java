@@ -12,6 +12,7 @@ import org.mapstruct.Mapping;
 @Mapper(uses = {AirlinesFinalFareTripItineraryMapper.class, AirportMapper.class})
 public interface AirlinesFinalFareTripMapper {
 
+    @Mapping(target = "segment", source = "segment")
     @Mapping(target = "originAirport", ignore = true)
     @Mapping(target = "destinationAirport", ignore = true)
     @Mapping(target = "seat", ignore = true)
@@ -44,7 +45,7 @@ public interface AirlinesFinalFareTripMapper {
     @Mapping(target = "adminAmount", ignore = true)
     @Mapping(target = "fares", ignore = true)
     @Mapping(target = "itineraries", ignore = true)
-    AirlinesFinalFareTrip airlinesAvailabilityToAirlinesFinalFareTrip(AirlinesAvailability airlinesAvailability);
+    AirlinesFinalFareTrip airlinesAvailabilityToAirlinesFinalFareTrip(AirlinesAvailability airlinesAvailability, Integer segment);
 
 
     @Mapping(target = "baggage", ignore = true)

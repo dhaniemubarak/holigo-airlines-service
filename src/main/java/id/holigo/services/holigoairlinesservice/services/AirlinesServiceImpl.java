@@ -180,7 +180,7 @@ public class AirlinesServiceImpl implements AirlinesService {
             AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
                     .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
             AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
-                    .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability);
+                    .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability, i + 1);
 //            if (responseFareDto.getSchedule() != null) {
 //                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition() != null) {
 //                    if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getBaggage() != null) {

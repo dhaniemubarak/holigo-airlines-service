@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.core.annotation.Order;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -37,7 +38,10 @@ public class AirlinesTransactionTrip {
     private String flightNumber;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    @OrderBy("leg")
     private List<AirlinesTransactionTripItinerary> itineraries = new ArrayList<>();
+
+    private Integer segment;
 
     @OneToMany(mappedBy = "trip")
     private List<AirlinesTransactionTripPassenger> passengers;

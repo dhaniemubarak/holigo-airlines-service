@@ -89,6 +89,7 @@ public class AirlinesFinalFare {
     private Timestamp updatedAt;
 
     @OneToMany(mappedBy = "finalFare", cascade = CascadeType.ALL)
+    @OrderBy("segment")
     private List<AirlinesFinalFareTrip> trips = new ArrayList<>();
 
 }

@@ -31,7 +31,7 @@ public class AirlinesTransactionTripItinerary {
     @Column(length = 10, columnDefinition = "varchar(10)")
     private String pnr;
 
-    @Column(length = 1, columnDefinition = "tinyint(1)", nullable = true)
+    @Column(length = 1, columnDefinition = "tinyint(1)")
     private Integer leg;
 
     @Column(columnDefinition = "varchar(20)")

@@ -45,9 +45,9 @@ public abstract class AirlinesFinalFareTripMapperDecorator
     }
 
     @Override
-    public AirlinesFinalFareTrip airlinesAvailabilityToAirlinesFinalFareTrip(AirlinesAvailability airlinesAvailability) {
+    public AirlinesFinalFareTrip airlinesAvailabilityToAirlinesFinalFareTrip(AirlinesAvailability airlinesAvailability, Integer segment) {
         AirlinesFinalFareTrip airlinesFinalFareTrip = this.airlinesFinalFareTripMapper
-                .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability);
+                .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability, segment);
         airlinesFinalFareTrip.setOriginAirport(airportRepository.getById(airlinesAvailability.getOriginAirportId()));
         airlinesFinalFareTrip.setDestinationAirport(airportRepository.getById(airlinesAvailability.getDestinationAirportId()));
         List<AirlinesFinalFareTripItinerary> itineraries = airlinesAvailability.getItineraries().stream()
