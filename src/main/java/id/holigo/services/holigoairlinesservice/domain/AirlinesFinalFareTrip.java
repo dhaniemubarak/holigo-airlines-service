@@ -35,6 +35,7 @@ public class AirlinesFinalFareTrip {
 
     private String airlinesCode;
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    @OrderBy("leg")
     private List<AirlinesFinalFareTripItinerary> itineraries = new ArrayList<>();
     @Column(columnDefinition = "varchar(20)")
     private String airlinesName;
