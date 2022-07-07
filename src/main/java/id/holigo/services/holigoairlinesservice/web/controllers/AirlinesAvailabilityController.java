@@ -10,6 +10,7 @@ import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
 import id.holigo.services.holigoairlinesservice.repositories.InquiryRepository;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
 import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
+import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
 import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesAvailabilityMapper;
 import id.holigo.services.holigoairlinesservice.web.mappers.InquiryMapper;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDto;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -111,9 +113,24 @@ public class AirlinesAvailabilityController {
         );
 
         if (airlinesAvailabilityDepartures.size() > 0) {
-            listAvailabilityDto.setDepartures(airlinesAvailabilityDepartures.stream().map(airlinesAvailability -> {
-                return airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability, userId, inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount());
-            }).toList());
+            try {
+                listAvailabilityDto.setDepartures(
+                        airlinesAvailabilityDepartures.stream().map(
+                                airlinesAvailability -> airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(
+                                        airlinesAvailability,
+                                        userId,
+                                        inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount())
+                        ).toList()
+                );
+            } catch (NoSuchElementException e) {
+                airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
+                        inquiryDto.getAirlinesCode(),
+                        inquiryDto.getOriginAirportId(),
+                        inquiryDto.getDestinationAirportId(),
+                        inquiryDto.getDepartureDate().toString());
+                throw new AvailabilitiesException();
+            }
+
         }
 
         if (inquiry.getTripType() == TripType.R) {
@@ -123,9 +140,17 @@ public class AirlinesAvailabilityController {
             );
 
             if (airlinesAvailabilityReturns.size() > 0) {
-                listAvailabilityDto.setReturns(airlinesAvailabilityReturns.stream().map(airlinesAvailability -> {
-                    return airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability, userId, inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount());
-                }).toList());
+                try {
+                    listAvailabilityDto.setReturns(airlinesAvailabilityReturns.stream().map(airlinesAvailability -> airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability, userId, inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount())).toList());
+                } catch (NoSuchElementException e) {
+                    airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
+                            inquiryDto.getAirlinesCode(),
+                            inquiryDto.getDestinationAirportId(),
+                            inquiryDto.getOriginAirportId(),
+                            inquiryDto.getReturnDate().toString());
+                    throw new AvailabilitiesException();
+                }
+
             }
             if (airlinesAvailabilityDepartures.isEmpty() && airlinesAvailabilityReturns.isEmpty()) {
 

@@ -32,7 +32,6 @@ public class AirlinesAvailabilityItinerary {
     private UUID id;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JsonBackReference
     private AirlinesAvailability airlinesAvailability;
 
     private String airlinesCode;

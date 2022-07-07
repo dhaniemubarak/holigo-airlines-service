@@ -7,6 +7,7 @@ import id.holigo.services.holigoairlinesservice.components.Airlines;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
 import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
+import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -194,7 +195,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
         AirlinesAvailabilityDto airlinesAvailabilityDto = this.airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability, userId, passengerAmount);
         airlinesAvailabilityDto.setOriginAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailability.getOriginAirportId())));
         airlinesAvailabilityDto.setDestinationAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailability.getDestinationAirportId())));
-        AirlinesAvailabilityFare airlinesAvailabilityFare = airlinesAvailability.getFares().stream().filter(fare -> fare.getSeatAvailable() > passengerAmount).findFirst().orElseThrow();
+        AirlinesAvailabilityFare airlinesAvailabilityFare = airlinesAvailability.getFares().stream().filter(fare -> fare.getSeatAvailable() >= passengerAmount).findFirst().orElseThrow();
         AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper.airlinesAvailabilityFareToAirlinesAvailabilityFareDto(airlinesAvailabilityFare);
         airlinesAvailabilityDto.setFare(airlinesAvailabilityPriceMapper.airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, userId));
         return airlinesAvailabilityDto;
