@@ -13,6 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,11 +22,8 @@ import java.util.UUID;
 @Entity(name = "airlines_transactions")
 public class AirlinesTransaction {
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
-    @Type(type = "org.hibernate.type.UUIDCharType")
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
 
     private Long userId;
 
@@ -41,7 +39,7 @@ public class AirlinesTransaction {
 
     @OneToMany(mappedBy = "transaction")
     @OrderBy("segment")
-    private List<AirlinesTransactionTrip> trips;
+    private List<AirlinesTransactionTrip> trips = new ArrayList<>();
 
     private Boolean isBookable;
 
@@ -100,6 +98,12 @@ public class AirlinesTransaction {
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    public void addTrip(AirlinesTransactionTrip airlinesTransactionTrip) {
+        airlinesTransactionTrip.setTransaction(this);
+        this.trips.add(airlinesTransactionTrip);
+
+    }
 
 
 }

@@ -1,5 +1,6 @@
 package id.holigo.services.holigoairlinesservice.web.controllers;
 
+import id.holigo.services.common.model.TransactionDto;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.services.AirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
@@ -30,10 +31,10 @@ public class AirlinesBookController {
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createBook(@RequestBody AirlinesBookDto airlinesBookDto,
                                                  @RequestHeader("user-id") Long userId) {
-        AirlinesTransaction airlinesTransaction = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
+        TransactionDto transactionDto = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setLocation(UriComponentsBuilder.fromPath(TRANSACTION_PATH)
-                .buildAndExpand(airlinesTransaction.getId().toString()).toUri());
+                .buildAndExpand(transactionDto.getId().toString()).toUri());
         return new ResponseEntity<>(httpHeaders, HttpStatus.CREATED);
     }
 

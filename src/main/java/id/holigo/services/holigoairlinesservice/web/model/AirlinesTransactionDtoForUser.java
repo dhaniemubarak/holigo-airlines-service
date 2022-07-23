@@ -2,17 +2,22 @@ package id.holigo.services.holigoairlinesservice.web.model;
 
 import id.holigo.services.common.model.PaymentStatusEnum;
 import id.holigo.services.common.model.TripType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class AirlinesTransactionDto implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor
+public class AirlinesTransactionDtoForUser implements Serializable {
 
     private Long id;
 
@@ -36,31 +41,14 @@ public class AirlinesTransactionDto implements Serializable {
 
     private BigDecimal discountAmount;
 
-    private BigDecimal ntaAmount;
-
-    private BigDecimal nraAmount;
-
-    private BigDecimal cpAmount;
-
-    private BigDecimal mpAmount;
-
-    private BigDecimal ipAmount;
-
-    private BigDecimal hpAmount;
-
-    private BigDecimal hvAmount;
-
-    private BigDecimal prAmount;
-
-    private BigDecimal ipcAmount;
-
-    private BigDecimal hpcAmount;
-
-    private BigDecimal prcAmount;
-
-    private BigDecimal lossAmount;
-
     private Timestamp createdAt;
 
     private Timestamp updatedAt;
+
+    private BigDecimal hpAmount;
+
+    private BigDecimal hpcAmount;
+
+    private List<AirlinesTransactionTripDtoForUser> trips;
+
 }

@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface AirlinesTransactionRepository extends JpaRepository<AirlinesTransaction, UUID> {
+public interface AirlinesTransactionRepository extends JpaRepository<AirlinesTransaction, Long> {
 }

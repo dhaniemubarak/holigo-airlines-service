@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.UUID;
 
 @Getter
@@ -34,6 +35,7 @@ public class Passenger {
     @Column(length = 20, columnDefinition = "varchar(20)")
     private String phoneNumber;
 
+    private Date birthDate;
 
     @OneToOne(cascade = CascadeType.ALL)
     private IdentityCard identityCard;

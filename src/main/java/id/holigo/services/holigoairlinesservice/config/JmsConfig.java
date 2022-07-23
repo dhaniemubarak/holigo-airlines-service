@@ -10,6 +10,7 @@ import org.springframework.jms.support.converter.MessageType;
 @Configuration
 public class JmsConfig {
 
+    public static final String CREATE_NEW_TRANSACTION = "create-new-transaction";
     public static final String GET_DETAIL_FARE_PRODUCT = "get-detail-fare-product";
 
     @Bean

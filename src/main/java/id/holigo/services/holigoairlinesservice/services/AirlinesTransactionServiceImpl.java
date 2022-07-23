@@ -1,9 +1,12 @@
 package id.holigo.services.holigoairlinesservice.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.common.model.OrderStatusEnum;
 import id.holigo.services.common.model.PaymentStatusEnum;
+import id.holigo.services.common.model.TransactionDto;
 import id.holigo.services.holigoairlinesservice.domain.*;
 import id.holigo.services.holigoairlinesservice.repositories.*;
+import id.holigo.services.holigoairlinesservice.services.transaction.TransactionService;
 import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
 import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
@@ -11,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jms.JMSException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -39,6 +43,20 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
     private PassengerRepository passengerRepository;
 
     private AirlinesTransactionTripPassengerRepository airlinesTransactionTripPassengerRepository;
+
+    private AirlinesTransactionMapper airlinesTransactionMapper;
+
+    private TransactionService transactionService;
+
+    @Autowired
+    public void setTransactionService(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+
+    @Autowired
+    public void setAirlinesTransactionMapper(AirlinesTransactionMapper airlinesTransactionMapper) {
+        this.airlinesTransactionMapper = airlinesTransactionMapper;
+    }
 
     @Autowired
     public void setAirlinesFinalFareRepository(AirlinesFinalFareRepository airlinesFinalFareRepository) {
@@ -97,8 +115,7 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
 
     @Transactional
     @Override
-    public AirlinesTransaction createTransaction(AirlinesBookDto airlinesBookDto, Long userId) {
-
+    public TransactionDto createTransaction(AirlinesBookDto airlinesBookDto, Long userId) {
         AirlinesFinalFare airlinesFinalFare;
         Optional<AirlinesFinalFare> fetchFinalFare = airlinesFinalFareRepository.findById(airlinesBookDto.getFareId());
         if (fetchFinalFare.isPresent()) {
@@ -149,6 +166,7 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
         List<AirlinesTransactionTripPassenger> airlinesTransactionTripPassengers = new ArrayList<>();
         // create passengers
         savedAirlinesTrips.forEach(airlinesTrip -> {
+            savedAirlinesTransaction.addTrip(airlinesTrip);
             savedPassengers.forEach(passenger -> {
                 AirlinesTransactionTripPassenger airlinesTransactionTripPassenger = new AirlinesTransactionTripPassenger();
                 airlinesTransactionTripPassenger.setTrip(airlinesTrip);
@@ -157,8 +175,14 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
             });
         });
         airlinesTransactionTripPassengerRepository.saveAll(airlinesTransactionTripPassengers);
-        // End of create trip passenger
 
-        return savedAirlinesTransaction;
+        TransactionDto transactionDto = airlinesTransactionMapper.airlinesTransactionToTransactionDto(savedAirlinesTransaction);
+
+        try {
+            transactionDto = transactionService.createNewTransaction(transactionDto);
+        } catch (JMSException | JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return transactionDto;
     }
 }
