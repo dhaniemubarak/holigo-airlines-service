@@ -39,8 +39,6 @@ public class AirlinesTransactionController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         AirlinesTransaction airlinesTransaction = fetchAirlinesTransaction.get();
-        log.info(airlinesTransaction.getId().toString());
-
         return new ResponseEntity<>(airlinesTransactionMapper.airlinesTransactionToAirlinesTransactionDtoForUser(airlinesTransaction), HttpStatus.OK);
     }
 }

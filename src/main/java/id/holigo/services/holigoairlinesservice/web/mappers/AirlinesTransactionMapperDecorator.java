@@ -8,11 +8,15 @@ import id.holigo.services.holigoairlinesservice.services.user.UserService;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionDto;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionDtoForUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
 
 public abstract class AirlinesTransactionMapperDecorator implements AirlinesTransactionMapper {
+    @Value("${airlines.iconUrl}")
+    private String iconUrl;
+
     private AirlinesTransactionMapper airlinesTransactionMapper;
 
     private AirlinesTransactionTripMapper airlinesTransactionTripMapper;
@@ -42,6 +46,7 @@ public abstract class AirlinesTransactionMapperDecorator implements AirlinesTran
     @Override
     public AirlinesTransactionDtoForUser airlinesTransactionToAirlinesTransactionDtoForUser(AirlinesTransaction airlinesTransaction) {
         AirlinesTransactionDtoForUser airlinesTransactionDtoForUser = this.airlinesTransactionMapper.airlinesTransactionToAirlinesTransactionDtoForUser(airlinesTransaction);
+        airlinesTransactionDtoForUser.setIconUrl(iconUrl);
         airlinesTransactionDtoForUser.setTrips(airlinesTransaction.getTrips().stream().map(airlinesTransactionTripMapper::airlinesTransactionTripToAirlinesTransactionTripDtoForUser).collect(Collectors.toList()));
         return airlinesTransactionDtoForUser;
     }

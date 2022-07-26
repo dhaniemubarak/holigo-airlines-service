@@ -18,8 +18,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AirlinesTransactionDtoForUser implements Serializable {
-
     private Long id;
+
+    private String iconUrl;
 
     private Long userId;
 

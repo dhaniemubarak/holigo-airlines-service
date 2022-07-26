@@ -13,6 +13,7 @@ import org.mapstruct.Mapping;
 public interface AirlinesTransactionMapper {
     AirlinesTransactionDto airlinesTransactionToAirlinesTransactionDto(AirlinesTransaction airlinesTransaction);
 
+    @Mapping(target = "iconUrl", ignore = true)
     AirlinesTransactionDtoForUser airlinesTransactionToAirlinesTransactionDtoForUser(AirlinesTransaction airlinesTransaction);
 
     @Mapping(target = "voucherCode", ignore = true)
