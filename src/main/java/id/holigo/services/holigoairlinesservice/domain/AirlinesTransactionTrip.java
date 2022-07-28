@@ -69,6 +69,10 @@ public class AirlinesTransactionTrip {
 
     private Integer transit;
 
+    private String supplierId;
+
+    private String supplierTransactionId;
+
     @Column(length = 4, columnDefinition = "tinyint(2) default 1", nullable = false)
     private Integer adultAmount;
 

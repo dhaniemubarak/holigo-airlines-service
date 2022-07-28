@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 @Mapper(uses = PassengerMapper.class)
 public interface AirlinesTransactionTripMapper {
 
+    @Mapping(target = "supplierTransactionId", ignore = true)
     @Mapping(target = "transaction", ignore = true)
     @Mapping(target = "paymentStatus", ignore = true)
     @Mapping(target = "passengers", ignore = true)

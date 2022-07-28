@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -131,7 +130,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                     .hpcAmount(BigDecimal.valueOf(0.00))
                     .prcAmount(BigDecimal.valueOf(0.00))
                     .lossAmount(BigDecimal.valueOf(0.00)).build();
-            ResponseFareDto responseFareDto;
+            ResponseFareDto responseFareDto = null;
             TripDto tripDto = requestFinalFareDto.getTrips().get(i);
             tripType = tripDto.getInquiry().getTripType();
             if ((tripType != TripType.R && i != 1)
@@ -167,7 +166,6 @@ public class AirlinesServiceImpl implements AirlinesService {
 
             }
             try {
-                log.info("Loop getFareDetail -> {}", i);
                 fareDto = fareService.getFareDetail(FareDetailDto.builder()
                         .ntaAmount(retrossFinalFares.get(i).get(0).getFares().get(0).getNta())
                         .nraAmount(retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare()
@@ -202,6 +200,13 @@ public class AirlinesServiceImpl implements AirlinesService {
 //                }
 //            }
 
+            // TODO: check price from schedule and final fare is there change?
+
+            assert responseFareDto != null;
+            responseFareDto.getSchedule().getDepartures().forEach(departureDto -> {
+                RetrossFareDto retrossFareDto = departureDto.getFares().get(0);
+                airlinesFinalFareTrip.setSupplierId(retrossFareDto.getSelectedIdDep() != null ? retrossFareDto.getSelectedIdDep() : retrossFareDto.getSelectedIdRet());
+            });
             airlinesFinalFareTrip.setAdultAmount(tripDto.getInquiry().getAdultAmount());
             airlinesFinalFareTrip.setChildAmount(tripDto.getInquiry().getChildAmount());
             airlinesFinalFareTrip.setInfantAmount(tripDto.getInquiry().getInfantAmount());

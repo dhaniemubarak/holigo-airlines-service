@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.sql.Date;
 import java.util.UUID;
 
 @Getter
@@ -30,4 +31,6 @@ public class PassengerDto implements Serializable {
     private String baggageCode;
 
     private String seatCode;
+
+    private Date birthDate;
 }
