@@ -1,5 +1,6 @@
 package id.holigo.services.holigoairlinesservice.domain;
 
+import id.holigo.services.common.model.TripType;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -35,6 +36,8 @@ public class AirlinesFinalFare {
     private String valueNote;
 
     private Boolean isBookable;
+
+    private TripType tripType;
 
     private Boolean isIdentityNumberRequired;
 

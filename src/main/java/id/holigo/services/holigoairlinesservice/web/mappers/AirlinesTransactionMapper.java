@@ -3,7 +3,7 @@ package id.holigo.services.holigoairlinesservice.web.mappers;
 import id.holigo.services.common.model.TransactionDto;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionDto;
-import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionDtoForUser;
+import id.holigo.services.common.model.AirlinesTransactionDtoForUser;
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

@@ -1,6 +1,7 @@
 package id.holigo.services.holigoairlinesservice.domain;
 
 
+import id.holigo.services.common.model.OrderStatusEnum;
 import id.holigo.services.common.model.PaymentStatusEnum;
 import id.holigo.services.common.model.TripType;
 import lombok.Getter;
@@ -47,6 +48,9 @@ public class AirlinesTransaction {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatusEnum paymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatusEnum orderStatus;
 
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal fareAmount;

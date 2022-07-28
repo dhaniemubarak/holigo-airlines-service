@@ -35,16 +35,15 @@ public abstract class AirlinesTransactionTripItineraryMapperDecorator implements
     }
 
     public AirlinesTransactionTripItineraryDto airlinesTransactionTripItineraryToAirlinesTransactionTripItineraryDto(AirlinesTransactionTripItinerary airlinesTransactionTripItinerary) {
-        AirlinesTransactionTripItineraryDto airlinesTransactionTripItineraryDto = this.airlinesTransactionTripItineraryMapper
+        //        if (airlinesTransactionTripItinerary.getOriginAirport() != null) {
+//            airlinesTransactionTripItineraryDto.setOriginAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesTransactionTripItinerary.getOriginAirportId())));
+//        }
+
+//        if (airlinesTransactionTripItinerary.getDestinationAirport() != null) {
+//            airlinesTransactionTripItineraryDto.setDestinationAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesTransactionTripItinerary.getDestinationAirportId())));
+//        }
+
+        return this.airlinesTransactionTripItineraryMapper
                 .airlinesTransactionTripItineraryToAirlinesTransactionTripItineraryDto(airlinesTransactionTripItinerary);
-        if (airlinesTransactionTripItinerary.getOriginAirportId() != null) {
-            airlinesTransactionTripItineraryDto.setOriginAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesTransactionTripItinerary.getOriginAirportId())));
-        }
-
-        if (airlinesTransactionTripItinerary.getDestinationAirportId() != null) {
-            airlinesTransactionTripItineraryDto.setDestinationAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesTransactionTripItinerary.getDestinationAirportId())));
-        }
-
-        return airlinesTransactionTripItineraryDto;
     }
 }

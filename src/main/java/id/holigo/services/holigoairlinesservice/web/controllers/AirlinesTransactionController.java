@@ -3,8 +3,7 @@ package id.holigo.services.holigoairlinesservice.web.controllers;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
 import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesTransactionMapper;
-import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionDtoForUser;
-import lombok.extern.slf4j.Slf4j;
+import id.holigo.services.common.model.AirlinesTransactionDtoForUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
-@Slf4j
 @RestController
 public class AirlinesTransactionController {
 

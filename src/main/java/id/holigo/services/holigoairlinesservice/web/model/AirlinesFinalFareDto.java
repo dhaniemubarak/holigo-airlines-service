@@ -1,6 +1,7 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import id.holigo.services.common.model.TripType;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTrip;
 import lombok.*;
 
@@ -31,6 +32,8 @@ public class AirlinesFinalFareDto {
     private Boolean isIdentityNumberRequired;
 
     private Boolean isPhoneNumberRequired;
+
+    private TripType tripType;
 
     private List<AirlinesFinalFareTripDto> trips = new ArrayList<>();
 }

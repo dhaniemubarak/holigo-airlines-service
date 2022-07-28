@@ -10,6 +10,7 @@ import id.holigo.services.holigoairlinesservice.services.transaction.Transaction
 import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
 import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
+@RequiredArgsConstructor
 @Service
 public class AirlinesTransactionServiceImpl implements AirlinesTransactionService {
 
@@ -137,6 +139,7 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
         airlinesTransaction.setExpiredAt(Timestamp.valueOf(LocalDateTime.now().plusMinutes(30L)));
         airlinesTransaction.setDiscountAmount(BigDecimal.valueOf(0.00));
         airlinesTransaction.setPaymentStatus(PaymentStatusEnum.SELECTING_PAYMENT);
+        airlinesTransaction.setOrderStatus(OrderStatusEnum.PROCESS_BOOK);
         AirlinesTransaction savedAirlinesTransaction = airlinesTransactionRepository.save(airlinesTransaction);
 
         // create passenger
@@ -180,9 +183,13 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
 
         try {
             transactionDto = transactionService.createNewTransaction(transactionDto);
+            savedAirlinesTransaction.setTransactionId(transactionDto.getId());
+            airlinesTransactionRepository.save(savedAirlinesTransaction);
         } catch (JMSException | JsonProcessingException e) {
             throw new RuntimeException(e);
         }
         return transactionDto;
     }
+
+
 }

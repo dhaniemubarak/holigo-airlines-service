@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -15,15 +16,26 @@ import java.util.Map;
 @Service
 public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
 
-    private static final String RETROSS_ID = "holigo";
 
-    private static final String RETROSS_PASSKEY = "H0LJSHRG3754875Y4698NKJWEF8UHIGO";
+    @Value("${retross.credential.mmid}")
+    private String RETROSS_ID;
 
-    @Autowired
+    @Value("${retross.credential.rqid}")
+    private String RETROSS_PASSKEY;
+
     private RetrossAirlinesServiceFeignClient retrossAirlinesServiceFeignClient;
 
     @Autowired
+    public void setRetrossAirlinesServiceFeignClient(RetrossAirlinesServiceFeignClient retrossAirlinesServiceFeignClient) {
+        this.retrossAirlinesServiceFeignClient = retrossAirlinesServiceFeignClient;
+    }
+
     private ObjectMapper objectMapper;
+
+    @Autowired
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public ResponseScheduleDto getSchedule(RequestScheduleDto requestScheduleDto) throws JsonProcessingException {

@@ -40,19 +40,11 @@ public class AirlinesTransactionTripItinerary {
     @Column(columnDefinition = "varchar(20)")
     private String flightNumber;
 
-    @Column(columnDefinition = "varchar(4)")
-    private String originAirportId;
-
-    @Transient
-    @OneToOne
+    @ManyToOne
     private Airport originAirport;
 
-    @Transient
-    @OneToOne
+    @ManyToOne
     private Airport destinationAirport;
-
-    @Column(columnDefinition = "varchar(4)")
-    private String destinationAirportId;
 
     private Date departureDate;
 

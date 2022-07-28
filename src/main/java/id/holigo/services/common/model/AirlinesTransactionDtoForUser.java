@@ -1,7 +1,9 @@
-package id.holigo.services.holigoairlinesservice.web.model;
+package id.holigo.services.common.model;
 
 import id.holigo.services.common.model.PaymentStatusEnum;
 import id.holigo.services.common.model.TripType;
+import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionTripDtoForUser;
+import id.holigo.services.holigoairlinesservice.web.model.ContactPersonDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,8 +25,6 @@ public class AirlinesTransactionDtoForUser implements Serializable {
     private String iconUrl;
 
     private Long userId;
-
-    private UUID transactionId;
 
     private ContactPersonDto contactPerson;
 

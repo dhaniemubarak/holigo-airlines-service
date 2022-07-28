@@ -12,6 +12,7 @@ import org.mapstruct.Mapping;
 @DecoratedWith(AirlinesFinalFareMapperDecorator.class)
 @Mapper
 public interface AirlinesFinalFareMapper {
+    @Mapping(target = "tripType", ignore = true)
     @Mapping(target = "isPhoneNumberRequired", ignore = true)
     @Mapping(target = "trips", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
@@ -41,6 +42,7 @@ public interface AirlinesFinalFareMapper {
     AirlinesFinalFareDto airlinesFinalFareToAirlinesFinalFareDto(AirlinesFinalFare airlinesFinalFare);
 
 
+    @Mapping(target = "orderStatus", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "trips", ignore = true)
     @Mapping(target = "transactionId", ignore = true)
@@ -48,6 +50,5 @@ public interface AirlinesFinalFareMapper {
     @Mapping(target = "expiredAt", ignore = true)
     @Mapping(target = "discountAmount", ignore = true)
     @Mapping(target = "contactPerson", ignore = true)
-    @Mapping(target = "tripType", ignore = true)
     AirlinesTransaction airlinesFinalFareToAirlinesTransaction(AirlinesFinalFare airlinesFinalFare);
 }

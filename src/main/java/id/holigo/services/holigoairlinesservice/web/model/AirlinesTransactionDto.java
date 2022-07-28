@@ -18,8 +18,6 @@ public class AirlinesTransactionDto implements Serializable {
 
     private Long userId;
 
-    private UUID transactionId;
-
     private ContactPersonDto contactPerson;
 
     private TripType tripType;

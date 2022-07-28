@@ -6,7 +6,7 @@ import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransactionTrip;
 import id.holigo.services.holigoairlinesservice.services.user.UserService;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionDto;
-import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionDtoForUser;
+import id.holigo.services.common.model.AirlinesTransactionDtoForUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 

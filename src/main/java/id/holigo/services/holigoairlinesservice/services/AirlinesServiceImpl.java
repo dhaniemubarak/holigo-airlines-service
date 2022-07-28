@@ -112,6 +112,8 @@ public class AirlinesServiceImpl implements AirlinesService {
         Set<AirlinesFinalFareTrip> airlinesFinalFareTrips = new HashSet<>();
         List<List<RetrossFinalFareDepartureDto>> retrossFinalFares = new ArrayList<>();
 
+        TripType tripType = TripType.O;
+
 
         for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
             String fares;
@@ -131,10 +133,11 @@ public class AirlinesServiceImpl implements AirlinesService {
                     .lossAmount(BigDecimal.valueOf(0.00)).build();
             ResponseFareDto responseFareDto;
             TripDto tripDto = requestFinalFareDto.getTrips().get(i);
-            if ((tripDto.getInquiry().getTripType() != TripType.R && i != 1)
-                    || (tripDto.getInquiry().getTripType().equals(TripType.R) && i == 0)) {
+            tripType = tripDto.getInquiry().getTripType();
+            if ((tripType != TripType.R && i != 1)
+                    || (tripType.equals(TripType.R) && i == 0)) {
                 Map<String, String> roundTrip = new HashMap<>();
-                if (tripDto.getInquiry().getTripType().equals(TripType.R)) {
+                if (tripType.equals(TripType.R)) {
                     TripDto roundTripDto = requestFinalFareDto.getTrips().get(1);
                     roundTrip.put("airlinesCode", roundTripDto.getTrip().getAirlinesCode());
                     roundTrip.put("selectedId", roundTripDto.getTrip().getFare().getSelectedId());
@@ -145,7 +148,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                         throw new Exception("Failed get final fare from airlines");
                     }
                     retrossFinalFares.add(responseFareDto.getSchedule().getDepartures());
-                    if (tripDto.getInquiry().getTripType().equals(TripType.R)) {
+                    if (tripType.equals(TripType.R)) {
                         retrossFinalFares.add(responseFareDto.getSchedule().getReturns());
                     }
                 } catch (Exception e) {
@@ -153,7 +156,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                             tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getOriginAirport().getId(), tripDto.getInquiry().getDestinationAirport().getId(),
                             tripDto.getInquiry().getDepartureDate().toString()
                     );
-                    if (tripDto.getInquiry().getTripType().equals(TripType.R)) {
+                    if (tripType.equals(TripType.R)) {
                         airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                                 tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getDestinationAirport().getId(), tripDto.getInquiry().getOriginAirport().getId(),
                                 tripDto.getInquiry().getReturnDate().toString()
@@ -240,9 +243,10 @@ public class AirlinesServiceImpl implements AirlinesService {
                 .build();
         airlinesFinalFare.setUserId(userId);
         airlinesFinalFare.setIsBookable(true);
+        airlinesFinalFare.setTripType(tripType);
         // Check airlines code for identity number and phone number
         airlinesFinalFare.setIsIdentityNumberRequired(true);
-        airlinesFinalFare.setIsPhoneNumberRequired(false);
+        airlinesFinalFare.setIsPhoneNumberRequired(true);
         airlinesFinalFareTrips.forEach(airlinesFinalFareTrip -> {
             airlinesFinalFare.setFareAmount(airlinesFinalFare.getFareAmount().add(airlinesFinalFareTrip.getFareAmount()));
             airlinesFinalFare.setAdminAmount(airlinesFinalFare.getAdminAmount().add(airlinesFinalFareTrip.getAdminAmount()));
