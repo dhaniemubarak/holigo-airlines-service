@@ -1,19 +1,15 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
+import id.holigo.services.holigoairlinesservice.domain.Passenger;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 
 @Getter
 @Setter
-public class RetrossRequestBookDto implements Serializable {
+public class RequestBookDto implements Serializable {
     private String rqid;
     private String mmid;
     private String app;
@@ -31,7 +27,7 @@ public class RetrossRequestBookDto implements Serializable {
     private String selectedIdDep;
     private String tgl_ret;
     private String selectedIdRet;
-    private List<PassengerDto> passengers;
+    private List<PassengerDto> passengers = new ArrayList<>();
 
     HashMap<String, Object> map = new HashMap<>();
 
@@ -85,7 +81,7 @@ public class RetrossRequestBookDto implements Serializable {
             }
             assert lastName != null;
             if (lastName.toString().length() == 1) {
-                lastName = new StringBuilder(firstName + " " + lastName.toString());
+                lastName = new StringBuilder(firstName + " " + lastName);
             }
 
             switch (passengerDto.getType()) {
@@ -94,7 +90,7 @@ public class RetrossRequestBookDto implements Serializable {
                     map.put("fnadt_" + (i + 1), firstName);
                     map.put("lnadt_" + (i + 1), lastName.toString());
                     map.put("hpadt_" + (i + 1), passengerDto.getPhoneNumber());
-                    map.put("birthadt_" + (i + 1), passengerDto.getBirthDate().toString());
+                    map.put("birthadt_" + (i + 1), (passengerDto.getBirthDate() != null) ? passengerDto.getBirthDate().toString() : null);
 
                     if (passengerDto.getIdentityCard() != null) {
                         map.put("nikadt_" + (i + 1), passengerDto.getIdentityCard().getIdCardNumber());

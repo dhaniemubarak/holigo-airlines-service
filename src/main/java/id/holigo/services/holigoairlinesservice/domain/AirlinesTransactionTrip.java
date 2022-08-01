@@ -44,7 +44,7 @@ public class AirlinesTransactionTrip {
     private Integer segment;
 
     @OneToMany(mappedBy = "trip")
-    private List<AirlinesTransactionTripPassenger> passengers;
+    private List<AirlinesTransactionTripPassenger> passengers = new ArrayList<>();
 
     @Column(columnDefinition = "varchar(4)", length = 4, nullable = false)
     private String airlinesCode;
@@ -144,6 +144,10 @@ public class AirlinesTransactionTrip {
 
     public void setItineraries(List<AirlinesTransactionTripItinerary> itineraries) {
         this.itineraries = itineraries;
+    }
+
+    public void setPassengers(List<AirlinesTransactionTripPassenger> passengers) {
+        this.passengers = passengers;
     }
 
     public void addToItineraries(AirlinesTransactionTripItinerary airlinesTransactionTripItinerary) {

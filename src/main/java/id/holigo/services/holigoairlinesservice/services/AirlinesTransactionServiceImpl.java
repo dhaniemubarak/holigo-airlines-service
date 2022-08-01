@@ -10,10 +10,8 @@ import id.holigo.services.holigoairlinesservice.services.transaction.Transaction
 import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
 import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.jms.JMSException;
 import java.math.BigDecimal;
@@ -21,7 +19,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@RequiredArgsConstructor
 @Service
 public class AirlinesTransactionServiceImpl implements AirlinesTransactionService {
 
@@ -49,6 +46,27 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
     private AirlinesTransactionMapper airlinesTransactionMapper;
 
     private TransactionService transactionService;
+
+
+    @Autowired
+    public void setAirlinesTransactionTripPassengerRepository(AirlinesTransactionTripPassengerRepository airlinesTransactionTripPassengerRepository) {
+        this.airlinesTransactionTripPassengerRepository = airlinesTransactionTripPassengerRepository;
+    }
+
+    @Autowired
+    public void setAirlinesTransactionTripMapper(AirlinesTransactionTripMapper airlinesTransactionTripMapper) {
+        this.airlinesTransactionTripMapper = airlinesTransactionTripMapper;
+    }
+
+    @Autowired
+    public void setAirlinesTransactionTripItineraryMapper(AirlinesTransactionTripItineraryMapper airlinesTransactionTripItineraryMapper) {
+        this.airlinesTransactionTripItineraryMapper = airlinesTransactionTripItineraryMapper;
+    }
+
+    @Autowired
+    public void setAirlinesTransactionTripRepository(AirlinesTransactionTripRepository airlinesTransactionTripRepository) {
+        this.airlinesTransactionTripRepository = airlinesTransactionTripRepository;
+    }
 
     @Autowired
     public void setTransactionService(TransactionService transactionService) {
@@ -115,7 +133,7 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
         this.airlinesTransactionTripPassengerRepository = airlinesTransactionTripPassengerRepository;
     }
 
-    @Transactional
+    //    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public TransactionDto createTransaction(AirlinesBookDto airlinesBookDto, Long userId) {
         AirlinesFinalFare airlinesFinalFare;
@@ -155,10 +173,8 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
             airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.SELECTING_PAYMENT);
             airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.PROCESS_BOOK);
             airlinesTransactionTrip.setIsInternational(false);
-            airlinesFinalFareTrip.getItineraries().forEach(airlinesFinalFareTripItinerary -> {
-                airlinesTransactionTrip.addToItineraries(airlinesTransactionTripItineraryMapper
-                        .airlinesFinalFareItineraryToAirlinesTripItinerary(airlinesFinalFareTripItinerary));
-            });
+            airlinesFinalFareTrip.getItineraries().forEach(airlinesFinalFareTripItinerary -> airlinesTransactionTrip.addToItineraries(airlinesTransactionTripItineraryMapper
+                    .airlinesFinalFareItineraryToAirlinesTripItinerary(airlinesFinalFareTripItinerary)));
             airlinesTransactionTrip.setTransaction(savedAirlinesTransaction);
             airlinesTransactionTrips.add(airlinesTransactionTrip);
         });

@@ -52,6 +52,8 @@ public class AirlinesTransaction {
     @Enumerated(EnumType.STRING)
     private OrderStatusEnum orderStatus;
 
+    private String supplierMessage;
+
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal fareAmount;
 

@@ -1,7 +1,9 @@
 package id.holigo.services.holigoairlinesservice.web.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.common.model.TransactionDto;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
+import id.holigo.services.holigoairlinesservice.services.AirlinesService;
 import id.holigo.services.holigoairlinesservice.services.AirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,13 @@ public class AirlinesBookController {
 
     private AirlinesTransactionService airlinesTransactionService;
 
+    private AirlinesService airlinesService;
+
+    @Autowired
+    public void setAirlinesService(AirlinesService airlinesService) {
+        this.airlinesService = airlinesService;
+    }
+
     private final static String PATH = "/api/v1/airlines/book";
 
     private final static String TRANSACTION_PATH = "/api/v1/transactions/{id}";
@@ -32,6 +41,12 @@ public class AirlinesBookController {
     public ResponseEntity<HttpStatus> createBook(@RequestBody AirlinesBookDto airlinesBookDto,
                                                  @RequestHeader("user-id") Long userId) {
         TransactionDto transactionDto = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
+
+        try {
+            airlinesService.createBook(Long.valueOf(transactionDto.getTransactionId()));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setLocation(UriComponentsBuilder.fromPath(TRANSACTION_PATH)
                 .buildAndExpand(transactionDto.getId().toString()).toUri());

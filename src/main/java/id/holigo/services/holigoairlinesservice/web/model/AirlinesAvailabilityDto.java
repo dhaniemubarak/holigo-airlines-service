@@ -31,10 +31,6 @@ public class AirlinesAvailabilityDto {
 
     private AirportDto destinationAirport;
 
-    private String originAirportId;
-
-    private String destinationAirportId;
-
     private Date departureDate;
 
     private Time departureTime;

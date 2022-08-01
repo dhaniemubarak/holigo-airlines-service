@@ -1,9 +1,15 @@
 package id.holigo.services.holigoairlinesservice.config;
 
 import id.holigo.services.common.model.OrderStatusEnum;
+import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.events.OrderStatusEvent;
+import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
+import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionTripRepository;
+import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
+import org.springframework.statemachine.action.Action;
 import org.springframework.statemachine.config.EnableStateMachineFactory;
 import org.springframework.statemachine.config.StateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
@@ -18,6 +24,10 @@ import java.util.EnumSet;
 @RequiredArgsConstructor
 @EnableStateMachineFactory(name = "orderAirlinesTransactionSMF")
 public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdapter<OrderStatusEnum, OrderStatusEvent> {
+
+    private final AirlinesTransactionRepository airlinesTransactionRepository;
+
+    private final AirlinesTransactionTripRepository airlinesTransactionTripRepository;
 
 
     @Override
@@ -35,10 +45,10 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
     public void configure(StateMachineTransitionConfigurer<OrderStatusEnum, OrderStatusEvent> transitions)
             throws Exception {
         transitions.withExternal().source(OrderStatusEnum.PROCESS_BOOK).target(OrderStatusEnum.BOOKED)
-                .event(OrderStatusEvent.BOOK_SUCCESS)
+                .event(OrderStatusEvent.BOOK_SUCCESS).action(bookSuccess())
                 .and()
                 .withExternal().source(OrderStatusEnum.PROCESS_BOOK).target(OrderStatusEnum.BOOK_FAILED)
-                .event(OrderStatusEvent.BOOK_FAIL)
+                .event(OrderStatusEvent.BOOK_FAIL).action(bookFailed())
                 .and()
                 .withExternal().source(OrderStatusEnum.BOOKED).target(OrderStatusEnum.PROCESS_ISSUED)
                 .event(OrderStatusEvent.PROCESS_ISSUED)
@@ -73,5 +83,31 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
             }
         };
         config.withConfiguration().listener(adapter);
+    }
+
+    @Bean
+    public Action<OrderStatusEnum, OrderStatusEvent> bookSuccess() {
+        return stateContext -> {
+            AirlinesTransaction airlinesTransaction = airlinesTransactionRepository
+                    .getById(Long.parseLong(stateContext
+                            .getMessageHeader(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.BOOKED);
+                airlinesTransactionTripRepository.save(airlinesTransactionTrip);
+            });
+        };
+    }
+
+    @Bean
+    public Action<OrderStatusEnum, OrderStatusEvent> bookFailed() {
+        return stateContext -> {
+            AirlinesTransaction airlinesTransaction = airlinesTransactionRepository
+                    .getById(Long.parseLong(stateContext
+                            .getMessageHeader(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.BOOK_FAILED);
+                airlinesTransactionTripRepository.save(airlinesTransactionTrip);
+            });
+        };
     }
 }

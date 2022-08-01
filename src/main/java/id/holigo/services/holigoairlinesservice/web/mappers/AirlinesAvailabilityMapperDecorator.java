@@ -86,8 +86,6 @@ public abstract class AirlinesAvailabilityMapperDecorator
         airlinesAvailabilityDto.setAirlinesCode(airlinesMap.get("code"));
         airlinesAvailabilityDto.setAirlinesName(airlinesMap.get("name"));
         airlinesAvailabilityDto.setImageUrl(airlinesMap.get("imageUrl"));
-        airlinesAvailabilityDto.setOriginAirportId(retrossDepartureDto.getFlights().get(0).getStd());
-        airlinesAvailabilityDto.setDestinationAirportId(retrossDepartureDto.getFlights().get(flightCounter - 1).getSta());
         airlinesAvailabilityDto.setFlightNumber(retrossDepartureDto.getFlights().get(0).getFlightNumber());
         airlinesAvailabilityDto.setDepartureDate(
                 Date.valueOf(LocalDate.parse(retrossDepartureDto.getFlights().get(0).getEtd().substring(0, 10))));
@@ -99,7 +97,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
                 Time.valueOf(LocalTime.parse(retrossDepartureDto.getFlights().get(flightCounter - 1).getEta().substring(11, 16))));
         airlinesAvailabilityDto.setDuration(duration);
         airlinesAvailabilityDto.setTransit(transit);
-        if (Objects.equals(airlinesAvailabilityDto.getOriginAirportId(), inquiryDto.getOriginAirport().getId())) {
+        if (Objects.equals(retrossDepartureDto.getFlights().get(0).getStd(), inquiryDto.getOriginAirport().getId())) {
             airlinesAvailabilityDto.setOriginAirport(inquiryDto.getOriginAirport());
             airlinesAvailabilityDto.setDestinationAirport(inquiryDto.getDestinationAirport());
         } else {

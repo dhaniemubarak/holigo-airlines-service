@@ -9,6 +9,7 @@ import id.holigo.services.holigoairlinesservice.domain.*;
 import id.holigo.services.holigoairlinesservice.repositories.*;
 import id.holigo.services.holigoairlinesservice.services.fare.FareService;
 import id.holigo.services.holigoairlinesservice.services.retross.RetrossAirlinesService;
+import id.holigo.services.holigoairlinesservice.web.exceptions.BookException;
 import id.holigo.services.holigoairlinesservice.web.exceptions.ConflictException;
 import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.*;
@@ -37,6 +38,27 @@ public class AirlinesServiceImpl implements AirlinesService {
     private AirlinesFinalFareTripMapper airlinesFinalFareTripMapper;
 
     private AirlinesFinalFareTripRepository airlinesFinalFareTripRepository;
+
+    private AirlinesTransactionTripItineraryRepository airlinesTransactionTripItineraryRepository;
+
+    private OrderAirlinesTransactionService orderAirlinesTransactionService;
+
+    private AirlinesTransactionRepository airlinesTransactionRepository;
+
+    @Autowired
+    public void setAirlinesTransactionRepository(AirlinesTransactionRepository airlinesTransactionRepository) {
+        this.airlinesTransactionRepository = airlinesTransactionRepository;
+    }
+
+    @Autowired
+    public void setOrderAirlinesTransactionService(OrderAirlinesTransactionService orderAirlinesTransactionService) {
+        this.orderAirlinesTransactionService = orderAirlinesTransactionService;
+    }
+
+    @Autowired
+    public void setAirlinesTransactionTripItineraryRepository(AirlinesTransactionTripItineraryRepository airlinesTransactionTripItineraryRepository) {
+        this.airlinesTransactionTripItineraryRepository = airlinesTransactionTripItineraryRepository;
+    }
 
     private ObjectMapper objectMapper;
 
@@ -112,8 +134,6 @@ public class AirlinesServiceImpl implements AirlinesService {
         List<List<RetrossFinalFareDepartureDto>> retrossFinalFares = new ArrayList<>();
 
         TripType tripType = TripType.O;
-
-
         for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
             String fares;
             FareDto fareDto = FareDto.builder()
@@ -163,7 +183,6 @@ public class AirlinesServiceImpl implements AirlinesService {
                     }
                     throw new ConflictException(e.getMessage());
                 }
-
             }
             try {
                 fareDto = fareService.getFareDetail(FareDetailDto.builder()
@@ -172,36 +191,13 @@ public class AirlinesServiceImpl implements AirlinesService {
                                 .subtract(retrossFinalFares.get(i).get(0).getFares().get(0).getNta()))
                         .productId(1).userId(userId).build());
                 fares = objectMapper.writeValueAsString(retrossFinalFares.get(i).get(0).getFares());
-
-
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
-
             AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
                     .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
             AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
                     .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability, i + 1);
-//            if (responseFareDto.getSchedule() != null) {
-//                if (responseFareDto.getSchedule().getDepartures().get(i).getAddition() != null) {
-//                    if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getBaggage() != null) {
-//                        airlinesFinalFareTrip.setBaggage(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getBaggage().toString());
-//                    }
-//
-//                    if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMeal() != null) {
-//                        airlinesFinalFareTrip.setMeal(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMeal().toString());
-//                    }
-//                    if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMedical() != null) {
-//                        airlinesFinalFareTrip.setMedical(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getMedical().toString());
-//                    }
-//                    if (responseFareDto.getSchedule().getDepartures().get(i).getAddition().getSeat() != null) {
-//                        airlinesFinalFareTrip.setSeat(responseFareDto.getSchedule().getDepartures().get(i).getAddition().getSeat().toString());
-//                    }
-//                }
-//            }
-
-            // TODO: check price from schedule and final fare is there change?
-
             assert responseFareDto != null;
             responseFareDto.getSchedule().getDepartures().forEach(departureDto -> {
                 RetrossFareDto retrossFareDto = departureDto.getFares().get(0);
@@ -227,9 +223,7 @@ public class AirlinesServiceImpl implements AirlinesService {
             airlinesFinalFareTrip.setPrcAmount(fareDto.getPrcAmount());
             airlinesFinalFareTrip.setLossAmount(fareDto.getLossAmount());
             airlinesFinalFareTrips.add(airlinesFinalFareTrip);
-
         }
-
         AirlinesFinalFare airlinesFinalFare = AirlinesFinalFare.builder()
                 .fareAmount(BigDecimal.valueOf(0.00))
                 .adminAmount(BigDecimal.valueOf(0.00))
@@ -249,7 +243,6 @@ public class AirlinesServiceImpl implements AirlinesService {
         airlinesFinalFare.setUserId(userId);
         airlinesFinalFare.setIsBookable(true);
         airlinesFinalFare.setTripType(tripType);
-        // Check airlines code for identity number and phone number
         airlinesFinalFare.setIsIdentityNumberRequired(true);
         airlinesFinalFare.setIsPhoneNumberRequired(true);
         airlinesFinalFareTrips.forEach(airlinesFinalFareTrip -> {
@@ -270,9 +263,39 @@ public class AirlinesServiceImpl implements AirlinesService {
         });
         AirlinesFinalFare savedAirlinesFinalFare = airlinesFinalFareRepository.save(airlinesFinalFare);
         airlinesFinalFareTrips.forEach(airlinesFinalFareTrip -> airlinesFinalFareTrip.setFinalFare(savedAirlinesFinalFare));
-
         airlinesFinalFareTripRepository.saveAll(airlinesFinalFareTrips);
         return savedAirlinesFinalFare;
+    }
+
+    @Override
+    public AirlinesTransaction createBook(Long airlinesTransactionId) throws JsonProcessingException {
+        AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(airlinesTransactionId);
+        ResponseBookDto responseBookDto = retrossAirlinesService.createBook(airlinesTransaction);
+        if (responseBookDto.getError_code().equals("000")) {
+            var wrapper = new Object() {
+                int i = 0;
+            };
+            List<AirlinesTransactionTripItinerary> airlinesTransactionTripItineraries = new ArrayList<>();
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                for (AirlinesTransactionTripItinerary airlinesTransactionTripItinerary : airlinesTransactionTrip.getItineraries()) {
+                    if (wrapper.i == 0) {
+                        airlinesTransactionTripItinerary.setPnr(responseBookDto.getPnrDep());
+                    } else {
+                        airlinesTransactionTripItinerary.setPnr(responseBookDto.getPnrRet());
+                    }
+                    airlinesTransactionTripItineraries.add(airlinesTransactionTripItinerary);
+                }
+                wrapper.i++;
+            });
+            airlinesTransactionTripItineraryRepository.saveAll(airlinesTransactionTripItineraries);
+            orderAirlinesTransactionService.booked(airlinesTransaction.getId());
+        } else {
+            orderAirlinesTransactionService.bookFailed(airlinesTransaction.getId());
+            airlinesTransaction.setSupplierMessage(responseBookDto.getError_msg());
+            airlinesTransactionRepository.save(airlinesTransaction);
+            throw new BookException(responseBookDto.getError_msg(), null, false, false);
+        }
+        return airlinesTransaction;
     }
 
     @Transactional

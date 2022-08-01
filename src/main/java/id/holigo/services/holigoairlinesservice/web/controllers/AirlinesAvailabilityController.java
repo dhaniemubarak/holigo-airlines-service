@@ -10,7 +10,6 @@ import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
 import id.holigo.services.holigoairlinesservice.repositories.InquiryRepository;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
 import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
-import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
 import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesAvailabilityMapper;
 import id.holigo.services.holigoairlinesservice.web.mappers.InquiryMapper;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDto;

@@ -23,10 +23,10 @@ public class AirlinesTransactionTripPassenger {
     @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private AirlinesTransactionTrip trip;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Passenger passenger;
 
     private String ticketNumber;
