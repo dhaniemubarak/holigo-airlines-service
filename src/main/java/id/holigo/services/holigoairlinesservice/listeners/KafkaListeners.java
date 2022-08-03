@@ -3,11 +3,11 @@ package id.holigo.services.holigoairlinesservice.listeners;
 import id.holigo.services.holigoairlinesservice.config.KafkaTopicConfig;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
+import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.services.PaymentAirlinesTransactionService;
 import id.holigo.services.common.model.AirlinesTransactionDtoForUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -26,6 +26,8 @@ public class KafkaListeners {
 
     private final PaymentAirlinesTransactionService paymentAirlinesTransactionService;
 
+    private final OrderAirlinesTransactionService orderAirlinesTransactionService;
+
     private final TransactionTemplate transactionTemplate;
 
     @KafkaListener(topics = KafkaTopicConfig.UPDATE_AIRLINES_TRANSACTION, groupId = "airlines-transaction-expired", containerFactory = "airlinesTransactionListenerFactory")
@@ -38,9 +40,9 @@ public class KafkaListeners {
                 if (fetchAirlinesTransaction.isPresent()) {
                     AirlinesTransaction airlinesTransaction = fetchAirlinesTransaction.get();
                     paymentAirlinesTransactionService.paymentHasExpired(airlinesTransaction.getId());
+                    orderAirlinesTransactionService.orderHasExpired(airlinesTransaction.getId());
                 }
             }
         });
-
     }
 }

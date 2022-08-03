@@ -29,7 +29,6 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
 
     private final AirlinesTransactionTripRepository airlinesTransactionTripRepository;
 
-
     @Override
     public void configure(StateMachineStateConfigurer<OrderStatusEnum, OrderStatusEvent> states) throws Exception {
         states.withStates().initial(OrderStatusEnum.PROCESS_BOOK)
@@ -66,7 +65,7 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
                 .event(OrderStatusEvent.RETRYING_ISSUED)
                 .and()
                 .withExternal().source(OrderStatusEnum.BOOKED).target(OrderStatusEnum.ORDER_CANCELED)
-                .event(OrderStatusEvent.ORDER_CANCEL)
+                .event(OrderStatusEvent.ORDER_CANCEL).action(orderCanceled())
                 .and()
                 .withExternal().source(OrderStatusEnum.BOOKED).target(OrderStatusEnum.ORDER_EXPIRED)
                 .event(OrderStatusEvent.ORDER_EXPIRE);
@@ -106,6 +105,18 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
                             .getMessageHeader(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
                 airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.BOOK_FAILED);
+                airlinesTransactionTripRepository.save(airlinesTransactionTrip);
+            });
+        };
+    }
+
+    public Action<OrderStatusEnum, OrderStatusEvent> orderCanceled() {
+        return stateContext -> {
+            AirlinesTransaction airlinesTransaction = airlinesTransactionRepository
+                    .getById(Long.parseLong(stateContext
+                            .getMessageHeader(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.ORDER_CANCELED);
                 airlinesTransactionTripRepository.save(airlinesTransactionTrip);
             });
         };

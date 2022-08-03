@@ -24,7 +24,6 @@ public class PaymentAirlinesTransactionServiceImpl implements PaymentAirlinesTra
 
     private final PaymentAirlinesTransactionTransactionInterceptor paymentAirlinesTransactionTransactionInterceptor;
 
-
     public static final String AIRLINES_TRANSACTION_HEADER = "airlines-transaction-id";
 
     @Autowired
@@ -35,6 +34,14 @@ public class PaymentAirlinesTransactionServiceImpl implements PaymentAirlinesTra
     public StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasPaid(Long id) {
         StateMachine<PaymentStatusEnum, PaymentStatusEvent> sm = build(id);
         sendEvent(id, sm, PaymentStatusEvent.PAYMENT_PAID);
+        return sm;
+    }
+
+    @Override
+    public StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasCanceled(Long id) {
+        StateMachine<PaymentStatusEnum, PaymentStatusEvent> sm = build(id);
+        sendEvent(id, sm, PaymentStatusEvent.PAYMENT_CANCEL);
+
         return sm;
     }
 

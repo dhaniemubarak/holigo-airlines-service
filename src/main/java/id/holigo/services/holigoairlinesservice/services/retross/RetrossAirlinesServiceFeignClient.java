@@ -25,4 +25,6 @@ public interface RetrossAirlinesServiceFeignClient {
     @RequestMapping(method = RequestMethod.POST, value = GET_SCHEDULE)
     ResponseEntity<String> book(@RequestBody String request);
 
+    @RequestMapping(method = RequestMethod.POST, value = GET_SCHEDULE)
+    ResponseEntity<String> cancel(@RequestBody String request);
 }

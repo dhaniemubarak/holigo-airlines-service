@@ -18,19 +18,6 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @JsonIgnoreProperties
 public class ResponseBookDto implements Serializable {
-    /**
-     * {
-     * "error_code":"000",
-     * "error_msg":"",
-     * "notrx":"AIR220730233390",
-     * "mmid":"mastersip",
-     * "acDep":"IL",
-     * "Timelimit":"2022-07-30 08:39:00",
-     * "TotalAmount":"575000",
-     * "NTA":"565802.7",
-     * "PNRDep":"LXZGRU"
-     * }
-     */
 
     private String error_code;
     private String error_msg;

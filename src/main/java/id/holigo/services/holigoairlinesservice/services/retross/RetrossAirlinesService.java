@@ -14,4 +14,8 @@ public interface RetrossAirlinesService {
     ResponseFareDto getFare(TripDto tripDto, Map<String, String> roundTrip) throws JsonProcessingException;
 
     ResponseBookDto createBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;
+
+    ResponseCancelDto cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;
+
+
 }

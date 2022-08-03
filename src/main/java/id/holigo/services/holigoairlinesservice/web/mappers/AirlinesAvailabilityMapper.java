@@ -34,6 +34,8 @@ public interface AirlinesAvailabilityMapper {
     ListAvailabilityDto responseScheduleDtoToListAvailabilityDto(
             ResponseScheduleDto responseScheduleDto, InquiryDto inquiryDto);
 
+    @Mapping(target = "destinationAirportId", source = "destinationAirport.id")
+    @Mapping(target = "originAirportId", source = "originAirport.id")
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "itineraries", ignore = true)

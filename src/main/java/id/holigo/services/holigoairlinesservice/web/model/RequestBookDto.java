@@ -19,7 +19,7 @@ public class RequestBookDto implements Serializable {
     private String cptlp;
     private String org;
     private String des;
-    private String trip;
+    private String flight;
     private Integer adt;
     private Integer chd;
     private Integer inf;
@@ -27,12 +27,13 @@ public class RequestBookDto implements Serializable {
     private String selectedIdDep;
     private String tgl_ret;
     private String selectedIdRet;
+    private String acDep;
+    private String acRet;
     private List<PassengerDto> passengers = new ArrayList<>();
 
-    HashMap<String, Object> map = new HashMap<>();
 
     public Map<String, Object> build() {
-
+        HashMap<String, Object> map = new HashMap<>();
         map.put("rqid", getRqid());
         map.put("mmid", getMmid());
         map.put("app", getApp());
@@ -42,13 +43,15 @@ public class RequestBookDto implements Serializable {
         map.put("cptlp", getCptlp());
         map.put("org", getOrg());
         map.put("des", getDes());
-        map.put("trip", getTrip());
+        map.put("flight", getFlight());
         map.put("adt", getAdt());
         map.put("chd", getChd());
         map.put("inf", getInf());
         map.put("tgl_dep", getTgl_dep());
         map.put("selectedIDdep", getSelectedIdDep());
-        if (getTrip().equals("R")) {
+        map.put("acDep", getAcDep());
+        if (getFlight().equals("R")) {
+            map.put("acRet", getAcRet());
             map.put("tgl_ret", getTgl_ret());
             map.put("selectedIDret", getSelectedIdRet());
         }
@@ -89,7 +92,7 @@ public class RequestBookDto implements Serializable {
                     map.put("titadt_" + (i + 1), passengerDto.getTitle().toString());
                     map.put("fnadt_" + (i + 1), firstName);
                     map.put("lnadt_" + (i + 1), lastName.toString());
-                    map.put("hpadt_" + (i + 1), passengerDto.getPhoneNumber());
+                    map.put("hpadt_" + (i + 1), "085718187373");
                     map.put("birthadt_" + (i + 1), (passengerDto.getBirthDate() != null) ? passengerDto.getBirthDate().toString() : null);
 
                     if (passengerDto.getIdentityCard() != null) {

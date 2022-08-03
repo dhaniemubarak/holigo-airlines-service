@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.common.model.TripType;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
-import id.holigo.services.holigoairlinesservice.domain.AirlinesTransactionTripPassenger;
-import id.holigo.services.holigoairlinesservice.domain.Passenger;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionTripPassengerRepository;
 import id.holigo.services.holigoairlinesservice.web.mappers.PassengerMapper;
 import id.holigo.services.holigoairlinesservice.web.model.*;
@@ -14,11 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -121,9 +115,10 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         requestBookDto.setCpname(airlinesTransaction.getContactPerson().getName());
         requestBookDto.setCpmail(airlinesTransaction.getContactPerson().getEmail());
         requestBookDto.setCptlp(airlinesTransaction.getContactPerson().getPhoneNumber());
+        requestBookDto.setAcDep(airlinesTransaction.getTrips().get(0).getAirlinesCode());
         requestBookDto.setOrg(airlinesTransaction.getTrips().get(0).getOriginAirport().getId());
         requestBookDto.setDes(airlinesTransaction.getTrips().get(0).getDestinationAirport().getId());
-        requestBookDto.setTrip(airlinesTransaction.getTripType().toString());
+        requestBookDto.setFlight(airlinesTransaction.getTripType().toString());
         requestBookDto.setAdt(airlinesTransaction.getTrips().get(0).getAdultAmount());
         requestBookDto.setChd(airlinesTransaction.getTrips().get(0).getChildAmount());
         requestBookDto.setInf(airlinesTransaction.getTrips().get(0).getInfantAmount());
@@ -131,17 +126,29 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         requestBookDto.setSelectedIdDep(airlinesTransaction.getTrips().get(0).getSupplierId());
         requestBookDto.setPassengers(airlinesTransactionTripPassengerRepository.findAllByTripId(airlinesTransaction.getTrips().get(0).getId()).stream().map(passengerMapper::airlinesTransactionTripPassengerToPassengerDto).toList());
         if (airlinesTransaction.getTripType().equals(TripType.R)) {
+            requestBookDto.setAcRet(airlinesTransaction.getTrips().get(1).getAirlinesCode());
             requestBookDto.setSelectedIdRet(airlinesTransaction.getTrips().get(1).getSupplierId());
             requestBookDto.setTgl_ret(airlinesTransaction.getTrips().get(1).getDepartureDate().toString());
         }
-        log.info("Format request -> {}", requestBookDto.build().toString());
+        log.info("Format request -> {}", objectMapper.writeValueAsString(requestBookDto.build()));
+        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.book(objectMapper.writeValueAsString(requestBookDto.build()));
+        log.info("Format response -> {}", responseEntity.getBody());
+        return objectMapper.readValue(responseEntity.getBody(), ResponseBookDto.class);
+//        String dummy = "{\"error_code\":\"000\",\"error_msg\":\"\",\"notrx\":\"AIR220803247758\",\"mmid\":\"holigo\",\"acDep\":\"JT\",\"Timelimit\":\"2022-08-03 04:46:00\",\"TotalAmount\":\"4319480\",\"NTA\":\"4248780\",\"PNRDep\":\"EGREFV\"}";
+//        responseBookDto = objectMapper.readValue(dummy, ResponseBookDto.class);
+//        return responseBookDto;
+    }
 
-
-        ResponseBookDto responseBookDto;
-//        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.book(requestBookDto.build().toString());
-//        responseBookDto = objectMapper.readValue(responseEntity.getBody(), ResponseBookDto.class);
-        String dummy = "{\"error_code\":\"001\",\"error_msg\":\"Nama penumpang tidak boleh 1 huruf\",\"notrx\":\"AIR220730887158\",\"mmid\":\"mastersip\",\"acDep\":\"JT\",\"Timelimit\":\"2022-07-30 08:06:00\",\"TotalAmount\":\"1735720\",\"NTA\":\"1714020\",\"PNRDep\":\"CZUTAB\"}";
-        responseBookDto = objectMapper.readValue(dummy, ResponseBookDto.class);
-        return responseBookDto;
+    @Override
+    public ResponseCancelDto cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException {
+        RequestCancelDto requestCancelDto = RequestCancelDto.builder()
+                .action("cancel")
+                .app("transaction")
+                .rqid(RETROSS_PASSKEY)
+                .mmid(RETROSS_ID)
+                .notrx(airlinesTransaction.getTrips().get(0).getSupplierTransactionId()).build();
+        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestCancelDto));
+        log.info(responseEntity.getBody());
+        return objectMapper.readValue(responseEntity.getBody(), ResponseCancelDto.class);
     }
 }

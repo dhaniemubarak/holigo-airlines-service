@@ -7,7 +7,6 @@ import id.holigo.services.common.model.TripType;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -52,6 +51,7 @@ public class AirlinesTransaction {
     @Enumerated(EnumType.STRING)
     private OrderStatusEnum orderStatus;
 
+    @Lob
     private String supplierMessage;
 
     @Column(precision = 10, scale = 2, nullable = false)

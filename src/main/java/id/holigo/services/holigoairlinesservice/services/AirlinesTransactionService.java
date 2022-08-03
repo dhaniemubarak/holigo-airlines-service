@@ -6,4 +6,5 @@ import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
 public interface AirlinesTransactionService {
 
     TransactionDto createTransaction(AirlinesBookDto airlinesBookDto, Long userId);
+
 }

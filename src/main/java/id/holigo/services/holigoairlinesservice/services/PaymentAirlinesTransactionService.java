@@ -9,5 +9,7 @@ public interface PaymentAirlinesTransactionService {
 
     StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasPaid(Long id);
 
+    StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasCanceled(Long id);
+
     StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasExpired(Long id);
 }

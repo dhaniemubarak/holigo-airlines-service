@@ -43,7 +43,21 @@ public class AirlinesServiceImpl implements AirlinesService {
 
     private OrderAirlinesTransactionService orderAirlinesTransactionService;
 
+    private PaymentAirlinesTransactionService paymentAirlinesTransactionService;
+
     private AirlinesTransactionRepository airlinesTransactionRepository;
+
+    private AirlinesTransactionTripRepository airlinesTransactionTripRepository;
+
+    @Autowired
+    public void setAirlinesTransactionTripRepository(AirlinesTransactionTripRepository airlinesTransactionTripRepository) {
+        this.airlinesTransactionTripRepository = airlinesTransactionTripRepository;
+    }
+
+    @Autowired
+    public void setPaymentAirlinesTransactionService(PaymentAirlinesTransactionService paymentAirlinesTransactionService) {
+        this.paymentAirlinesTransactionService = paymentAirlinesTransactionService;
+    }
 
     @Autowired
     public void setAirlinesTransactionRepository(AirlinesTransactionRepository airlinesTransactionRepository) {
@@ -268,7 +282,7 @@ public class AirlinesServiceImpl implements AirlinesService {
     }
 
     @Override
-    public AirlinesTransaction createBook(Long airlinesTransactionId) throws JsonProcessingException {
+    public void createBook(Long airlinesTransactionId) throws JsonProcessingException {
         AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(airlinesTransactionId);
         ResponseBookDto responseBookDto = retrossAirlinesService.createBook(airlinesTransaction);
         if (responseBookDto.getError_code().equals("000")) {
@@ -276,7 +290,10 @@ public class AirlinesServiceImpl implements AirlinesService {
                 int i = 0;
             };
             List<AirlinesTransactionTripItinerary> airlinesTransactionTripItineraries = new ArrayList<>();
+            List<AirlinesTransactionTrip> airlinesTransactionTrips = new ArrayList<>();
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setSupplierTransactionId(responseBookDto.getNotrx());
+                airlinesTransactionTrips.add(airlinesTransactionTrip);
                 for (AirlinesTransactionTripItinerary airlinesTransactionTripItinerary : airlinesTransactionTrip.getItineraries()) {
                     if (wrapper.i == 0) {
                         airlinesTransactionTripItinerary.setPnr(responseBookDto.getPnrDep());
@@ -287,6 +304,9 @@ public class AirlinesServiceImpl implements AirlinesService {
                 }
                 wrapper.i++;
             });
+            airlinesTransaction.setExpiredAt(responseBookDto.getTimelimit());
+            airlinesTransactionRepository.save(airlinesTransaction);
+            airlinesTransactionTripRepository.saveAll(airlinesTransactionTrips);
             airlinesTransactionTripItineraryRepository.saveAll(airlinesTransactionTripItineraries);
             orderAirlinesTransactionService.booked(airlinesTransaction.getId());
         } else {
@@ -295,7 +315,13 @@ public class AirlinesServiceImpl implements AirlinesService {
             airlinesTransactionRepository.save(airlinesTransaction);
             throw new BookException(responseBookDto.getError_msg(), null, false, false);
         }
-        return airlinesTransaction;
+    }
+
+    @Override
+    public void cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException {
+        retrossAirlinesService.cancelBook(airlinesTransaction);
+        orderAirlinesTransactionService.orderHasCanceled(airlinesTransaction.getId());
+        paymentAirlinesTransactionService.paymentHasCanceled(airlinesTransaction.getId());
     }
 
     @Transactional

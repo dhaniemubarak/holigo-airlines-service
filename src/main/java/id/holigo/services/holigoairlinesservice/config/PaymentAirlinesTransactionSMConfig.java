@@ -1,7 +1,10 @@
 package id.holigo.services.holigoairlinesservice.config;
 
 import id.holigo.services.common.model.PaymentStatusEnum;
+import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.events.PaymentStatusEvent;
+import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
+import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionTripRepository;
 import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +28,9 @@ import java.util.EnumSet;
 @Configuration
 public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAdapter<PaymentStatusEnum, PaymentStatusEvent> {
 
-    private final OrderAirlinesTransactionService orderAirlinesTransactionService;
+    private final AirlinesTransactionRepository airlinesTransactionRepository;
+
+    private final AirlinesTransactionTripRepository airlinesTransactionTripRepository;
 
 
     @Override
@@ -46,7 +51,11 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
                 .and().withExternal().source(PaymentStatusEnum.SELECTING_PAYMENT).target(PaymentStatusEnum.PAYMENT_EXPIRED)
                 .event(PaymentStatusEvent.PAYMENT_EXPIRED).action(paymentHasExpired())
                 .and().withExternal().source(PaymentStatusEnum.WAITING_PAYMENT).target(PaymentStatusEnum.PAYMENT_EXPIRED)
-                .event(PaymentStatusEvent.PAYMENT_EXPIRED).action(paymentHasExpired());
+                .event(PaymentStatusEvent.PAYMENT_EXPIRED).action(paymentHasExpired())
+                .and().withExternal().source(PaymentStatusEnum.SELECTING_PAYMENT).target(PaymentStatusEnum.PAYMENT_CANCELED)
+                .event(PaymentStatusEvent.PAYMENT_CANCEL).action(paymentHasCanceled())
+                .and().withExternal().source(PaymentStatusEnum.WAITING_PAYMENT).target(PaymentStatusEnum.PAYMENT_CANCELED)
+                .event(PaymentStatusEvent.PAYMENT_CANCEL).action(paymentHasCanceled());
     }
 
     @Override
@@ -64,6 +73,27 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
 
     @Bean
     public Action<PaymentStatusEnum, PaymentStatusEvent> paymentHasExpired() {
-        return stateContext -> orderAirlinesTransactionService.orderHasExpired(Long.parseLong(stateContext.getMessageHeader(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+        return stateContext -> {
+            AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(
+                    Long.parseLong(stateContext.getMessageHeader(
+                            OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.PAYMENT_EXPIRED);
+                airlinesTransactionTripRepository.save(airlinesTransactionTrip);
+            });
+        };
+    }
+
+    @Bean
+    public Action<PaymentStatusEnum, PaymentStatusEvent> paymentHasCanceled() {
+        return stateContext -> {
+            AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(
+                    Long.parseLong(stateContext.getMessageHeader(
+                            OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.PAYMENT_CANCELED);
+                airlinesTransactionTripRepository.save(airlinesTransactionTrip);
+            });
+        };
     }
 }

@@ -1,10 +1,8 @@
 package id.holigo.services.holigoairlinesservice.services;
 
 import id.holigo.services.common.model.OrderStatusEnum;
-import id.holigo.services.common.model.PaymentStatusEnum;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.events.OrderStatusEvent;
-import id.holigo.services.holigoairlinesservice.events.PaymentStatusEvent;
 import id.holigo.services.holigoairlinesservice.interceptors.OrderAirlinesTransactionTransactionInterceptor;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +23,6 @@ public class OrderAirlinesTransactionServiceImpl implements OrderAirlinesTransac
     private final StateMachineFactory<OrderStatusEnum, OrderStatusEvent> stateMachineFactory;
 
     private final OrderAirlinesTransactionTransactionInterceptor orderAirlinesTransactionTransactionInterceptor;
-
     public static final String AIRLINES_TRANSACTION_HEADER = "airlines-transaction-id";
 
     @Autowired
