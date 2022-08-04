@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ public class RetrossFareDto {
     private Integer seatAvb;
 
     @JsonProperty("NTA")
-    private BigDecimal nta;
+    private BigDecimal nta = BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP);
 
     @JsonProperty("TotalFare")
     private BigDecimal totalFare;

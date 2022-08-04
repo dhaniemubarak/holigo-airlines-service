@@ -31,11 +31,6 @@ public abstract class AirlinesFinalFareMapperDecorator implements AirlinesFinalF
     }
 
     @Override
-    public AirlinesFinalFare responseFareDtoToAirlinesFinalFare(ResponseFareDto responseFareDto, TripDto tripDto, Long userId) {
-        return null;
-    }
-
-    @Override
     public AirlinesFinalFareDto airlinesFinalFareToAirlinesFinalFareDto(AirlinesFinalFare airlinesFinalFare) {
         AirlinesFinalFareDto airlinesFinalFareDto = this.airlinesFinalFareMapper.airlinesFinalFareToAirlinesFinalFareDto(airlinesFinalFare);
 

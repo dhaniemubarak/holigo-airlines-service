@@ -25,6 +25,9 @@ public abstract class AirlinesAvailabilityFareMapperDecorator implements Airline
         AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = this.airlinesAvailabilityFareMapper.retrossFareToAirlinesAvailabilityFareDto(fare);
         airlinesAvailabilityFareDto.setFareAmount(airlinesAvailabilityFareDto.getFareAmount().setScale(2, RoundingMode.UP));
         airlinesAvailabilityFareDto.setNtaAmount(airlinesAvailabilityFareDto.getNtaAmount().setScale(2, RoundingMode.UP));
+        if (airlinesAvailabilityFareDto.getNtaAmount().setScale(2, RoundingMode.UP).equals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP))) {
+            airlinesAvailabilityFareDto.setNtaAmount(airlinesAvailabilityFareDto.getFareAmount().setScale(2, RoundingMode.UP));
+        }
         airlinesAvailabilityFareDto.setNraAmount(airlinesAvailabilityFareDto.getFareAmount().subtract(airlinesAvailabilityFareDto.getNtaAmount()).setScale(2, RoundingMode.UP));
         if (fare.getSelectedIdDep() != null) {
             airlinesAvailabilityFareDto.setSelectedId(fare.getSelectedIdDep());

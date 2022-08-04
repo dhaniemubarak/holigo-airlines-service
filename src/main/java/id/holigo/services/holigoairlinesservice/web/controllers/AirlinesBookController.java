@@ -1,11 +1,13 @@
 package id.holigo.services.holigoairlinesservice.web.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.common.model.TransactionDto;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
 import id.holigo.services.holigoairlinesservice.services.AirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@Slf4j
 @RestController
 public class AirlinesBookController {
 
@@ -40,8 +43,12 @@ public class AirlinesBookController {
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createBook(@RequestBody AirlinesBookDto airlinesBookDto,
                                                  @RequestHeader("user-id") Long userId) {
+        try {
+            log.info(new ObjectMapper().writeValueAsString(airlinesBookDto));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         TransactionDto transactionDto = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
-
         try {
             airlinesService.createBook(Long.valueOf(transactionDto.getTransactionId()));
         } catch (JsonProcessingException e) {

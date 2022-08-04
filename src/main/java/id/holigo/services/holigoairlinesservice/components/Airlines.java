@@ -82,7 +82,7 @@ public class Airlines {
             }
             case "IU", "IW" -> {
                 airlines.put("code", "JT");
-                airlines.put("name", "Whings Air");
+                airlines.put("name", "Wings Air");
                 airlines.put("imageUrl", "https://www.gstatic.com/flights/airline_logos/70px/IU.png");
             }
             case "JL" -> {

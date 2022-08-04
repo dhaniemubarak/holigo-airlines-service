@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Slf4j
@@ -199,10 +200,14 @@ public class AirlinesServiceImpl implements AirlinesService {
                 }
             }
             try {
+                BigDecimal ntaAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getNta();
+                if (ntaAmount.equals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP))) {
+                    ntaAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare();
+                }
+                BigDecimal nraAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare().subtract(ntaAmount);
                 fareDto = fareService.getFareDetail(FareDetailDto.builder()
-                        .ntaAmount(retrossFinalFares.get(i).get(0).getFares().get(0).getNta())
-                        .nraAmount(retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare()
-                                .subtract(retrossFinalFares.get(i).get(0).getFares().get(0).getNta()))
+                        .ntaAmount(ntaAmount)
+                        .nraAmount(nraAmount)
                         .productId(1).userId(userId).build());
                 fares = objectMapper.writeValueAsString(retrossFinalFares.get(i).get(0).getFares());
             } catch (JsonProcessingException e) {
