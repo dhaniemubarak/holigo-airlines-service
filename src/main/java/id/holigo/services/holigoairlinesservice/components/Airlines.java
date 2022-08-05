@@ -83,7 +83,7 @@ public class Airlines {
             case "IU", "IW" -> {
                 airlines.put("code", "JT");
                 airlines.put("name", "Wings Air");
-                airlines.put("imageUrl", "https://www.gstatic.com/flights/airline_logos/70px/IU.png");
+                airlines.put("imageUrl", "https://ik.imagekit.io/holigo/transportasi/Wings_uQBTPZwhDH.webp?ik-sdk-version=javascript-1.4.3&updatedAt=1659660283858");
             }
             case "JL" -> {
                 airlines.put("name", "Japan Airlines");
