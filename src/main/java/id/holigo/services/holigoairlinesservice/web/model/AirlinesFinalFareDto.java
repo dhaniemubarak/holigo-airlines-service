@@ -25,6 +25,8 @@ public class AirlinesFinalFareDto {
 
     private BigDecimal hpAmount;
 
+    private BigDecimal hpcAmount;
+
     private String note;
 
     private Boolean isBookable;

@@ -36,6 +36,8 @@ public class AirlinesTransactionDtoForUser implements Serializable {
 
     private PaymentStatusEnum paymentStatus;
 
+    private OrderStatusEnum orderStatus;
+
     private BigDecimal fareAmount;
 
     private BigDecimal adminAmount;

@@ -4,15 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
+import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionService;
+import id.holigo.services.holigoairlinesservice.services.PaymentAirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesTransactionMapper;
 import id.holigo.services.common.model.AirlinesTransactionDtoForUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -24,6 +23,20 @@ public class AirlinesTransactionController {
     private AirlinesService airlinesService;
 
     private AirlinesTransactionMapper airlinesTransactionMapper;
+
+    private PaymentAirlinesTransactionService paymentAirlinesTransactionService;
+
+    private OrderAirlinesTransactionService orderAirlinesTransactionService;
+
+    @Autowired
+    public void setPaymentAirlinesTransactionService(PaymentAirlinesTransactionService paymentAirlinesTransactionService) {
+        this.paymentAirlinesTransactionService = paymentAirlinesTransactionService;
+    }
+
+    @Autowired
+    public void setOrderAirlinesTransactionService(OrderAirlinesTransactionService orderAirlinesTransactionService) {
+        this.orderAirlinesTransactionService = orderAirlinesTransactionService;
+    }
 
     @Autowired
     public void setAirlinesService(AirlinesService airlinesService) {
@@ -47,7 +60,8 @@ public class AirlinesTransactionController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         AirlinesTransaction airlinesTransaction = fetchAirlinesTransaction.get();
-        airlinesService.cancelBook(airlinesTransaction);
+        orderAirlinesTransactionService.orderHasCanceled(airlinesTransaction.getId());
+        paymentAirlinesTransactionService.paymentHasCanceled(airlinesTransaction.getId());
         return new ResponseEntity<>(airlinesTransactionMapper.airlinesTransactionToAirlinesTransactionDtoForUser(fetchAirlinesTransaction.get()), HttpStatus.OK);
     }
 

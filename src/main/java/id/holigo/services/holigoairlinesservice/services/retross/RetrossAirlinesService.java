@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public interface RetrossAirlinesService {
@@ -15,7 +14,9 @@ public interface RetrossAirlinesService {
 
     ResponseBookDto createBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;
 
-    ResponseCancelDto cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;
+    void cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;
 
+
+    void issued(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;
 
 }

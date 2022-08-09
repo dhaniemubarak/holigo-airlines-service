@@ -1,12 +1,15 @@
 package id.holigo.services.holigoairlinesservice.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.common.model.PaymentStatusEnum;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
+import id.holigo.services.holigoairlinesservice.domain.IssuedError;
 import id.holigo.services.holigoairlinesservice.events.PaymentStatusEvent;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionTripRepository;
-import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionService;
+import id.holigo.services.holigoairlinesservice.services.AirlinesService;
 import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionServiceImpl;
+import id.holigo.services.holigoairlinesservice.services.PaymentAirlinesTransactionServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +35,8 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
 
     private final AirlinesTransactionTripRepository airlinesTransactionTripRepository;
 
+    private final AirlinesService airlinesService;
+
 
     @Override
     public void configure(StateMachineStateConfigurer<PaymentStatusEnum, PaymentStatusEvent> states) throws Exception {
@@ -47,7 +52,7 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
     public void configure(StateMachineTransitionConfigurer<PaymentStatusEnum, PaymentStatusEvent> transitions)
             throws Exception {
         transitions.withExternal().source(PaymentStatusEnum.WAITING_PAYMENT).target(PaymentStatusEnum.PAID)
-                .event(PaymentStatusEvent.PAYMENT_PAID)
+                .event(PaymentStatusEvent.PAYMENT_PAID).action(paymentHasPaid())
                 .and().withExternal().source(PaymentStatusEnum.SELECTING_PAYMENT).target(PaymentStatusEnum.PAYMENT_EXPIRED)
                 .event(PaymentStatusEvent.PAYMENT_EXPIRED).action(paymentHasExpired())
                 .and().withExternal().source(PaymentStatusEnum.WAITING_PAYMENT).target(PaymentStatusEnum.PAYMENT_EXPIRED)
@@ -69,6 +74,29 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
             }
         };
         config.withConfiguration().listener(adapter);
+    }
+
+    @Bean
+    public Action<PaymentStatusEnum, PaymentStatusEvent> paymentHasPaid() {
+        return stateContext -> {
+            AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(Long.parseLong(stateContext
+                    .getMessageHeader(PaymentAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.PAID);
+                airlinesTransactionTripRepository.save(airlinesTransactionTrip);
+            });
+            try {
+                airlinesService.issued(airlinesTransaction);
+            } catch (JsonProcessingException e) {
+                IssuedError issuedError = IssuedError.builder()
+                        .transactionId(airlinesTransaction.getTransactionId())
+                        .userId(airlinesTransaction.getUserId())
+                        .airlinesTransactionId(airlinesTransaction.getId())
+                        .message(e.getMessage())
+                        .build();
+                throw new RuntimeException(e);
+            }
+        };
     }
 
     @Bean

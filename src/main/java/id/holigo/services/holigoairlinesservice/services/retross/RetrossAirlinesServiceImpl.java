@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import java.util.Map;
 
 
@@ -140,7 +141,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
     }
 
     @Override
-    public ResponseCancelDto cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException {
+    public void cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException {
         RequestCancelDto requestCancelDto = RequestCancelDto.builder()
                 .action("cancel")
                 .app("transaction")
@@ -149,6 +150,19 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .notrx(airlinesTransaction.getTrips().get(0).getSupplierTransactionId()).build();
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestCancelDto));
         log.info(responseEntity.getBody());
-        return objectMapper.readValue(responseEntity.getBody(), ResponseCancelDto.class);
+        objectMapper.readValue(responseEntity.getBody(), ResponseCancelDto.class);
+    }
+
+    @Override
+    public void issued(AirlinesTransaction airlinesTransaction) throws JsonProcessingException {
+        RequestIssuedDto requestCancelDto = RequestIssuedDto.builder()
+                .action("issued")
+                .app("transaction")
+                .rqid(RETROSS_PASSKEY)
+                .mmid(RETROSS_ID)
+                .notrx(airlinesTransaction.getTrips().get(0).getSupplierTransactionId()).build();
+        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestCancelDto));
+        log.info(responseEntity.getBody());
+        objectMapper.readValue(responseEntity.getBody(), ResponseCancelDto.class);
     }
 }

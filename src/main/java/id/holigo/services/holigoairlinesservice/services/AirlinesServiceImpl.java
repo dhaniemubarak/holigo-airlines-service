@@ -42,10 +42,6 @@ public class AirlinesServiceImpl implements AirlinesService {
 
     private AirlinesTransactionTripItineraryRepository airlinesTransactionTripItineraryRepository;
 
-    private OrderAirlinesTransactionService orderAirlinesTransactionService;
-
-    private PaymentAirlinesTransactionService paymentAirlinesTransactionService;
-
     private AirlinesTransactionRepository airlinesTransactionRepository;
 
     private AirlinesTransactionTripRepository airlinesTransactionTripRepository;
@@ -56,18 +52,8 @@ public class AirlinesServiceImpl implements AirlinesService {
     }
 
     @Autowired
-    public void setPaymentAirlinesTransactionService(PaymentAirlinesTransactionService paymentAirlinesTransactionService) {
-        this.paymentAirlinesTransactionService = paymentAirlinesTransactionService;
-    }
-
-    @Autowired
     public void setAirlinesTransactionRepository(AirlinesTransactionRepository airlinesTransactionRepository) {
         this.airlinesTransactionRepository = airlinesTransactionRepository;
-    }
-
-    @Autowired
-    public void setOrderAirlinesTransactionService(OrderAirlinesTransactionService orderAirlinesTransactionService) {
-        this.orderAirlinesTransactionService = orderAirlinesTransactionService;
     }
 
     @Autowired
@@ -151,20 +137,7 @@ public class AirlinesServiceImpl implements AirlinesService {
         TripType tripType = TripType.O;
         for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
             String fares;
-            FareDto fareDto = FareDto.builder()
-                    .ntaAmount(BigDecimal.valueOf(0.00))
-                    .nraAmount(BigDecimal.valueOf(0.00))
-                    .fareAmount(BigDecimal.valueOf(0.00))
-                    .cpAmount(BigDecimal.valueOf(0.00))
-                    .mpAmount(BigDecimal.valueOf(0.00))
-                    .ipAmount(BigDecimal.valueOf(0.00))
-                    .hpAmount(BigDecimal.valueOf(0.00))
-                    .hvAmount(BigDecimal.valueOf(0.00))
-                    .prAmount(BigDecimal.valueOf(0.00))
-                    .ipcAmount(BigDecimal.valueOf(0.00))
-                    .hpcAmount(BigDecimal.valueOf(0.00))
-                    .prcAmount(BigDecimal.valueOf(0.00))
-                    .lossAmount(BigDecimal.valueOf(0.00)).build();
+            FareDto fareDto;
             ResponseFareDto responseFareDto = null;
             TripDto tripDto = requestFinalFareDto.getTrips().get(i);
             tripType = tripDto.getInquiry().getTripType();
@@ -313,9 +286,7 @@ public class AirlinesServiceImpl implements AirlinesService {
             airlinesTransactionRepository.save(airlinesTransaction);
             airlinesTransactionTripRepository.saveAll(airlinesTransactionTrips);
             airlinesTransactionTripItineraryRepository.saveAll(airlinesTransactionTripItineraries);
-            orderAirlinesTransactionService.booked(airlinesTransaction.getId());
         } else {
-            orderAirlinesTransactionService.bookFailed(airlinesTransaction.getId());
             airlinesTransaction.setSupplierMessage(responseBookDto.getError_msg());
             airlinesTransactionRepository.save(airlinesTransaction);
             throw new BookException(responseBookDto.getError_msg(), null, false, false);
@@ -325,8 +296,11 @@ public class AirlinesServiceImpl implements AirlinesService {
     @Override
     public void cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException {
         retrossAirlinesService.cancelBook(airlinesTransaction);
-        orderAirlinesTransactionService.orderHasCanceled(airlinesTransaction.getId());
-        paymentAirlinesTransactionService.paymentHasCanceled(airlinesTransaction.getId());
+    }
+
+    @Override
+    public void issued(AirlinesTransaction airlinesTransaction) throws JsonProcessingException {
+        retrossAirlinesService.issued(airlinesTransaction);
     }
 
     @Transactional

@@ -15,5 +15,7 @@ public interface AirlinesService {
 
     void cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;
 
+    void issued(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;
+
     void saveAvailabilities(ListAvailabilityDto listAvailabilityDto);
 }

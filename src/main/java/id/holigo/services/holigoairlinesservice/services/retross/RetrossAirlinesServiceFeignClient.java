@@ -10,21 +10,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.core.Response;
 
 @FeignClient(name = "retross-airlines", url = "http://ws.retross.com")
 public interface RetrossAirlinesServiceFeignClient {
 
-    public static final String GET_SCHEDULE = "/airline/domestik/";
+    public static final String DOMESTIC_URI = "/airline/domestik/";
 
-    @RequestMapping(method = RequestMethod.POST, value = GET_SCHEDULE)
+    @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> getSchedule(@RequestBody RequestScheduleDto requestScheduleDto);
 
-    @RequestMapping(method = RequestMethod.POST, value = GET_SCHEDULE)
+    @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> getFare(@RequestBody RequestFareDto requestFareDto);
 
-    @RequestMapping(method = RequestMethod.POST, value = GET_SCHEDULE)
+    @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> book(@RequestBody String request);
 
-    @RequestMapping(method = RequestMethod.POST, value = GET_SCHEDULE)
+    @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> cancel(@RequestBody String request);
+
+    @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
+    ResponseEntity<String> issued(@RequestBody String request);
 }

@@ -1,5 +1,6 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
+import id.holigo.services.common.model.OrderStatusEnum;
 import id.holigo.services.common.model.PaymentStatusEnum;
 import id.holigo.services.common.model.TripType;
 import lombok.Getter;
@@ -27,6 +28,8 @@ public class AirlinesTransactionDto implements Serializable {
     private Timestamp expiredAt;
 
     private PaymentStatusEnum paymentStatus;
+
+    private OrderStatusEnum orderStatus;
 
     private BigDecimal fareAmount;
 
