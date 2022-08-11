@@ -17,6 +17,7 @@ public interface AirlinesAvailabilityMapper {
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "imageUrl", ignore = true)
     @Mapping(target = "flightNumber", ignore = true)
+    @Mapping(target = "fares", ignore = true)
     @Mapping(target = "fare", ignore = true)
     @Mapping(target = "duration", ignore = true)
     @Mapping(target = "departureTime", ignore = true)

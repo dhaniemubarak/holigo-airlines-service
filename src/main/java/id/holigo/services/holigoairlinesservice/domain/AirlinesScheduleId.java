@@ -28,4 +28,6 @@ public class AirlinesScheduleId implements Serializable {
     private Date arrivalDate;
 
     private Time arrivalTime;
+
+    private String seatClass;
 }

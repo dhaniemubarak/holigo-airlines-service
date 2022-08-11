@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.jms.Message;
 import java.util.Map;
 
 
@@ -64,8 +65,18 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         log.info("Calling get schedule with request -> {}", objectMapper.writeValueAsString(requestScheduleDto));
 //
         ResponseScheduleDto responseScheduleDto;
-        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.getSchedule(requestScheduleDto);
-//
+        ResponseEntity<String> responseEntity;
+        if (requestScheduleDto.getAc().equals("IA")) {
+            if (requestScheduleDto.getCabin().equals("E")) {
+                requestScheduleDto.setCabin("economy");
+            } else {
+                requestScheduleDto.setCabin("business");
+            }
+            responseEntity = retrossAirlinesServiceFeignClient.getInternationalSchedule(requestScheduleDto);
+            log.info("International schedule -> {}", responseEntity.getBody());
+        } else {
+            responseEntity = retrossAirlinesServiceFeignClient.getSchedule(requestScheduleDto);
+        }
         responseScheduleDto = objectMapper.readValue(responseEntity.getBody(), ResponseScheduleDto.class);
 
         log.info("ResponseEntity body -> {}", responseEntity.getBody());

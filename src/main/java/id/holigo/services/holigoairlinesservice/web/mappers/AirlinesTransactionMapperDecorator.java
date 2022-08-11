@@ -61,8 +61,8 @@ public abstract class AirlinesTransactionMapperDecorator implements AirlinesTran
         transactionDto.setProductId(1);
         transactionDto.setPointAmount(BigDecimal.valueOf(0.0));
         transactionDto.setTransactionId(airlinesTransaction.getId().toString());
-        transactionDto.setIndexProduct(airlinesTransactionTrip.getFlightNumber() + "|"
-                + airlinesTransactionTrip.getOriginAirport().getId() + " - " + airlinesTransactionTrip.getDestinationAirport().getId() + "|"
+        transactionDto.setIndexProduct(airlinesTransaction.getTripType().toString() + "|"
+                + airlinesTransactionTrip.getOriginAirport().getCity() + " - " + airlinesTransactionTrip.getDestinationAirport().getCity() + "|"
                 + airlinesTransactionTrip.getDepartureDate().toString() + " " + airlinesTransactionTrip.getDepartureTime().toString() + "|");
         transactionDto.setIndexUser(userDtoForUser.getName() + "|" + userDtoForUser.getPhoneNumber() + "|" + userDtoForUser.getEmail());
         return transactionDto;

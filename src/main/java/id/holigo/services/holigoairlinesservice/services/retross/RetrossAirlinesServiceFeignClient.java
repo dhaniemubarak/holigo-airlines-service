@@ -17,8 +17,13 @@ public interface RetrossAirlinesServiceFeignClient {
 
     public static final String DOMESTIC_URI = "/airline/domestik/";
 
+    public static final String INTERNATIONAL_URI = "/airline/international/";
+
     @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> getSchedule(@RequestBody RequestScheduleDto requestScheduleDto);
+
+    @RequestMapping(method = RequestMethod.POST, value = INTERNATIONAL_URI)
+    ResponseEntity<String> getInternationalSchedule(@RequestBody RequestScheduleDto requestScheduleDto);
 
     @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> getFare(@RequestBody RequestFareDto requestFareDto);

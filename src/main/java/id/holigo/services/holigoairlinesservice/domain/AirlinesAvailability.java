@@ -66,6 +66,10 @@ public class AirlinesAvailability {
     @Id
     private Time arrivalTime;
 
+    @Id
+    @Column(length = 1)
+    private String seatClass;
+
     private Integer duration;
 
     private String imageUrl;

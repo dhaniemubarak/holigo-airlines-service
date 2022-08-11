@@ -9,8 +9,10 @@ import id.holigo.services.holigoairlinesservice.domain.*;
 import id.holigo.services.holigoairlinesservice.repositories.*;
 import id.holigo.services.holigoairlinesservice.services.fare.FareService;
 import id.holigo.services.holigoairlinesservice.services.retross.RetrossAirlinesService;
+import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
 import id.holigo.services.holigoairlinesservice.web.exceptions.BookException;
 import id.holigo.services.holigoairlinesservice.web.exceptions.ConflictException;
+import id.holigo.services.holigoairlinesservice.web.exceptions.FareBadException;
 import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -119,6 +121,9 @@ public class AirlinesServiceImpl implements AirlinesService {
                 .inf(inquiryDto.getInfantAmount())
                 .cabin(inquiryDto.getSeatClass()).build();
         ResponseScheduleDto responseScheduleDto = retrossAirlinesService.getSchedule(requestScheduleDto);
+        if (responseScheduleDto.getError_code().equals("001")) {
+            throw new AvailabilitiesException(responseScheduleDto.getError_msg());
+        }
         if (responseScheduleDto.getSchedule() == null) {
             return null;
         }
@@ -133,14 +138,12 @@ public class AirlinesServiceImpl implements AirlinesService {
 
         Set<AirlinesFinalFareTrip> airlinesFinalFareTrips = new HashSet<>();
         List<List<RetrossFinalFareDepartureDto>> retrossFinalFares = new ArrayList<>();
-
+        ResponseFareDto responseFareDto = null;
         TripType tripType = TripType.O;
         for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
-            String fares;
-            FareDto fareDto;
-            ResponseFareDto responseFareDto = null;
             TripDto tripDto = requestFinalFareDto.getTrips().get(i);
             tripType = tripDto.getInquiry().getTripType();
+
             if ((tripType != TripType.R && i != 1)
                     || (tripType.equals(TripType.R) && i == 0)) {
                 Map<String, String> roundTrip = new HashMap<>();
@@ -152,10 +155,11 @@ public class AirlinesServiceImpl implements AirlinesService {
                 try {
                     responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip);
                     if (!responseFareDto.getError_code().equals("000")) {
-                        throw new Exception("Failed get final fare from airlines");
+                        throw new FareBadException("Sesi telah habis, silahkan cari pencarian yang lain", null, false, false);
                     }
                     retrossFinalFares.add(responseFareDto.getSchedule().getDepartures());
                     if (tripType.equals(TripType.R)) {
+                        log.info("Response getFareDto return");
                         retrossFinalFares.add(responseFareDto.getSchedule().getReturns());
                     }
                 } catch (Exception e) {
@@ -172,8 +176,14 @@ public class AirlinesServiceImpl implements AirlinesService {
                     throw new ConflictException(e.getMessage());
                 }
             }
+        }
+        for (int i = 0; i < retrossFinalFares.size(); i++) {
+            String fares;
+            FareDto fareDto;
+            TripDto tripDto = requestFinalFareDto.getTrips().get(i);
             try {
-                BigDecimal ntaAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getNta();
+                log.info("Loop ke -> {}", i);
+                BigDecimal ntaAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare();
                 if (ntaAmount.equals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP))) {
                     ntaAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare();
                 }
@@ -190,7 +200,6 @@ public class AirlinesServiceImpl implements AirlinesService {
                     .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
             AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
                     .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability, i + 1);
-            assert responseFareDto != null;
             responseFareDto.getSchedule().getDepartures().forEach(departureDto -> {
                 RetrossFareDto retrossFareDto = departureDto.getFares().get(0);
                 airlinesFinalFareTrip.setSupplierId(retrossFareDto.getSelectedIdDep() != null ? retrossFareDto.getSelectedIdDep() : retrossFareDto.getSelectedIdRet());

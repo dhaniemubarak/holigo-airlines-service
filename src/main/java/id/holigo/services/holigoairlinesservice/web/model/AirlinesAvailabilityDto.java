@@ -45,6 +45,8 @@ public class AirlinesAvailabilityDto {
 
     private String imageUrl;
 
+    private String seatClass;
+
     private AirlinesAvailabilityPriceDto fare;
 
     private List<AirlinesAvailabilityTagsDto> tags = new ArrayList<>();

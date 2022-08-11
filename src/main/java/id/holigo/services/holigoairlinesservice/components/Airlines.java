@@ -11,6 +11,11 @@ public class Airlines {
         Map<String, String> airlines = new HashMap<>();
         airlines.put("code", airlinesCode);
         switch (airlinesCode) {
+            case "IP" -> {
+                airlines.put("code", "IP");
+                airlines.put("name", "Pelita Air");
+                airlines.put("imageUrl", "https://ik.imagekit.io/holigo/transportasi/pelita_eqnbSkua4.png?ik-sdk-version=javascript-1.4.3&updatedAt=1660178242638");
+            }
             case "JT" -> {
                 airlines.put("code", "JT");
                 airlines.put("name", "Lion Air");
@@ -83,7 +88,7 @@ public class Airlines {
             case "IU", "IW" -> {
                 airlines.put("code", "JT");
                 airlines.put("name", "Wings Air");
-                airlines.put("imageUrl", "https://ik.imagekit.io/holigo/transportasi/Wings_uQBTPZwhDH.webp?ik-sdk-version=javascript-1.4.3&updatedAt=1659660283858");
+                airlines.put("imageUrl", "https://ik.imagekit.io/holigo/transportasi/wings_ZFKnGYa3N.png?ik-sdk-version=javascript-1.4.3&updatedAt=1660178242989");
             }
             case "JL" -> {
                 airlines.put("name", "Japan Airlines");

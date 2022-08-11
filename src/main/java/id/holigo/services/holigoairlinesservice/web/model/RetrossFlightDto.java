@@ -1,5 +1,6 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import java.io.Serializable;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties
 public class RetrossFlightDto {
 
     @JsonProperty(value = "FlightNo")

@@ -55,13 +55,14 @@ public abstract class AirlinesAvailabilityItineraryMapperDecorator implements Ai
         airports.add(inquiryDto.getOriginAirport());
         airports.add(inquiryDto.getDestinationAirport());
 
-        AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto = airlinesAvailabilityItineraryMapper.retrossFlightDtoToAirlinesAvailabilityItineraryDto(retrossFlightDto, inquiryDto);
+        AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto = new AirlinesAvailabilityItineraryDto();
         AirportDto originAirport = airports.stream()
-                .filter(airport -> airlinesAvailabilityItineraryDto.getOriginAirportId().equals(airport.getId()))
-                .findFirst().orElse(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailabilityItineraryDto.getOriginAirportId())));
+                .filter(airport -> retrossFlightDto.getStd().equals(airport.getId()))
+                .findFirst().orElse(airportMapper.airportToAirportDto(airportRepository.getById(retrossFlightDto.getStd())));
         AirportDto destinationAirport = airports.stream()
-                .filter(airport -> airlinesAvailabilityItineraryDto.getDestinationAirportId().equals(airport.getId()))
-                .findFirst().orElse(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailabilityItineraryDto.getDestinationAirportId())));
+                .filter(airport -> retrossFlightDto.getSta().equals(airport.getId()))
+                .findFirst().orElse(airportMapper.airportToAirportDto(airportRepository.getById(retrossFlightDto.getSta())));
+        airlinesAvailabilityItineraryDto.setFlightNumber(retrossFlightDto.getFlightNumber());
         airlinesAvailabilityItineraryDto.setOriginAirport(originAirport);
         airlinesAvailabilityItineraryDto.setDestinationAirport(destinationAirport);
         airlinesAvailabilityItineraryDto.setAirlinesCode(airlinesMap.get("code"));
@@ -74,6 +75,13 @@ public abstract class AirlinesAvailabilityItineraryMapperDecorator implements Ai
         airlinesAvailabilityItineraryDto.setArrivalDate(Date.valueOf(LocalDate.parse(retrossFlightDto.getEta().substring(0, 10))));
         airlinesAvailabilityItineraryDto.setArrivalTime(
                 Time.valueOf(LocalTime.parse(retrossFlightDto.getEta().substring(11, 16))));
+        if (retrossFlightDto.getTransit() != null) {
+            airlinesAvailabilityItineraryDto.setTransit(Integer.parseInt(retrossFlightDto.getTransit()));
+        }
+        if (retrossFlightDto.getDuration() != null) {
+            airlinesAvailabilityItineraryDto.setDuration(Integer.parseInt(retrossFlightDto.getDuration()));
+        }
+
 
         return airlinesAvailabilityItineraryDto;
     }

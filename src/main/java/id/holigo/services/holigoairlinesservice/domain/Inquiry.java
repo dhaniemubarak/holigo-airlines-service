@@ -49,6 +49,7 @@ public class Inquiry {
     private Integer adultAmount;
     private Integer childAmount;
     private Integer infantAmount;
+    @Column(length = 1)
     private String seatClass;
     @CreationTimestamp
     private Timestamp createdAt;

@@ -7,6 +7,7 @@ import id.holigo.services.holigoairlinesservice.components.Airlines;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
 import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
+import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
 import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -77,9 +78,14 @@ public abstract class AirlinesAvailabilityMapperDecorator
     public AirlinesAvailabilityDto retrossDepartureDtoToAirlinesAvailabilityDto(
             RetrossDepartureDto retrossDepartureDto, InquiryDto inquiryDto) {
         int flightCounter = retrossDepartureDto.getFlights().size();
-        int duration = retrossDepartureDto.getFlights().stream()
-                .mapToInt(dto -> Integer.parseInt(dto.getDuration())).sum();
-        int transit = retrossDepartureDto.getFlights().size() - 1;
+        int duration = 0;
+        int transit = 0;
+        if (!inquiryDto.getAirlinesCode().equals("IA")) {
+            duration = retrossDepartureDto.getFlights().stream()
+                    .mapToInt(dto -> Integer.parseInt(dto.getDuration())).sum();
+            transit = retrossDepartureDto.getFlights().size() - 1;
+
+        }
         Map<String, String> airlinesMap = airlines.getAirlines(retrossDepartureDto.getFlights().get(0).getFlightNumber().substring(0, 2));
         AirlinesAvailabilityDto airlinesAvailabilityDto = new AirlinesAvailabilityDto();
         airlinesAvailabilityDto.setId(UUID.randomUUID());
@@ -97,6 +103,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
                 Time.valueOf(LocalTime.parse(retrossDepartureDto.getFlights().get(flightCounter - 1).getEta().substring(11, 16))));
         airlinesAvailabilityDto.setDuration(duration);
         airlinesAvailabilityDto.setTransit(transit);
+        airlinesAvailabilityDto.setSeatClass(inquiryDto.getSeatClass());
         if (Objects.equals(retrossDepartureDto.getFlights().get(0).getStd(), inquiryDto.getOriginAirport().getId())) {
             airlinesAvailabilityDto.setOriginAirport(inquiryDto.getOriginAirport());
             airlinesAvailabilityDto.setDestinationAirport(inquiryDto.getDestinationAirport());
@@ -107,28 +114,46 @@ public abstract class AirlinesAvailabilityMapperDecorator
 
 
         List<AirlinesAvailabilityFareDto> fares = new ArrayList<>();
-        for (JsonNode fare : retrossDepartureDto.getFares()) {
-
-            fare.forEach(value -> {
+        if (inquiryDto.getAirlinesCode().equals("IA")) {
+            retrossDepartureDto.getFares().forEach(value -> {
+                AirlinesAvailabilityFareDto airlinesAvailabilityFareDto;
                 try {
-                    AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper
+                    airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper
                             .retrossFareToAirlinesAvailabilityFareDto(objectMapper.readValue(value.toString(), RetrossFareDto.class));
-                    if (airlinesAvailabilityDto.getFare() == null) {
-                        // Check for promo, economy, business, and first class
-                        airlinesAvailabilityDto.setFare(
-                                airlinesAvailabilityPriceMapper
-                                        .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
-                        );
-                    }
-                    fares.add(airlinesAvailabilityFareDto);
                 } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                    throw new AvailabilitiesException(e);
                 }
+                if (airlinesAvailabilityDto.getFare() == null) {
+                    airlinesAvailabilityDto.setFare(
+                            airlinesAvailabilityPriceMapper
+                                    .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
+                    );
+                }
+                fares.add(airlinesAvailabilityFareDto);
 
-                log.info("value -> {}", value);
+                log.info("international value -> {}", value);
 
             });
+        } else {
+            for (JsonNode faresNode : retrossDepartureDto.getFares()) {
+                faresNode.forEach(value -> {
+                    try {
+                        AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper
+                                .retrossFareToAirlinesAvailabilityFareDto(objectMapper.readValue(value.toString(), RetrossFareDto.class));
+                        if (airlinesAvailabilityDto.getFare() == null) {
+                            // Check for promo, economy, business, and first class
+                            airlinesAvailabilityDto.setFare(
+                                    airlinesAvailabilityPriceMapper
+                                            .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
+                            );
+                        }
+                    } catch (JsonProcessingException e) {
+                        throw new AvailabilitiesException(e);
+                    }
+                });
+            }
         }
+
 
         airlinesAvailabilityDto.setFares(fares);
         List<AirlinesAvailabilityItineraryDto> airlinesAvailabilityItineraryDtoList = new ArrayList<>();
