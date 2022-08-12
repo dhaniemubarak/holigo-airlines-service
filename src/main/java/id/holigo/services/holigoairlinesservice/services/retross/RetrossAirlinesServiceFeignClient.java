@@ -3,6 +3,7 @@ package id.holigo.services.holigoairlinesservice.services.retross;
 import id.holigo.services.holigoairlinesservice.web.model.RequestBookDto;
 import id.holigo.services.holigoairlinesservice.web.model.RequestFareDto;
 import id.holigo.services.holigoairlinesservice.web.model.RequestScheduleDto;
+import org.bouncycastle.cert.ocsp.Req;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +28,9 @@ public interface RetrossAirlinesServiceFeignClient {
 
     @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> getFare(@RequestBody RequestFareDto requestFareDto);
+
+    @RequestMapping(method = RequestMethod.POST, value = INTERNATIONAL_URI)
+    ResponseEntity<String> getInternationalFare(@RequestBody RequestFareDto requestFareDto);
 
     @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> book(@RequestBody String request);

@@ -75,7 +75,7 @@ public abstract class AirlinesAvailabilityItineraryMapperDecorator implements Ai
         airlinesAvailabilityItineraryDto.setArrivalDate(Date.valueOf(LocalDate.parse(retrossFlightDto.getEta().substring(0, 10))));
         airlinesAvailabilityItineraryDto.setArrivalTime(
                 Time.valueOf(LocalTime.parse(retrossFlightDto.getEta().substring(11, 16))));
-        if (retrossFlightDto.getTransit() != null) {
+        if (retrossFlightDto.getTransit() != null && (!retrossFlightDto.getTransit().equals(""))) {
             airlinesAvailabilityItineraryDto.setTransit(Integer.parseInt(retrossFlightDto.getTransit()));
         }
         if (retrossFlightDto.getDuration() != null) {

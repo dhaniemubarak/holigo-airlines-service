@@ -1,6 +1,7 @@
 package id.holigo.services.holigoairlinesservice.web.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.Airport;
 import id.holigo.services.holigoairlinesservice.domain.Inquiry;
@@ -16,6 +17,7 @@ import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDt
 import id.holigo.services.holigoairlinesservice.web.model.InquiryDto;
 import id.holigo.services.holigoairlinesservice.web.model.ListAvailabilityDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 public class AirlinesAvailabilityController {
@@ -102,6 +105,11 @@ public class AirlinesAvailabilityController {
         }
         inquiryDto = inquiryMapper.inquiryToInquiryDto(inquiry);
         inquiryDto.setUserId(userId);
+        if (!inquiryDto.getAirlinesCode().equals("IA") &&
+                (!inquiryDto.getOriginAirport().getCountry().toLowerCase().equals("indonesia") ||
+                        !inquiryDto.getDestinationAirport().getCountry().toLowerCase().equals("indonesia"))) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
         listAvailabilityDto.setInquiry(inquiryDto);
@@ -110,6 +118,12 @@ public class AirlinesAvailabilityController {
                 inquiry.getAirlinesCode(), inquiry.getOriginAirport().getId(), inquiry.getDestinationAirport().getId(),
                 inquiry.getDepartureDate().toString()
         );
+        try {
+            log.info("Inquiry -> {}", new ObjectMapper().writeValueAsString(inquiryDto));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("size -> {}", airlinesAvailabilityDepartures.size());
 
         if (airlinesAvailabilityDepartures.size() > 0) {
             try {

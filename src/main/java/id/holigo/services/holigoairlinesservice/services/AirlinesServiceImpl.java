@@ -12,7 +12,6 @@ import id.holigo.services.holigoairlinesservice.services.retross.RetrossAirlines
 import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
 import id.holigo.services.holigoairlinesservice.web.exceptions.BookException;
 import id.holigo.services.holigoairlinesservice.web.exceptions.ConflictException;
-import id.holigo.services.holigoairlinesservice.web.exceptions.FareBadException;
 import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -155,7 +154,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                 try {
                     responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip);
                     if (!responseFareDto.getError_code().equals("000")) {
-                        throw new FareBadException("Sesi telah habis, silahkan cari pencarian yang lain", null, false, false);
+                        throw new Exception("Failed get final fare from airlines");
                     }
                     retrossFinalFares.add(responseFareDto.getSchedule().getDepartures());
                     if (tripType.equals(TripType.R)) {

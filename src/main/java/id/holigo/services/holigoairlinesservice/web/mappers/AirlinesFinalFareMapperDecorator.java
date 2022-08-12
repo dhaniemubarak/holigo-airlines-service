@@ -3,13 +3,8 @@ package id.holigo.services.holigoairlinesservice.web.mappers;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFare;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesFinalFareDto;
-import id.holigo.services.holigoairlinesservice.web.model.ResponseFareDto;
-import id.holigo.services.holigoairlinesservice.web.model.TripDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j

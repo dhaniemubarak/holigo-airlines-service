@@ -43,4 +43,6 @@ public class RequestFareDto {
 
     @JsonProperty("selectedIDret")
     private String selectedIdRet;
+
+    private String cabin;
 }

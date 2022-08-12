@@ -109,10 +109,15 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
 
         log.info("Calling get fare with request -> {}", objectMapper.writeValueAsString(requestFareDto));
 
-        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.getFare(requestFareDto);
-
+        ResponseEntity<String> responseEntity;
+        if (tripDto.getInquiry().getAirlinesCode().equals("IA")) {
+            requestFareDto.setCabin(tripDto.getInquiry().getSeatClass().equals("E") ? "economy" : "business");
+            responseEntity = retrossAirlinesServiceFeignClient.getInternationalFare(requestFareDto);
+            log.info("International fare -> {}", objectMapper.writeValueAsString(responseEntity.getBody()));
+        } else {
+            responseEntity = retrossAirlinesServiceFeignClient.getFare(requestFareDto);
+        }
         log.info("ResponseEntity body -> {}", responseEntity.getBody());
-//
         responseFareDto = objectMapper.readValue(responseEntity.getBody(), ResponseFareDto.class);
         return responseFareDto;
     }
