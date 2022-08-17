@@ -16,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -46,7 +47,14 @@ public class AirlinesFareController {
 
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createFare(@RequestBody RequestFinalFareDto requestFinalFareDto, @RequestHeader("user-id") Long userId) {
-        AirlinesFinalFare airlinesFinalFare = airlinesService.createFinalFares(requestFinalFareDto, userId);
+        boolean isInternational = requestFinalFareDto.getTrips().stream().anyMatch(tripDto -> tripDto.getInquiry().getAirlinesCode().equals("IA"));
+        AirlinesFinalFare airlinesFinalFare;
+        if (isInternational) {
+            airlinesFinalFare = airlinesService.createInternationalFinalFare(requestFinalFareDto, userId);
+        } else {
+            airlinesFinalFare = airlinesService.createFinalFares(requestFinalFareDto, userId);
+        }
+
         if (airlinesFinalFare == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

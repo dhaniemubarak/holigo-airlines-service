@@ -11,6 +11,8 @@ public interface AirlinesService {
 
     AirlinesFinalFare createFinalFares(RequestFinalFareDto requestFinalFareDto, Long userId);
 
+    AirlinesFinalFare createInternationalFinalFare(RequestFinalFareDto requestFinalFareDto, long userId);
+
     void createBook(Long airlinesTransactionId) throws JsonProcessingException;
 
     void cancelBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;

@@ -22,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 @Slf4j
 @Service
@@ -145,12 +148,7 @@ public class AirlinesServiceImpl implements AirlinesService {
 
             if ((tripType != TripType.R && i != 1)
                     || (tripType.equals(TripType.R) && i == 0)) {
-                Map<String, String> roundTrip = new HashMap<>();
-                if (tripType.equals(TripType.R)) {
-                    TripDto roundTripDto = requestFinalFareDto.getTrips().get(1);
-                    roundTrip.put("airlinesCode", roundTripDto.getTrip().getAirlinesCode());
-                    roundTrip.put("selectedId", roundTripDto.getTrip().getFare().getSelectedId());
-                }
+                Map<String, String> roundTrip = setRoundTripVariable(requestFinalFareDto, tripType);
                 try {
                     responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip);
                     if (!responseFareDto.getError_code().equals("000")) {
@@ -162,17 +160,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                         retrossFinalFares.add(responseFareDto.getSchedule().getReturns());
                     }
                 } catch (Exception e) {
-                    airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
-                            tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getOriginAirport().getId(), tripDto.getInquiry().getDestinationAirport().getId(),
-                            tripDto.getInquiry().getDepartureDate().toString()
-                    );
-                    if (tripType.equals(TripType.R)) {
-                        airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
-                                tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getDestinationAirport().getId(), tripDto.getInquiry().getOriginAirport().getId(),
-                                tripDto.getInquiry().getReturnDate().toString()
-                        );
-                    }
-                    throw new ConflictException(e.getMessage());
+                    catchFinalFare(tripDto, tripType, e);
                 }
             }
         }
@@ -207,23 +195,98 @@ public class AirlinesServiceImpl implements AirlinesService {
             airlinesFinalFareTrip.setChildAmount(tripDto.getInquiry().getChildAmount());
             airlinesFinalFareTrip.setInfantAmount(tripDto.getInquiry().getInfantAmount());
             airlinesFinalFareTrip.setFares(fares);
-            airlinesFinalFareTrip.setIsPriceIncluded(fareDto.getFareAmount().equals(BigDecimal.valueOf(0.00)));
-            airlinesFinalFareTrip.setFareAmount(fareDto.getFareAmount());
-            airlinesFinalFareTrip.setNtaAmount(fareDto.getNtaAmount());
-            airlinesFinalFareTrip.setNraAmount(fareDto.getNraAmount());
-            airlinesFinalFareTrip.setAdminAmount(BigDecimal.valueOf(0.00));
-            airlinesFinalFareTrip.setCpAmount(fareDto.getCpAmount());
-            airlinesFinalFareTrip.setMpAmount(fareDto.getMpAmount());
-            airlinesFinalFareTrip.setIpAmount(fareDto.getIpAmount());
-            airlinesFinalFareTrip.setHpAmount(fareDto.getHpAmount());
-            airlinesFinalFareTrip.setHvAmount(fareDto.getHvAmount());
-            airlinesFinalFareTrip.setPrAmount(fareDto.getPrAmount());
-            airlinesFinalFareTrip.setIpcAmount(fareDto.getIpcAmount());
-            airlinesFinalFareTrip.setHpcAmount(fareDto.getHpcAmount());
-            airlinesFinalFareTrip.setPrcAmount(fareDto.getPrcAmount());
-            airlinesFinalFareTrip.setLossAmount(fareDto.getLossAmount());
+            setFinalFare(airlinesFinalFareTrip, fareDto);
             airlinesFinalFareTrips.add(airlinesFinalFareTrip);
         }
+        return getAirlinesFinalFare(userId, airlinesFinalFareTrips, tripType, false);
+    }
+
+    @Override
+    public AirlinesFinalFare createInternationalFinalFare(RequestFinalFareDto requestFinalFareDto, long userId) {
+        try {
+            log.info("request final fare dto -> {}", new ObjectMapper().writeValueAsString(requestFinalFareDto));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        Set<AirlinesFinalFareTrip> airlinesFinalFareTrips = new HashSet<>();
+        ResponseFareDto responseFareDto = null;
+        TripType tripType = TripType.O;
+        for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
+            TripDto tripDto = requestFinalFareDto.getTrips().get(i);
+            tripType = tripDto.getInquiry().getTripType();
+
+            if ((tripType != TripType.R && i != 1)
+                    || (tripType.equals(TripType.R) && i == 0)) {
+                Map<String, String> roundTrip = setRoundTripVariable(requestFinalFareDto, tripType);
+                try {
+                    responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip);
+                    if (!responseFareDto.getError_code().equals("000")) {
+                        throw new Exception("Failed get final fare from airlines");
+                    }
+                } catch (Exception e) {
+                    catchFinalFare(tripDto, tripType, e);
+                }
+            }
+        }
+        ResponseFareDto finalResponseFareDto = responseFareDto;
+        requestFinalFareDto.getTrips().forEach(withCounter((i, tripDto) -> {
+
+            AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
+                    .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
+            AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
+                    .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability, i + 1);
+            airlinesFinalFareTrip.setAdultAmount(tripDto.getInquiry().getAdultAmount());
+            airlinesFinalFareTrip.setChildAmount(tripDto.getInquiry().getChildAmount());
+            airlinesFinalFareTrip.setInfantAmount(tripDto.getInquiry().getInfantAmount());
+            airlinesFinalFareTrip.setIsPriceIncluded(true);
+            airlinesFinalFareTrip.setFareAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setNtaAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setNraAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setAdminAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setCpAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setMpAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setIpAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setHpAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setHvAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setPrAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setIpcAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setHpcAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setPrcAmount(BigDecimal.ZERO);
+            airlinesFinalFareTrip.setLossAmount(BigDecimal.ZERO);
+            if (i == 0) {
+                assert finalResponseFareDto != null;
+                BigDecimal ntaAmount = finalResponseFareDto.getNtaAmount();
+                if (ntaAmount.compareTo(BigDecimal.ZERO) == 0) {
+                    ntaAmount = finalResponseFareDto.getTotalAmount();
+                }
+                BigDecimal nraAmount = finalResponseFareDto.getTotalAmount().subtract(ntaAmount);
+                FareDto fareDto = fareService.getFareDetail(FareDetailDto.builder()
+                        .ntaAmount(ntaAmount)
+                        .nraAmount(nraAmount)
+                        .productId(1).userId(userId).build());
+                airlinesFinalFareTrip.setSupplierId(finalResponseFareDto.getTrxId());
+                setFinalFare(airlinesFinalFareTrip, fareDto);
+            }
+            airlinesFinalFareTrips.add(airlinesFinalFareTrip);
+        }));
+        return getAirlinesFinalFare(userId, airlinesFinalFareTrips, tripType, true);
+    }
+
+    private void catchFinalFare(TripDto tripDto, TripType tripType, Exception e) {
+        airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
+                tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getOriginAirport().getId(), tripDto.getInquiry().getDestinationAirport().getId(),
+                tripDto.getInquiry().getDepartureDate().toString()
+        );
+        if (tripType.equals(TripType.R)) {
+            airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
+                    tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getDestinationAirport().getId(), tripDto.getInquiry().getOriginAirport().getId(),
+                    tripDto.getInquiry().getReturnDate().toString()
+            );
+        }
+        throw new ConflictException(e.getMessage());
+    }
+
+    private AirlinesFinalFare getAirlinesFinalFare(long userId, Set<AirlinesFinalFareTrip> airlinesFinalFareTrips, TripType tripType, Boolean isInternational) {
         AirlinesFinalFare airlinesFinalFare = AirlinesFinalFare.builder()
                 .fareAmount(BigDecimal.valueOf(0.00))
                 .adminAmount(BigDecimal.valueOf(0.00))
@@ -239,6 +302,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                 .hpcAmount(BigDecimal.valueOf(0.00))
                 .prcAmount(BigDecimal.valueOf(0.00))
                 .lossAmount(BigDecimal.valueOf(0.00))
+                .isInternational(isInternational)
                 .build();
         airlinesFinalFare.setUserId(userId);
         airlinesFinalFare.setIsBookable(true);
@@ -265,6 +329,29 @@ public class AirlinesServiceImpl implements AirlinesService {
         airlinesFinalFareTrips.forEach(airlinesFinalFareTrip -> airlinesFinalFareTrip.setFinalFare(savedAirlinesFinalFare));
         airlinesFinalFareTripRepository.saveAll(airlinesFinalFareTrips);
         return savedAirlinesFinalFare;
+    }
+
+    private void setFinalFare(AirlinesFinalFareTrip airlinesFinalFareTrip, FareDto fareDto) {
+        airlinesFinalFareTrip.setIsPriceIncluded(fareDto.getFareAmount().equals(BigDecimal.valueOf(0.00)));
+        airlinesFinalFareTrip.setFareAmount(fareDto.getFareAmount());
+        airlinesFinalFareTrip.setNtaAmount(fareDto.getNtaAmount());
+        airlinesFinalFareTrip.setNraAmount(fareDto.getNraAmount());
+        airlinesFinalFareTrip.setAdminAmount(BigDecimal.valueOf(0.00));
+        airlinesFinalFareTrip.setCpAmount(fareDto.getCpAmount());
+        airlinesFinalFareTrip.setMpAmount(fareDto.getMpAmount());
+        airlinesFinalFareTrip.setIpAmount(fareDto.getIpAmount());
+        airlinesFinalFareTrip.setHpAmount(fareDto.getHpAmount());
+        airlinesFinalFareTrip.setHvAmount(fareDto.getHvAmount());
+        airlinesFinalFareTrip.setPrAmount(fareDto.getPrAmount());
+        airlinesFinalFareTrip.setIpcAmount(fareDto.getIpcAmount());
+        airlinesFinalFareTrip.setHpcAmount(fareDto.getHpcAmount());
+        airlinesFinalFareTrip.setPrcAmount(fareDto.getPrcAmount());
+        airlinesFinalFareTrip.setLossAmount(fareDto.getLossAmount());
+    }
+
+    public static <T> Consumer<T> withCounter(BiConsumer<Integer, T> consumer) {
+        AtomicInteger counter = new AtomicInteger(0);
+        return item -> consumer.accept(counter.getAndIncrement(), item);
     }
 
     @Override
@@ -318,5 +405,15 @@ public class AirlinesServiceImpl implements AirlinesService {
         if (listAvailabilityDto.getReturns() != null) {
             airlinesAvailabilityRepository.saveAll(listAvailabilityDto.getReturns().stream().map(airlinesAvailabilityMapper::airlinesAvailabilityDtoToAirlinesAvailability).toList());
         }
+    }
+
+    private Map<String, String> setRoundTripVariable(RequestFinalFareDto requestFinalFareDto, TripType tripType) {
+        Map<String, String> roundTrip = new HashMap<>();
+        if (tripType.equals(TripType.R)) {
+            TripDto roundTripDto = requestFinalFareDto.getTrips().get(1);
+            roundTrip.put("airlinesCode", roundTripDto.getTrip().getAirlinesCode());
+            roundTrip.put("selectedId", roundTripDto.getTrip().getFare().getSelectedId());
+        }
+        return roundTrip;
     }
 }
