@@ -18,12 +18,14 @@ public interface AirlinesAvailabilityRepository extends JpaRepository<AirlinesAv
                     "WHERE airlines_code = :airlinesCode " +
                     "AND origin_airport_id = :originAirportId " +
                     "AND destination_airport_id = :destinationAirportId " +
-                    "AND departure_date = :departureDate")
+                    "AND departure_date = :departureDate " +
+                    "AND seat_class= :seatClass")
     List<AirlinesAvailability> getAirlinesAvailability(
             @Param("airlinesCode") String airlinesCode,
             @Param("originAirportId") String originAirportId,
             @Param("destinationAirportId") String destinationAirportId,
-            @Param("departureDate") String departureDate);
+            @Param("departureDate") String departureDate,
+            @Param("seatClass") String seatClass);
 
     @Modifying
     @Query(

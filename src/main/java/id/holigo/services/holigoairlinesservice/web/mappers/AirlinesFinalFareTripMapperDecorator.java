@@ -8,12 +8,13 @@ import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTrip;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFareTripItinerary;
 import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
-import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityDto;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesFinalFareTripDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
+@Slf4j
 public abstract class AirlinesFinalFareTripMapperDecorator
         implements AirlinesFinalFareTripMapper {
     private AirlinesFinalFareTripMapper airlinesFinalFareTripMapper;

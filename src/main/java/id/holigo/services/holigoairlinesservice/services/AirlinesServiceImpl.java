@@ -203,11 +203,6 @@ public class AirlinesServiceImpl implements AirlinesService {
 
     @Override
     public AirlinesFinalFare createInternationalFinalFare(RequestFinalFareDto requestFinalFareDto, long userId) {
-        try {
-            log.info("request final fare dto -> {}", new ObjectMapper().writeValueAsString(requestFinalFareDto));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
         Set<AirlinesFinalFareTrip> airlinesFinalFareTrips = new HashSet<>();
         ResponseFareDto responseFareDto = null;
         TripType tripType = TripType.O;

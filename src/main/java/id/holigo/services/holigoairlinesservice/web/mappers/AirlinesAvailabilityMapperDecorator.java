@@ -8,7 +8,6 @@ import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
 import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
 import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
-import id.holigo.services.holigoairlinesservice.web.exceptions.NotFoundException;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +119,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
                 try {
                     airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper
                             .retrossFareToAirlinesAvailabilityFareDto(objectMapper.readValue(value.toString(), RetrossFareDto.class));
+                    fares.add(airlinesAvailabilityFareDto);
                 } catch (JsonProcessingException e) {
                     throw new AvailabilitiesException(e);
                 }
@@ -129,9 +129,6 @@ public abstract class AirlinesAvailabilityMapperDecorator
                                     .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
                     );
                 }
-                fares.add(airlinesAvailabilityFareDto);
-
-                log.info("international value -> {}", value);
 
             });
         } else {
@@ -147,9 +144,11 @@ public abstract class AirlinesAvailabilityMapperDecorator
                                             .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
                             );
                         }
+                        fares.add(airlinesAvailabilityFareDto);
                     } catch (JsonProcessingException e) {
                         throw new AvailabilitiesException(e);
                     }
+
                 });
             }
         }
@@ -223,8 +222,6 @@ public abstract class AirlinesAvailabilityMapperDecorator
             AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper.airlinesAvailabilityFareToAirlinesAvailabilityFareDto(airlinesAvailabilityFare);
             airlinesAvailabilityDto.setFare(airlinesAvailabilityPriceMapper.airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, userId));
         }
-
-
         return airlinesAvailabilityDto;
     }
 

@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
@@ -78,9 +79,15 @@ public class AirlinesAvailabilityController {
         this.airportRepository = airportRepository;
     }
 
+    @Transactional
     @GetMapping("/api/v1/airlines/availabilities")
     public ResponseEntity<ListAvailabilityDto> getAvailabilities(InquiryDto inquiryDto, @RequestHeader("user-id") Long userId) {
         Inquiry inquiry;
+        try {
+            log.info("inquiryDto -> {}", new ObjectMapper().writeValueAsString(inquiryDto));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         List<AirlinesAvailabilityDto> availabilityDeparturesDto = new ArrayList<>();
         Optional<Inquiry> fetchInquiry = inquiryRepository.getInquiry(inquiryDto.getAirlinesCode(),
                 inquiryDto.getOriginAirportId(), inquiryDto.getDestinationAirportId(), inquiryDto.getDepartureDate().toString(),
@@ -97,7 +104,7 @@ public class AirlinesAvailabilityController {
                 inquiry = inquiryRepository.save(inquiryObject);
             } catch (Exception e) {
                 // TODO Need message
-                throw new AvailabilitiesException();
+                throw new AvailabilitiesException(e.getMessage(), null, false, false);
             }
 
         } else {
@@ -106,8 +113,8 @@ public class AirlinesAvailabilityController {
         inquiryDto = inquiryMapper.inquiryToInquiryDto(inquiry);
         inquiryDto.setUserId(userId);
         if (!inquiryDto.getAirlinesCode().equals("IA") &&
-                (!inquiryDto.getOriginAirport().getCountry().toLowerCase().equals("indonesia") ||
-                        !inquiryDto.getDestinationAirport().getCountry().toLowerCase().equals("indonesia"))) {
+                (!inquiryDto.getOriginAirport().getCountry().equalsIgnoreCase("indonesia") ||
+                        !inquiryDto.getDestinationAirport().getCountry().equalsIgnoreCase("indonesia"))) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
@@ -116,7 +123,7 @@ public class AirlinesAvailabilityController {
 
         List<AirlinesAvailability> airlinesAvailabilityDepartures = airlinesAvailabilityRepository.getAirlinesAvailability(
                 inquiry.getAirlinesCode(), inquiry.getOriginAirport().getId(), inquiry.getDestinationAirport().getId(),
-                inquiry.getDepartureDate().toString()
+                inquiry.getDepartureDate().toString(), inquiry.getSeatClass()
         );
         try {
             log.info("Inquiry -> {}", new ObjectMapper().writeValueAsString(inquiryDto));
@@ -136,12 +143,13 @@ public class AirlinesAvailabilityController {
                         ).toList()
                 );
             } catch (NoSuchElementException e) {
+                log.info("Error log -> {}", e.getMessage());
                 airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                         inquiryDto.getAirlinesCode(),
-                        inquiryDto.getOriginAirportId(),
-                        inquiryDto.getDestinationAirportId(),
+                        inquiryDto.getOriginAirport().getId(),
+                        inquiryDto.getDestinationAirport().getId(),
                         inquiryDto.getDepartureDate().toString());
-                throw new AvailabilitiesException();
+                throw new AvailabilitiesException(e.getMessage(), null, false, false);
             }
 
         }
@@ -149,7 +157,7 @@ public class AirlinesAvailabilityController {
         if (inquiry.getTripType() == TripType.R) {
             List<AirlinesAvailability> airlinesAvailabilityReturns = airlinesAvailabilityRepository.getAirlinesAvailability(
                     inquiry.getAirlinesCode(), inquiry.getDestinationAirport().getId(), inquiry.getOriginAirport().getId(),
-                    inquiry.getReturnDate().toString()
+                    inquiry.getReturnDate().toString(), inquiry.getSeatClass()
             );
 
             if (airlinesAvailabilityReturns.size() > 0) {
@@ -161,7 +169,7 @@ public class AirlinesAvailabilityController {
                             inquiryDto.getDestinationAirportId(),
                             inquiryDto.getOriginAirportId(),
                             inquiryDto.getReturnDate().toString());
-                    throw new AvailabilitiesException();
+                    throw new AvailabilitiesException(e.getMessage(), null, false, false);
                 }
 
             }

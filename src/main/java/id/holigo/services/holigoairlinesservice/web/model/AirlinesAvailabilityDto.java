@@ -1,12 +1,11 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
-import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
-import id.holigo.services.holigoairlinesservice.domain.Airport;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AirlinesAvailabilityDto {
+public class AirlinesAvailabilityDto implements Serializable {
 
     private UUID id;
 

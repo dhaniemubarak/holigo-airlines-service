@@ -18,6 +18,5 @@ public class RetrossDepartureDto {
     List<RetrossFlightDto> flights;
 
     @JsonProperty(value = "Fares")
-//    List<List<RetrossFareDto>> fares;
     List<JsonNode> fares;
 }
