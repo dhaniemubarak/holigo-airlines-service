@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -45,10 +47,10 @@ public class AirlinesFinalFareTrip {
     private Airport originAirport;
     @ManyToOne
     private Airport destinationAirport;
-    private Date departureDate;
-    private Time departureTime;
-    private Date arrivalDate;
-    private Time arrivalTime;
+    private LocalDate departureDate;
+    private LocalTime departureTime;
+    private LocalDate arrivalDate;
+    private LocalTime arrivalTime;
     private Integer duration;
     private String imageUrl;
     private Integer transit;

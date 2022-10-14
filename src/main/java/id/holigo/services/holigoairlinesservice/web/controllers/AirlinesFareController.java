@@ -1,5 +1,7 @@
 package id.holigo.services.holigoairlinesservice.web.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesFinalFare;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesFinalFareRepository;
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
@@ -44,9 +46,20 @@ public class AirlinesFareController {
         this.airlinesFinalFareMapper = airlinesFinalFareMapper;
     }
 
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createFare(@RequestBody RequestFinalFareDto requestFinalFareDto, @RequestHeader("user-id") Long userId) {
+        try {
+            log.info("requestFinalFareDto -> {}", objectMapper.writeValueAsString(requestFinalFareDto));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         boolean isInternational = requestFinalFareDto.getTrips().stream().anyMatch(tripDto -> tripDto.getInquiry().getAirlinesCode().equals("IA"));
         AirlinesFinalFare airlinesFinalFare;
         if (isInternational) {

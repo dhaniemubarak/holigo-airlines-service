@@ -1,7 +1,5 @@
 package id.holigo.services.holigoairlinesservice.domain;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import id.holigo.services.holigoairlinesservice.web.model.AirportDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,9 +10,9 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.sql.Date;
-import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Getter
@@ -54,13 +52,13 @@ public class AirlinesAvailabilityItinerary {
     @ManyToOne
     private Airport destinationAirport;
 
-    private Date departureDate;
+    private LocalDate departureDate;
 
-    private Time departureTime;
+    private LocalTime departureTime;
 
-    private Date arrivalDate;
+    private LocalDate arrivalDate;
 
-    private Time arrivalTime;
+    private LocalTime arrivalTime;
 
     private Integer duration;
 

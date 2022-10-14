@@ -6,6 +6,8 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -25,13 +27,13 @@ public class AirlinesAvailabilityItineraryDto implements Serializable {
 
     private String destinationAirportId; //
 
-    private Date departureDate; //
+    private LocalDate departureDate; //
 
-    private Time departureTime; //
+    private LocalTime departureTime; //
 
-    private Date arrivalDate; //
+    private LocalDate arrivalDate; //
 
-    private Time arrivalTime; //
+    private LocalTime arrivalTime; //
 
     private Integer duration; //
 

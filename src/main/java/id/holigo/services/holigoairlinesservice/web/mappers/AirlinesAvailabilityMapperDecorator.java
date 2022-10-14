@@ -92,14 +92,11 @@ public abstract class AirlinesAvailabilityMapperDecorator
         airlinesAvailabilityDto.setAirlinesName(airlinesMap.get("name"));
         airlinesAvailabilityDto.setImageUrl(airlinesMap.get("imageUrl"));
         airlinesAvailabilityDto.setFlightNumber(retrossDepartureDto.getFlights().get(0).getFlightNumber());
-        airlinesAvailabilityDto.setDepartureDate(
-                Date.valueOf(LocalDate.parse(retrossDepartureDto.getFlights().get(0).getEtd().substring(0, 10))));
-        airlinesAvailabilityDto.setDepartureTime(
-                Time.valueOf(LocalTime.parse(retrossDepartureDto.getFlights().get(0).getEtd().substring(11, 16))));
-        airlinesAvailabilityDto.setArrivalDate(Date.valueOf(LocalDate.parse(retrossDepartureDto.getFlights()
+        airlinesAvailabilityDto.setDepartureDate(LocalDate.parse(retrossDepartureDto.getFlights().get(0).getEtd().substring(0, 10)));
+        airlinesAvailabilityDto.setDepartureTime(LocalTime.parse(retrossDepartureDto.getFlights().get(0).getEtd().substring(11, 16)));
+        airlinesAvailabilityDto.setArrivalDate((LocalDate.parse(retrossDepartureDto.getFlights()
                 .get(flightCounter - 1).getEta().substring(0, 10))));
-        airlinesAvailabilityDto.setArrivalTime(
-                Time.valueOf(LocalTime.parse(retrossDepartureDto.getFlights().get(flightCounter - 1).getEta().substring(11, 16))));
+        airlinesAvailabilityDto.setArrivalTime(LocalTime.parse(retrossDepartureDto.getFlights().get(flightCounter - 1).getEta().substring(11, 16)));
         airlinesAvailabilityDto.setDuration(duration);
         airlinesAvailabilityDto.setTransit(transit);
         airlinesAvailabilityDto.setSeatClass(inquiryDto.getSeatClass());

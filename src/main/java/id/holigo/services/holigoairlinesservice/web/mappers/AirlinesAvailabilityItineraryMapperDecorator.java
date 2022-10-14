@@ -2,7 +2,6 @@ package id.holigo.services.holigoairlinesservice.web.mappers;
 
 import id.holigo.services.holigoairlinesservice.components.Airlines;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityItinerary;
-import id.holigo.services.holigoairlinesservice.domain.Airport;
 import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityItineraryDto;
 import id.holigo.services.holigoairlinesservice.web.model.AirportDto;
@@ -10,8 +9,6 @@ import id.holigo.services.holigoairlinesservice.web.model.InquiryDto;
 import id.holigo.services.holigoairlinesservice.web.model.RetrossFlightDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -69,12 +66,12 @@ public abstract class AirlinesAvailabilityItineraryMapperDecorator implements Ai
         airlinesAvailabilityItineraryDto.setAirlinesName(airlinesMap.get("name"));
         airlinesAvailabilityItineraryDto.setImageUrl(airlinesMap.get("imageUrl"));
         airlinesAvailabilityItineraryDto.setDepartureDate(
-                Date.valueOf(LocalDate.parse(retrossFlightDto.getEtd().substring(0, 10))));
+                LocalDate.parse(retrossFlightDto.getEtd().substring(0, 10)));
         airlinesAvailabilityItineraryDto.setDepartureTime(
-                Time.valueOf(LocalTime.parse(retrossFlightDto.getEtd().substring(11, 16))));
-        airlinesAvailabilityItineraryDto.setArrivalDate(Date.valueOf(LocalDate.parse(retrossFlightDto.getEta().substring(0, 10))));
+                LocalTime.parse(retrossFlightDto.getEtd().substring(11, 16)));
+        airlinesAvailabilityItineraryDto.setArrivalDate(LocalDate.parse(retrossFlightDto.getEta().substring(0, 10)));
         airlinesAvailabilityItineraryDto.setArrivalTime(
-                Time.valueOf(LocalTime.parse(retrossFlightDto.getEta().substring(11, 16))));
+                LocalTime.parse(retrossFlightDto.getEta().substring(11, 16)));
         if (retrossFlightDto.getTransit() != null && (!retrossFlightDto.getTransit().equals(""))) {
             airlinesAvailabilityItineraryDto.setTransit(Integer.parseInt(retrossFlightDto.getTransit()));
         }

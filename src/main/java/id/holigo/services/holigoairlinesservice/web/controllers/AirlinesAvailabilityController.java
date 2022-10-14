@@ -26,10 +26,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.sql.Date;
+import java.time.ZoneId;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -48,6 +47,12 @@ public class AirlinesAvailabilityController {
 
     private AirportRepository airportRepository;
 
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Autowired
     public void setAirlinesService(AirlinesService airlinesService) {
@@ -82,6 +87,9 @@ public class AirlinesAvailabilityController {
     @Transactional
     @GetMapping("/api/v1/airlines/availabilities")
     public ResponseEntity<ListAvailabilityDto> getAvailabilities(InquiryDto inquiryDto, @RequestHeader("user-id") Long userId) {
+        if (inquiryDto.getAirlinesCode().equals("MV")) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         Inquiry inquiry;
         try {
             log.info("inquiryDto -> {}", new ObjectMapper().writeValueAsString(inquiryDto));
@@ -126,7 +134,7 @@ public class AirlinesAvailabilityController {
                 inquiry.getDepartureDate().toString(), inquiry.getSeatClass()
         );
         try {
-            log.info("Inquiry -> {}", new ObjectMapper().writeValueAsString(inquiryDto));
+            log.info("Inquiry -> {}", objectMapper.writeValueAsString(inquiryDto));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -146,8 +154,8 @@ public class AirlinesAvailabilityController {
                 log.info("Error log -> {}", e.getMessage());
                 airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                         inquiryDto.getAirlinesCode(),
-                        inquiryDto.getOriginAirport().getId(),
-                        inquiryDto.getDestinationAirport().getId(),
+                        inquiryDto.getOriginAirportId(),
+                        inquiryDto.getDestinationAirportId(),
                         inquiryDto.getDepartureDate().toString());
                 throw new AvailabilitiesException(e.getMessage(), null, false, false);
             }
@@ -197,7 +205,7 @@ public class AirlinesAvailabilityController {
                 if (airlinesAvailabilityReturns.isEmpty()) {
                     inquiryDto.setOriginAirportId(inquiry.getDestinationAirportId());
                     inquiryDto.setDestinationAirportId(inquiry.getOriginAirportId());
-                    inquiryDto.setDepartureDate(inquiry.getReturnDate());
+                    inquiryDto.setDepartureDate(Date.valueOf(inquiry.getReturnDate()));
                     inquiryDto.setReturnDate(null);
                     inquiryDto.setTripType(TripType.O);
                     try {
@@ -232,6 +240,12 @@ public class AirlinesAvailabilityController {
                 availabilityReturnsDto.add(departure);
             });
             listAvailabilityDto.setReturns(availabilityReturnsDto);
+        }
+
+        try {
+            log.info("Airlines availability -> {}", objectMapper.writeValueAsString(listAvailabilityDto));
+        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
         }
         return new ResponseEntity<>(listAvailabilityDto, HttpStatus.OK);
     }

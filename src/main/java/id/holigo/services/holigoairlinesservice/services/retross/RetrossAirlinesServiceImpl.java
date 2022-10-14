@@ -147,7 +147,6 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
             requestBookDto.setSelectedIdRet(airlinesTransaction.getTrips().get(1).getSupplierId());
             requestBookDto.setTgl_ret(airlinesTransaction.getTrips().get(1).getDepartureDate().toString());
         }
-        log.info("Format request -> {}", objectMapper.writeValueAsString(requestBookDto.build()));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.book(objectMapper.writeValueAsString(requestBookDto.build()));
         log.info("Format response -> {}", responseEntity.getBody());
         return objectMapper.readValue(responseEntity.getBody(), ResponseBookDto.class);

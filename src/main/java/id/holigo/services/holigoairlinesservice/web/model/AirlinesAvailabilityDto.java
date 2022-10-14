@@ -8,6 +8,8 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -30,13 +32,13 @@ public class AirlinesAvailabilityDto implements Serializable {
 
     private AirportDto destinationAirport;
 
-    private Date departureDate;
+    private LocalDate departureDate;
 
-    private Time departureTime;
+    private LocalTime departureTime;
 
-    private Date arrivalDate;
+    private LocalDate arrivalDate;
 
-    private Time arrivalTime;
+    private LocalTime arrivalTime;
 
     private Integer duration;
 

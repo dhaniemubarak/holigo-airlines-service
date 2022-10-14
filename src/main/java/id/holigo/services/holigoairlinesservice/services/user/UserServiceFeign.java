@@ -13,7 +13,7 @@ public class UserServiceFeign implements UserService {
 
     @Override
     public UserDtoForUser getUser(Long userId) {
-        ResponseEntity<UserDtoForUser> responseEntity = userServiceFeignClient.getUser(userId);
+        ResponseEntity<UserDtoForUser> responseEntity = userServiceFeignClient.getUser(userId, userId);
         return responseEntity.getBody();
     }
 }

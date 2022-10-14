@@ -183,6 +183,7 @@ public class AirlinesServiceImpl implements AirlinesService {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
+            log.info("airlines availability id -> {}", tripDto.getTrip().getId().toString());
             AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
                     .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
             AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
@@ -268,6 +269,11 @@ public class AirlinesServiceImpl implements AirlinesService {
     }
 
     private void catchFinalFare(TripDto tripDto, TripType tripType, Exception e) {
+        log.info("Catch final fares.......");
+        log.info("Airlines code -> {}", tripDto.getTrip().getAirlinesCode());
+        log.info("origin airport -> {}", tripDto.getInquiry().getOriginAirport().getId());
+        log.info("destination airport -> {}", tripDto.getInquiry().getDestinationAirport().getId());
+        log.info("departure date -> {}", tripDto.getInquiry().getDepartureDate().toString());
         airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                 tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getOriginAirport().getId(), tripDto.getInquiry().getDestinationAirport().getId(),
                 tripDto.getInquiry().getDepartureDate().toString()

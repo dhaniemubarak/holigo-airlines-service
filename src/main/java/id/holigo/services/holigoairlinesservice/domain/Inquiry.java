@@ -12,7 +12,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
@@ -42,8 +42,8 @@ public class Inquiry {
     @ManyToOne
     private Airport destinationAirport;
 
-    private Date departureDate;
-    private Date returnDate;
+    private LocalDate departureDate;
+    private LocalDate returnDate;
     @Enumerated(EnumType.STRING)
     private TripType tripType;
     private Integer adultAmount;

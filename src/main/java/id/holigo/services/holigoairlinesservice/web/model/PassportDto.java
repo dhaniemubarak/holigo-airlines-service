@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -16,9 +17,9 @@ public class PassportDto implements Serializable {
 
     private String passportNumber;
 
-    private Date issueDate;
+    private LocalDate issueDate;
 
-    private Date expiryDate;
+    private LocalDate expiryDate;
 
     private String issueCountry;
 }

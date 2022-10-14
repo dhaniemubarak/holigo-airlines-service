@@ -45,9 +45,21 @@ public class AirlinesBookController {
         this.airlinesTransactionService = airlinesTransactionService;
     }
 
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createBook(@RequestBody AirlinesBookDto airlinesBookDto,
                                                  @RequestHeader("user-id") Long userId) {
+        try {
+            log.info("airlinesBookDto -> {}", objectMapper.writeValueAsString(airlinesBookDto));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         TransactionDto transactionDto = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
         StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.booked(Long.valueOf(transactionDto.getTransactionId()));
         log.info("get State id -> {}", sm.getState().getId());
