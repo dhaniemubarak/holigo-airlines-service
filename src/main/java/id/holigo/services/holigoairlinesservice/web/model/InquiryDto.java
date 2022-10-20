@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.sql.Date;
 import java.util.UUID;
 
 @Getter
@@ -30,9 +30,9 @@ public class InquiryDto implements Serializable {
 
     private String destinationAirportId;
 
-    private LocalDate departureDate;
+    private Date departureDate;
 
-    private LocalDate returnDate;
+    private Date returnDate;
 
     private TripType tripType;
 

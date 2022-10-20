@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.Date;
 import java.util.*;
 
 @Slf4j
@@ -203,7 +204,7 @@ public class AirlinesAvailabilityController {
                 if (airlinesAvailabilityReturns.isEmpty()) {
                     inquiryDto.setOriginAirportId(inquiry.getDestinationAirportId());
                     inquiryDto.setDestinationAirportId(inquiry.getOriginAirportId());
-                    inquiryDto.setDepartureDate(inquiry.getReturnDate());
+                    inquiryDto.setDepartureDate(Date.valueOf(inquiry.getReturnDate()));
                     inquiryDto.setReturnDate(null);
                     inquiryDto.setTripType(TripType.O);
                     try {
