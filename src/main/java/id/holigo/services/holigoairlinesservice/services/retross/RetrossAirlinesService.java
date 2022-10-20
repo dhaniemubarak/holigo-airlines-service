@@ -8,9 +8,9 @@ import java.util.Map;
 
 public interface RetrossAirlinesService {
 
-    ResponseScheduleDto getSchedule(RequestScheduleDto requestScheduleDto) throws JsonProcessingException;
+    ResponseScheduleDto getSchedule(RequestScheduleDto requestScheduleDto, Long userId) throws JsonProcessingException;
 
-    ResponseFareDto getFare(TripDto tripDto, Map<String, String> roundTrip) throws JsonProcessingException;
+    ResponseFareDto getFare(TripDto tripDto, Map<String, String> roundTrip, Long userId) throws JsonProcessingException;
 
     ResponseBookDto createBook(AirlinesTransaction airlinesTransaction) throws JsonProcessingException;
 

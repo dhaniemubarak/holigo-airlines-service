@@ -10,12 +10,13 @@
     </parent>
     <groupId>id.holigo.services</groupId>
     <artifactId>holigo-airlines-service</artifactId>
-    <version>1.0.15</version>
+    <version>1.0.16</version>
     <name>holigo-airlines-service</name>
     <description>holigo-airlines-service</description>
     <properties>
         <spring-cloud.version>2021.0.1</spring-cloud.version>
         <java.version>17</java.version>
+        <jvmArguments>-Dusertimezone=Asia/Jakarta</jvmArguments>
         <spring-statemachine.version>2.2.3.RELEASE</spring-statemachine.version>
         <docker.image.prefix>holigo</docker.image.prefix>
         <docker.image.name>${project.artifactId}</docker.image.name>

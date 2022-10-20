@@ -2,9 +2,12 @@ package id.holigo.services.holigoairlinesservice.services.retross;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.discovery.converters.Auto;
 import id.holigo.services.common.model.TripType;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionTripPassengerRepository;
+import id.holigo.services.holigoairlinesservice.services.logs.LogService;
+import id.holigo.services.holigoairlinesservice.services.logs.LogServiceImpl;
 import id.holigo.services.holigoairlinesservice.web.mappers.PassengerMapper;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +32,13 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
     private String RETROSS_PASSKEY;
 
     private RetrossAirlinesServiceFeignClient retrossAirlinesServiceFeignClient;
+
+    private LogService logService;
+
+    @Autowired
+    public void setLogService(LogService logService) {
+        this.logService = logService;
+    }
 
     @Autowired
     public void setRetrossAirlinesServiceFeignClient(RetrossAirlinesServiceFeignClient retrossAirlinesServiceFeignClient) {
@@ -57,35 +67,44 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
     }
 
     @Override
-    public ResponseScheduleDto getSchedule(RequestScheduleDto requestScheduleDto) throws JsonProcessingException {
+    public ResponseScheduleDto getSchedule(RequestScheduleDto requestScheduleDto, Long userId) throws JsonProcessingException {
         requestScheduleDto.setMmid(RETROSS_ID);
         requestScheduleDto.setRqid(RETROSS_PASSKEY);
         requestScheduleDto.setApp("information");
         requestScheduleDto.setAction("get_schedule");
-        log.info("Calling get schedule with request -> {}", objectMapper.writeValueAsString(requestScheduleDto));
-//
         ResponseScheduleDto responseScheduleDto;
         ResponseEntity<String> responseEntity;
+        SupplierLogDto supplierLogDto = SupplierLogDto.builder()
+                .userId(userId)
+                .supplier("retross")
+                .code("AIR")
+                .build();
+        log.info("Request body -> {}", objectMapper.writeValueAsString(requestScheduleDto));
         if (requestScheduleDto.getAc().equals("IA")) {
             if (requestScheduleDto.getCabin().equals("E")) {
                 requestScheduleDto.setCabin("economy");
             } else {
                 requestScheduleDto.setCabin("business");
             }
+            supplierLogDto.setUrl("http://ws.retross.com/airline/international/");
             responseEntity = retrossAirlinesServiceFeignClient.getInternationalSchedule(requestScheduleDto);
-            log.info("International schedule -> {}", responseEntity.getBody());
         } else {
+            supplierLogDto.setUrl("http://ws.retross.com/airline/domestik/");
             responseEntity = retrossAirlinesServiceFeignClient.getSchedule(requestScheduleDto);
+
         }
+        requestScheduleDto.setMmid("holivers");
+        requestScheduleDto.setRqid("HOLI******************GO");
+        supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestScheduleDto));
+        supplierLogDto.setLogResponse(responseEntity.getBody());
+        logService.sendSupplierLog(supplierLogDto);
         responseScheduleDto = objectMapper.readValue(responseEntity.getBody(), ResponseScheduleDto.class);
-
-        log.info("ResponseEntity body -> {}", responseEntity.getBody());
-
+        log.info("Response body -> {}", responseEntity.getBody());
         return responseScheduleDto;
     }
 
     @Override
-    public ResponseFareDto getFare(TripDto tripDto, Map<String, String> roundTrip) throws JsonProcessingException {
+    public ResponseFareDto getFare(TripDto tripDto, Map<String, String> roundTrip, Long userId) throws JsonProcessingException {
         RequestFareDto requestFareDto = RequestFareDto.builder()
                 .mmid(RETROSS_ID)
                 .rqid(RETROSS_PASSKEY)
@@ -106,18 +125,25 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
             requestFareDto.setAcRet(roundTrip.get("airlinesCode"));
         }
         ResponseFareDto responseFareDto;
-
-        log.info("Calling get fare with request -> {}", objectMapper.writeValueAsString(requestFareDto));
-
         ResponseEntity<String> responseEntity;
+        SupplierLogDto supplierLogDto = SupplierLogDto.builder()
+                .userId(userId)
+                .supplier("retross")
+                .code("AIR")
+                .build();
+        log.info("Request body -> {}", objectMapper.writeValueAsString(requestFareDto));
         if (tripDto.getInquiry().getAirlinesCode().equals("IA")) {
             requestFareDto.setCabin(tripDto.getInquiry().getSeatClass().equals("E") ? "economy" : "business");
             responseEntity = retrossAirlinesServiceFeignClient.getInternationalFare(requestFareDto);
-            log.info("International fare -> {}", objectMapper.writeValueAsString(responseEntity.getBody()));
         } else {
             responseEntity = retrossAirlinesServiceFeignClient.getFare(requestFareDto);
         }
-        log.info("ResponseEntity body -> {}", responseEntity.getBody());
+        log.info("Response body -> {}", responseEntity.getBody());
+        requestFareDto.setMmid("holivers");
+        requestFareDto.setRqid("HOLI**********************GO");
+        supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestFareDto));
+        supplierLogDto.setLogResponse(responseEntity.getBody());
+        logService.sendSupplierLog(supplierLogDto);
         responseFareDto = objectMapper.readValue(responseEntity.getBody(), ResponseFareDto.class);
         return responseFareDto;
     }
@@ -147,8 +173,19 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
             requestBookDto.setSelectedIdRet(airlinesTransaction.getTrips().get(1).getSupplierId());
             requestBookDto.setTgl_ret(airlinesTransaction.getTrips().get(1).getDepartureDate().toString());
         }
+        SupplierLogDto supplierLogDto = SupplierLogDto.builder()
+                .userId(airlinesTransaction.getUserId())
+                .supplier("retross")
+                .code("AIR")
+                .build();
+        log.info("Request body -> {}", objectMapper.writeValueAsString(requestBookDto));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.book(objectMapper.writeValueAsString(requestBookDto.build()));
-        log.info("Format response -> {}", responseEntity.getBody());
+        log.info("Response body -> {}", responseEntity.getBody());
+        requestBookDto.setMmid("holivers");
+        requestBookDto.setRqid("HOLI**********************GO");
+        supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestBookDto));
+        supplierLogDto.setLogResponse(responseEntity.getBody());
+        logService.sendSupplierLog(supplierLogDto);
         return objectMapper.readValue(responseEntity.getBody(), ResponseBookDto.class);
 //        String dummy = "{\"error_code\":\"000\",\"error_msg\":\"\",\"notrx\":\"AIR220803247758\",\"mmid\":\"holigo\",\"acDep\":\"JT\",\"Timelimit\":\"2022-08-03 04:46:00\",\"TotalAmount\":\"4319480\",\"NTA\":\"4248780\",\"PNRDep\":\"EGREFV\"}";
 //        responseBookDto = objectMapper.readValue(dummy, ResponseBookDto.class);
@@ -163,21 +200,44 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .rqid(RETROSS_PASSKEY)
                 .mmid(RETROSS_ID)
                 .notrx(airlinesTransaction.getTrips().get(0).getSupplierTransactionId()).build();
+        SupplierLogDto supplierLogDto = SupplierLogDto.builder()
+                .userId(airlinesTransaction.getUserId())
+                .supplier("retross")
+                .code("AIR")
+                .build();
+        log.info("Request body -> {}", objectMapper.writeValueAsString(requestCancelDto));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestCancelDto));
-        log.info(responseEntity.getBody());
+        log.info("Request body -> {}", responseEntity.getBody());
+        requestCancelDto.setMmid("holivers");
+        requestCancelDto.setRqid("HOLI**********************GO");
+        supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestCancelDto));
+        supplierLogDto.setLogResponse(responseEntity.getBody());
+        logService.sendSupplierLog(supplierLogDto);
         objectMapper.readValue(responseEntity.getBody(), ResponseCancelDto.class);
     }
 
     @Override
     public void issued(AirlinesTransaction airlinesTransaction) throws JsonProcessingException {
-        RequestIssuedDto requestCancelDto = RequestIssuedDto.builder()
+        RequestIssuedDto requestIssuedDto = RequestIssuedDto.builder()
                 .action("issued")
                 .app("transaction")
                 .rqid(RETROSS_PASSKEY)
                 .mmid(RETROSS_ID)
                 .notrx(airlinesTransaction.getTrips().get(0).getSupplierTransactionId()).build();
-        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestCancelDto));
+        SupplierLogDto supplierLogDto = SupplierLogDto.builder()
+                .userId(airlinesTransaction.getUserId())
+                .supplier("retross")
+                .code("AIR")
+                .build();
+        log.info("Request body -> {}", objectMapper.writeValueAsString(requestIssuedDto));
+        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestIssuedDto));
+        requestIssuedDto.setMmid("holivers");
+        requestIssuedDto.setRqid("HOLI**********************GO");
+        supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestIssuedDto));
+        supplierLogDto.setLogResponse(responseEntity.getBody());
+        logService.sendSupplierLog(supplierLogDto);
         log.info(responseEntity.getBody());
+        log.info("Response body -> {}", objectMapper.writeValueAsString(responseEntity.getBody()));
         objectMapper.readValue(responseEntity.getBody(), ResponseCancelDto.class);
     }
 }

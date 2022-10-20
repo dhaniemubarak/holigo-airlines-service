@@ -122,7 +122,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                 .chd(inquiryDto.getChildAmount())
                 .inf(inquiryDto.getInfantAmount())
                 .cabin(inquiryDto.getSeatClass()).build();
-        ResponseScheduleDto responseScheduleDto = retrossAirlinesService.getSchedule(requestScheduleDto);
+        ResponseScheduleDto responseScheduleDto = retrossAirlinesService.getSchedule(requestScheduleDto, inquiryDto.getUserId());
         if (responseScheduleDto.getError_code().equals("001")) {
             throw new AvailabilitiesException(responseScheduleDto.getError_msg());
         }
@@ -150,7 +150,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                     || (tripType.equals(TripType.R) && i == 0)) {
                 Map<String, String> roundTrip = setRoundTripVariable(requestFinalFareDto, tripType);
                 try {
-                    responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip);
+                    responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip, userId);
                     if (!responseFareDto.getError_code().equals("000")) {
                         throw new Exception("Failed get final fare from airlines");
                     }
@@ -215,7 +215,7 @@ public class AirlinesServiceImpl implements AirlinesService {
                     || (tripType.equals(TripType.R) && i == 0)) {
                 Map<String, String> roundTrip = setRoundTripVariable(requestFinalFareDto, tripType);
                 try {
-                    responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip);
+                    responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip, userId);
                     if (!responseFareDto.getError_code().equals("000")) {
                         throw new Exception("Failed get final fare from airlines");
                     }
