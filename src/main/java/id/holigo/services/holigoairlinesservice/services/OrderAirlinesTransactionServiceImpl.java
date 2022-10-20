@@ -45,6 +45,20 @@ public class OrderAirlinesTransactionServiceImpl implements OrderAirlinesTransac
     }
 
     @Override
+    public StateMachine<OrderStatusEnum, OrderStatusEvent> processIssued(Long id) {
+        StateMachine<OrderStatusEnum, OrderStatusEvent> sm = build(id);
+        sendEvent(id, sm, OrderStatusEvent.PROCESS_ISSUED);
+        return sm;
+    }
+
+    @Override
+    public StateMachine<OrderStatusEnum, OrderStatusEvent> issued(Long id) {
+        StateMachine<OrderStatusEnum, OrderStatusEvent> sm = build(id);
+        sendEvent(id, sm, OrderStatusEvent.ISSUED_SUCCESS);
+        return sm;
+    }
+
+    @Override
     public StateMachine<OrderStatusEnum, OrderStatusEvent> orderHasExpired(Long id) {
         StateMachine<OrderStatusEnum, OrderStatusEvent> sm = build(id);
         sendEvent(id, sm, OrderStatusEvent.ORDER_EXPIRE);

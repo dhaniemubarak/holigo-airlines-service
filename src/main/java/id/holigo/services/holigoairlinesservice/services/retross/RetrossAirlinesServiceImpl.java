@@ -231,7 +231,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .url("http://ws.retross.com/airline/domestik/")
                 .build();
         log.info("Request body -> {}", objectMapper.writeValueAsString(requestIssuedDto));
-        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestIssuedDto));
+        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.issued(objectMapper.writeValueAsString(requestIssuedDto));
         requestIssuedDto.setMmid("holivers");
         requestIssuedDto.setRqid("HOLI**********************GO");
         supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestIssuedDto));
@@ -239,6 +239,5 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         logService.sendSupplierLog(supplierLogDto);
         log.info(responseEntity.getBody());
         log.info("Response body -> {}", objectMapper.writeValueAsString(responseEntity.getBody()));
-        objectMapper.readValue(responseEntity.getBody(), ResponseCancelDto.class);
     }
 }
