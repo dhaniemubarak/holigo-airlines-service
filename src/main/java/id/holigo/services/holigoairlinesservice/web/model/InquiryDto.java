@@ -5,10 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -32,9 +30,9 @@ public class InquiryDto implements Serializable {
 
     private String destinationAirportId;
 
-    private Date departureDate;
+    private LocalDate departureDate;
 
-    private Date returnDate;
+    private LocalDate returnDate;
 
     private TripType tripType;
 

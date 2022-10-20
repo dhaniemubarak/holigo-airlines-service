@@ -2,12 +2,10 @@ package id.holigo.services.holigoairlinesservice.services.retross;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.discovery.converters.Auto;
 import id.holigo.services.common.model.TripType;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionTripPassengerRepository;
 import id.holigo.services.holigoairlinesservice.services.logs.LogService;
-import id.holigo.services.holigoairlinesservice.services.logs.LogServiceImpl;
 import id.holigo.services.holigoairlinesservice.web.mappers.PassengerMapper;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import javax.jms.Message;
 import java.util.Map;
 
 
@@ -130,9 +126,11 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .userId(userId)
                 .supplier("retross")
                 .code("AIR")
+                .url("http://ws.retross.com/airline/domestik/")
                 .build();
         log.info("Request body -> {}", objectMapper.writeValueAsString(requestFareDto));
         if (tripDto.getInquiry().getAirlinesCode().equals("IA")) {
+            supplierLogDto.setUrl("http://ws.retross.com/airline/international/");
             requestFareDto.setCabin(tripDto.getInquiry().getSeatClass().equals("E") ? "economy" : "business");
             responseEntity = retrossAirlinesServiceFeignClient.getInternationalFare(requestFareDto);
         } else {
@@ -177,6 +175,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .userId(airlinesTransaction.getUserId())
                 .supplier("retross")
                 .code("AIR")
+                .url("http://ws.retross.com/airline/domestik/")
                 .build();
         log.info("Request body -> {}", objectMapper.writeValueAsString(requestBookDto));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.book(objectMapper.writeValueAsString(requestBookDto.build()));
@@ -204,6 +203,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .userId(airlinesTransaction.getUserId())
                 .supplier("retross")
                 .code("AIR")
+                .url("http://ws.retross.com/airline/domestik/")
                 .build();
         log.info("Request body -> {}", objectMapper.writeValueAsString(requestCancelDto));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestCancelDto));
@@ -228,6 +228,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .userId(airlinesTransaction.getUserId())
                 .supplier("retross")
                 .code("AIR")
+                .url("http://ws.retross.com/airline/domestik/")
                 .build();
         log.info("Request body -> {}", objectMapper.writeValueAsString(requestIssuedDto));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestIssuedDto));
