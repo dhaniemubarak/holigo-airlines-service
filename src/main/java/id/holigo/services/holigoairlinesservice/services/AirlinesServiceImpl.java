@@ -156,7 +156,6 @@ public class AirlinesServiceImpl implements AirlinesService {
                     }
                     retrossFinalFares.add(responseFareDto.getSchedule().getDepartures());
                     if (tripType.equals(TripType.R)) {
-                        log.info("Response getFareDto return");
                         retrossFinalFares.add(responseFareDto.getSchedule().getReturns());
                     }
                 } catch (Exception e) {
@@ -199,7 +198,7 @@ public class AirlinesServiceImpl implements AirlinesService {
             setFinalFare(airlinesFinalFareTrip, fareDto);
             airlinesFinalFareTrips.add(airlinesFinalFareTrip);
         }
-        return getAirlinesFinalFare(userId, airlinesFinalFareTrips, tripType, false);
+        return getAirlinesFinalFare(userId, airlinesFinalFareTrips, tripType, responseFareDto, false);
     }
 
     @Override
@@ -265,15 +264,10 @@ public class AirlinesServiceImpl implements AirlinesService {
             }
             airlinesFinalFareTrips.add(airlinesFinalFareTrip);
         }));
-        return getAirlinesFinalFare(userId, airlinesFinalFareTrips, tripType, true);
+        return getAirlinesFinalFare(userId, airlinesFinalFareTrips, tripType, responseFareDto, true);
     }
 
     private void catchFinalFare(TripDto tripDto, TripType tripType, Exception e) {
-        log.info("Catch final fares.......");
-        log.info("Airlines code -> {}", tripDto.getTrip().getAirlinesCode());
-        log.info("origin airport -> {}", tripDto.getInquiry().getOriginAirport().getId());
-        log.info("destination airport -> {}", tripDto.getInquiry().getDestinationAirport().getId());
-        log.info("departure date -> {}", tripDto.getInquiry().getDepartureDate().toString());
         airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                 tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getOriginAirport().getId(), tripDto.getInquiry().getDestinationAirport().getId(),
                 tripDto.getInquiry().getDepartureDate().toString()
@@ -287,45 +281,33 @@ public class AirlinesServiceImpl implements AirlinesService {
         throw new ConflictException(e.getMessage());
     }
 
-    private AirlinesFinalFare getAirlinesFinalFare(long userId, Set<AirlinesFinalFareTrip> airlinesFinalFareTrips, TripType tripType, Boolean isInternational) {
+    private AirlinesFinalFare getAirlinesFinalFare(long userId, Set<AirlinesFinalFareTrip> airlinesFinalFareTrips, TripType tripType, ResponseFareDto responseFareDto, Boolean isInternational) {
+        FareDto fareDto = fareService.getFareDetail(FareDetailDto.builder()
+                .ntaAmount(responseFareDto.getTotalAmount())
+                .nraAmount(responseFareDto.getTotalAmount().subtract(responseFareDto.getNtaAmount()))
+                .productId(1).userId(userId).build());
         AirlinesFinalFare airlinesFinalFare = AirlinesFinalFare.builder()
-                .fareAmount(BigDecimal.valueOf(0.00))
+                .fareAmount(fareDto.getFareAmount())
                 .adminAmount(BigDecimal.valueOf(0.00))
-                .ntaAmount(BigDecimal.valueOf(0.00))
-                .nraAmount(BigDecimal.valueOf(0.00))
-                .cpAmount(BigDecimal.valueOf(0.00))
-                .mpAmount(BigDecimal.valueOf(0.00))
-                .ipAmount(BigDecimal.valueOf(0.00))
-                .hpAmount(BigDecimal.valueOf(0.00))
-                .hvAmount(BigDecimal.valueOf(0.00))
-                .prAmount(BigDecimal.valueOf(0.00))
-                .ipcAmount(BigDecimal.valueOf(0.00))
-                .hpcAmount(BigDecimal.valueOf(0.00))
-                .prcAmount(BigDecimal.valueOf(0.00))
-                .lossAmount(BigDecimal.valueOf(0.00))
+                .ntaAmount(fareDto.getNtaAmount())
+                .nraAmount(fareDto.getNraAmount())
+                .cpAmount(fareDto.getCpAmount())
+                .mpAmount(fareDto.getMpAmount())
+                .ipAmount(fareDto.getIpAmount())
+                .hpAmount(fareDto.getHpAmount())
+                .hvAmount(fareDto.getHvAmount())
+                .prAmount(fareDto.getPrAmount())
+                .ipcAmount(fareDto.getIpcAmount())
+                .hpcAmount(fareDto.getHpcAmount())
+                .prcAmount(fareDto.getPrcAmount())
+                .lossAmount(fareDto.getLossAmount())
                 .isInternational(isInternational)
+                .userId(userId)
+                .isBookable(true)
+                .tripType(tripType)
+                .isIdentityNumberRequired(true)
+                .isPhoneNumberRequired(true)
                 .build();
-        airlinesFinalFare.setUserId(userId);
-        airlinesFinalFare.setIsBookable(true);
-        airlinesFinalFare.setTripType(tripType);
-        airlinesFinalFare.setIsIdentityNumberRequired(true);
-        airlinesFinalFare.setIsPhoneNumberRequired(true);
-        airlinesFinalFareTrips.forEach(airlinesFinalFareTrip -> {
-            airlinesFinalFare.setFareAmount(airlinesFinalFare.getFareAmount().add(airlinesFinalFareTrip.getFareAmount()));
-            airlinesFinalFare.setAdminAmount(airlinesFinalFare.getAdminAmount().add(airlinesFinalFareTrip.getAdminAmount()));
-            airlinesFinalFare.setNtaAmount(airlinesFinalFare.getNtaAmount().add(airlinesFinalFareTrip.getNtaAmount()));
-            airlinesFinalFare.setNraAmount(airlinesFinalFare.getNraAmount().add(airlinesFinalFareTrip.getNraAmount()));
-            airlinesFinalFare.setCpAmount(airlinesFinalFare.getCpAmount().add(airlinesFinalFareTrip.getCpAmount()));
-            airlinesFinalFare.setMpAmount(airlinesFinalFare.getMpAmount().add(airlinesFinalFareTrip.getMpAmount()));
-            airlinesFinalFare.setIpAmount(airlinesFinalFare.getIpAmount().add(airlinesFinalFareTrip.getIpAmount()));
-            airlinesFinalFare.setHpAmount(airlinesFinalFare.getHpAmount().add(airlinesFinalFareTrip.getHpAmount()));
-            airlinesFinalFare.setHvAmount(airlinesFinalFare.getHvAmount().add(airlinesFinalFareTrip.getHvAmount()));
-            airlinesFinalFare.setPrAmount(airlinesFinalFare.getPrAmount().add(airlinesFinalFareTrip.getPrAmount()));
-            airlinesFinalFare.setIpcAmount(airlinesFinalFare.getIpcAmount().add(airlinesFinalFareTrip.getIpcAmount()));
-            airlinesFinalFare.setHpcAmount(airlinesFinalFare.getHpcAmount().add(airlinesFinalFareTrip.getHpcAmount()));
-            airlinesFinalFare.setPrcAmount(airlinesFinalFare.getPrcAmount().add(airlinesFinalFareTrip.getPrcAmount()));
-            airlinesFinalFare.setLossAmount(airlinesFinalFare.getLossAmount().add(airlinesFinalFareTrip.getLossAmount()));
-        });
         AirlinesFinalFare savedAirlinesFinalFare = airlinesFinalFareRepository.save(airlinesFinalFare);
         airlinesFinalFareTrips.forEach(airlinesFinalFareTrip -> airlinesFinalFareTrip.setFinalFare(savedAirlinesFinalFare));
         airlinesFinalFareTripRepository.saveAll(airlinesFinalFareTrips);

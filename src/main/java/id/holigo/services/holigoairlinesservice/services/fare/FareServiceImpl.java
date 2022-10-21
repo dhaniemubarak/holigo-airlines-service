@@ -33,8 +33,6 @@ public class FareServiceImpl implements FareService {
 
     @Override
     public FareDto getFareDetail(FareDetailDto fareDetailDto) {
-        log.info("JMS getFareDetail is running...");
-        log.info("fareDetailDto -> {}", fareDetailDto);
         Message message = jmsTemplate.sendAndReceive(JmsConfig.GET_DETAIL_FARE_PRODUCT, session -> {
             Message detailFareMessage;
             try {

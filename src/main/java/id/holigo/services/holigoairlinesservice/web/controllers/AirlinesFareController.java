@@ -55,11 +55,6 @@ public class AirlinesFareController {
 
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createFare(@RequestBody RequestFinalFareDto requestFinalFareDto, @RequestHeader("user-id") Long userId) {
-        try {
-            log.info("requestFinalFareDto -> {}", objectMapper.writeValueAsString(requestFinalFareDto));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
         boolean isInternational = requestFinalFareDto.getTrips().stream().anyMatch(tripDto -> tripDto.getInquiry().getAirlinesCode().equals("IA"));
         AirlinesFinalFare airlinesFinalFare;
         if (isInternational) {

@@ -91,11 +91,6 @@ public class AirlinesAvailabilityController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         Inquiry inquiry;
-        try {
-            log.info("inquiryDto -> {}", new ObjectMapper().writeValueAsString(inquiryDto));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
         List<AirlinesAvailabilityDto> availabilityDeparturesDto = new ArrayList<>();
         Optional<Inquiry> fetchInquiry = inquiryRepository.getInquiry(inquiryDto.getAirlinesCode(),
                 inquiryDto.getOriginAirportId(), inquiryDto.getDestinationAirportId(), inquiryDto.getDepartureDate().toString(),
