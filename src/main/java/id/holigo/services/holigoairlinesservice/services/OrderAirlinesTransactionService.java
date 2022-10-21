@@ -10,6 +10,10 @@ public interface OrderAirlinesTransactionService {
 
     StateMachine<OrderStatusEnum, OrderStatusEvent> bookFailed(Long id);
 
+    StateMachine<OrderStatusEnum, OrderStatusEvent> processIssued(Long id);
+
+    StateMachine<OrderStatusEnum, OrderStatusEvent> issued(Long id);
+
     StateMachine<OrderStatusEnum, OrderStatusEvent> orderHasExpired(Long id);
 
     StateMachine<OrderStatusEnum, OrderStatusEvent> orderHasCanceled(Long id);

@@ -54,7 +54,7 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
                 .event(OrderStatusEvent.BOOK_FAIL).action(bookFailed())
                 .and()
                 .withExternal().source(OrderStatusEnum.BOOKED).target(OrderStatusEnum.PROCESS_ISSUED)
-                .event(OrderStatusEvent.PROCESS_ISSUED)
+                .event(OrderStatusEvent.PROCESS_ISSUED).action(processIssued())
                 .and()
                 .withExternal().source(OrderStatusEnum.PROCESS_ISSUED).target(OrderStatusEnum.ISSUED)
                 .event(OrderStatusEvent.ISSUED_SUCCESS)
@@ -91,7 +91,6 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
     @Bean
     public Action<OrderStatusEnum, OrderStatusEvent> bookSuccess() {
         return stateContext -> {
-
             AirlinesTransaction airlinesTransaction = airlinesTransactionRepository
                     .getById(Long.parseLong(stateContext
                             .getMessageHeader(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
@@ -102,6 +101,24 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
             }
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
                 airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.BOOKED);
+                airlinesTransactionTripRepository.save(airlinesTransactionTrip);
+            });
+        };
+    }
+
+    @Bean
+    public Action<OrderStatusEnum, OrderStatusEvent> processIssued() {
+        return stateContext -> {
+            AirlinesTransaction airlinesTransaction = airlinesTransactionRepository
+                    .getById(Long.parseLong(stateContext
+                            .getMessageHeader(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+            try {
+                airlinesService.issued(airlinesTransaction);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.PROCESS_ISSUED);
                 airlinesTransactionTripRepository.save(airlinesTransactionTrip);
             });
         };

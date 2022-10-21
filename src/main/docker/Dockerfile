@@ -4,6 +4,8 @@ ADD maven/${project.build.finalName}.jar ${project.build.finalName}.jar
 RUN java -Djarmode=layertools -jar ${project.build.finalName}.jar extract
 
 FROM openjdk:17-alpine
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Jakarta
 LABEL   PROJECT_NAME={project.artifactId} \
     PROJECT=${project.id}
 

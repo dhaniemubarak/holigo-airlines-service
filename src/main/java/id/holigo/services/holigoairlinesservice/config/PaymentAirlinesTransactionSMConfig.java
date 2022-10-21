@@ -1,13 +1,11 @@
 package id.holigo.services.holigoairlinesservice.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import id.holigo.services.common.model.PaymentStatusEnum;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
-import id.holigo.services.holigoairlinesservice.domain.IssuedError;
 import id.holigo.services.holigoairlinesservice.events.PaymentStatusEvent;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionTripRepository;
-import id.holigo.services.holigoairlinesservice.services.AirlinesService;
+import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionServiceImpl;
 import id.holigo.services.holigoairlinesservice.services.PaymentAirlinesTransactionServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +33,7 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
 
     private final AirlinesTransactionTripRepository airlinesTransactionTripRepository;
 
-    private final AirlinesService airlinesService;
+    private final OrderAirlinesTransactionService orderAirlinesTransactionService;
 
 
     @Override
@@ -85,17 +83,7 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
                 airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.PAID);
                 airlinesTransactionTripRepository.save(airlinesTransactionTrip);
             });
-            try {
-                airlinesService.issued(airlinesTransaction);
-            } catch (JsonProcessingException e) {
-                IssuedError issuedError = IssuedError.builder()
-                        .transactionId(airlinesTransaction.getTransactionId())
-                        .userId(airlinesTransaction.getUserId())
-                        .airlinesTransactionId(airlinesTransaction.getId())
-                        .message(e.getMessage())
-                        .build();
-                throw new RuntimeException(e);
-            }
+            orderAirlinesTransactionService.processIssued(airlinesTransaction.getId());
         };
     }
 
