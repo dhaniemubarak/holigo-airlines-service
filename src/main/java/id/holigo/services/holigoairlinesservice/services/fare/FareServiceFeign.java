@@ -16,16 +16,11 @@ public class FareServiceFeign implements FareService {
 
     @Override
     public FareDto getFareDetail(FareDetailDto fareDetailDto) {
-        log.info("Calling fare service feign with");
-
         ResponseEntity<FareDto> responseEntity = fareServiceFeignClient.getFare(
                 fareDetailDto.getUserId(),
                 fareDetailDto.getProductId(),
                 fareDetailDto.getNraAmount(),
                 fareDetailDto.getNtaAmount());
-
-        log.info("responseEntity body -> {}", responseEntity.getBody());
-
         return responseEntity.getBody();
     }
 }

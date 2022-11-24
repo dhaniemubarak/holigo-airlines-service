@@ -3,8 +3,8 @@ package id.holigo.services.holigoairlinesservice.domain;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.sql.Date;
+import java.sql.Time;
 
 @Data
 public class AirlinesScheduleId implements Serializable {
@@ -19,13 +19,13 @@ public class AirlinesScheduleId implements Serializable {
 
     private String destinationAirportId;
 
-    private LocalDate departureDate;
+    private Date departureDate;
 
-    private LocalTime departureTime;
+    private Time departureTime;
 
-    private LocalDate arrivalDate;
+    private Date arrivalDate;
 
-    private LocalTime arrivalTime;
+    private Time arrivalTime;
 
     private String seatClass;
 }

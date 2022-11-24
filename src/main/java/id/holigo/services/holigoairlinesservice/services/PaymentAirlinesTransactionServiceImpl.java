@@ -31,6 +31,12 @@ public class PaymentAirlinesTransactionServiceImpl implements PaymentAirlinesTra
         this.airlinesTransactionRepository = airlinesTransactionRepository;
     }
 
+    @Override
+    public void paymentHasSelected(Long id) {
+        StateMachine<PaymentStatusEnum, PaymentStatusEvent> sm = build(id);
+        sendEvent(id, sm, PaymentStatusEvent.PAYMENT_SELECTED);
+    }
+
     public StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasPaid(Long id) {
         StateMachine<PaymentStatusEnum, PaymentStatusEvent> sm = build(id);
         sendEvent(id, sm, PaymentStatusEvent.PAYMENT_PAID);
@@ -38,11 +44,10 @@ public class PaymentAirlinesTransactionServiceImpl implements PaymentAirlinesTra
     }
 
     @Override
-    public StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasCanceled(Long id) {
+    public void paymentHasCanceled(Long id) {
         StateMachine<PaymentStatusEnum, PaymentStatusEvent> sm = build(id);
         sendEvent(id, sm, PaymentStatusEvent.PAYMENT_CANCEL);
 
-        return sm;
     }
 
     @Override

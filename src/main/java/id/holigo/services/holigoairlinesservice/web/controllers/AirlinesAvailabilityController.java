@@ -45,14 +45,6 @@ public class AirlinesAvailabilityController {
     private InquiryMapper inquiryMapper;
 
     private AirportRepository airportRepository;
-
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    public void setObjectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
     @Autowired
     public void setAirlinesService(AirlinesService airlinesService) {
         this.airlinesService = airlinesService;
@@ -114,11 +106,13 @@ public class AirlinesAvailabilityController {
         }
         inquiryDto = inquiryMapper.inquiryToInquiryDto(inquiry);
         inquiryDto.setUserId(userId);
-        if (!inquiryDto.getAirlinesCode().equals("IA") &&
-                (!inquiryDto.getOriginAirport().getCountry().equalsIgnoreCase("indonesia") ||
-                        !inquiryDto.getDestinationAirport().getCountry().equalsIgnoreCase("indonesia"))) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        // If airlines code is "IA" which mean international airlines then make sure the origin and destination of flight is not indonesia (same)
+        if (inquiryDto.getAirlinesCode().equals("IA")) {
+            if (inquiryDto.getOriginAirport().getCountry().equalsIgnoreCase("indonesia") && inquiryDto.getDestinationAirport().getCountry().equalsIgnoreCase("indonesia")) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
         }
+
 
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
         listAvailabilityDto.setInquiry(inquiryDto);
@@ -127,13 +121,6 @@ public class AirlinesAvailabilityController {
                 inquiry.getAirlinesCode(), inquiry.getOriginAirport().getId(), inquiry.getDestinationAirport().getId(),
                 inquiry.getDepartureDate().toString(), inquiry.getSeatClass()
         );
-        try {
-            log.info("Inquiry -> {}", objectMapper.writeValueAsString(inquiryDto));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        log.info("size -> {}", airlinesAvailabilityDepartures.size());
-
         if (airlinesAvailabilityDepartures.size() > 0) {
             try {
                 listAvailabilityDto.setDepartures(
@@ -145,12 +132,11 @@ public class AirlinesAvailabilityController {
                         ).toList()
                 );
             } catch (NoSuchElementException e) {
-                log.info("Error log -> {}", e.getMessage());
                 airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                         inquiryDto.getAirlinesCode(),
                         inquiryDto.getOriginAirportId(),
                         inquiryDto.getDestinationAirportId(),
-                        inquiryDto.getDepartureDate().toString());
+                        inquiryDto.getDepartureDate());
                 throw new AvailabilitiesException(e.getMessage(), null, false, false);
             }
 
@@ -170,7 +156,7 @@ public class AirlinesAvailabilityController {
                             inquiryDto.getAirlinesCode(),
                             inquiryDto.getDestinationAirportId(),
                             inquiryDto.getOriginAirportId(),
-                            inquiryDto.getReturnDate().toString());
+                            inquiryDto.getReturnDate());
                     throw new AvailabilitiesException(e.getMessage(), null, false, false);
                 }
 
@@ -199,7 +185,7 @@ public class AirlinesAvailabilityController {
                 if (airlinesAvailabilityReturns.isEmpty()) {
                     inquiryDto.setOriginAirportId(inquiry.getDestinationAirportId());
                     inquiryDto.setDestinationAirportId(inquiry.getOriginAirportId());
-                    inquiryDto.setDepartureDate(Date.valueOf(inquiry.getReturnDate()));
+                    inquiryDto.setDepartureDate(inquiry.getReturnDate());
                     inquiryDto.setReturnDate(null);
                     inquiryDto.setTripType(TripType.O);
                     try {
@@ -235,12 +221,12 @@ public class AirlinesAvailabilityController {
             });
             listAvailabilityDto.setReturns(availabilityReturnsDto);
         }
-
-        try {
-            log.info("Airlines availability -> {}", objectMapper.writeValueAsString(listAvailabilityDto));
-        } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-        }
+//
+//        try {
+//            log.info("Airlines availability -> {}", objectMapper.writeValueAsString(listAvailabilityDto));
+//        } catch (JsonProcessingException e) {
+////            throw new RuntimeException(e);
+//        }
         return new ResponseEntity<>(listAvailabilityDto, HttpStatus.OK);
     }
 }

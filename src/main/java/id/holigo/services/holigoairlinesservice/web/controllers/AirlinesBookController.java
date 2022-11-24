@@ -10,6 +10,7 @@ import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransaction
 import id.holigo.services.holigoairlinesservice.services.AirlinesService;
 import id.holigo.services.holigoairlinesservice.services.AirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionService;
+import id.holigo.services.holigoairlinesservice.services.transaction.TransactionService;
 import id.holigo.services.holigoairlinesservice.web.exceptions.BookException;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesBookDto;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +30,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AirlinesBookController {
 
     private AirlinesTransactionService airlinesTransactionService;
-    private OrderAirlinesTransactionService orderAirlinesTransactionService;
+    private AirlinesService airlinesService;
 
     @Autowired
-    public void setOrderAirlinesTransactionService(OrderAirlinesTransactionService orderAirlinesTransactionService) {
-        this.orderAirlinesTransactionService = orderAirlinesTransactionService;
+    public void setAirlinesService(AirlinesService airlinesService) {
+        this.airlinesService = airlinesService;
     }
 
     private final static String PATH = "/api/v1/airlines/book";
@@ -44,29 +45,21 @@ public class AirlinesBookController {
     public void setAirlinesTransactionService(AirlinesTransactionService airlinesTransactionService) {
         this.airlinesTransactionService = airlinesTransactionService;
     }
-
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    public void setObjectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createBook(@RequestBody AirlinesBookDto airlinesBookDto,
                                                  @RequestHeader("user-id") Long userId) {
+        TransactionDto transactionDto = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
         try {
-            log.info("airlinesBookDto -> {}", objectMapper.writeValueAsString(airlinesBookDto));
+            AirlinesTransaction airlinesTransaction = airlinesService.createBook(Long.valueOf(transactionDto.getTransactionId()));
+            if (!airlinesTransaction.getOrderStatus().equals(OrderStatusEnum.BOOKED)) {
+
+                throw new BookException("Gagal booking, Silahkan pilih kembali penerbangan Anda", null, false, false);
+            }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        TransactionDto transactionDto = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
-        StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.booked(Long.valueOf(transactionDto.getTransactionId()));
-        log.info("get State id -> {}", sm.getState().getId());
-        if (!sm.getState().getId().equals(OrderStatusEnum.BOOKED)) {
-            orderAirlinesTransactionService.bookFailed(Long.valueOf(transactionDto.getTransactionId()));
-            throw new BookException("Gagal booking, Silahkan pilih kembali penerbangan Anda", null, false, false);
-        }
+
+
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setLocation(UriComponentsBuilder.fromPath(TRANSACTION_PATH)
                 .buildAndExpand(transactionDto.getId().toString()).toUri());

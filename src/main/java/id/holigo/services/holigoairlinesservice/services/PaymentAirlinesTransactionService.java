@@ -7,9 +7,10 @@ import org.springframework.statemachine.StateMachine;
 public interface PaymentAirlinesTransactionService {
 
 
+    void paymentHasSelected(Long id);
     StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasPaid(Long id);
 
-    StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasCanceled(Long id);
+    void paymentHasCanceled(Long id);
 
     StateMachine<PaymentStatusEnum, PaymentStatusEvent> paymentHasExpired(Long id);
 }

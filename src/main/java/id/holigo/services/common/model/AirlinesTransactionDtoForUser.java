@@ -4,10 +4,7 @@ import id.holigo.services.common.model.PaymentStatusEnum;
 import id.holigo.services.common.model.TripType;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesTransactionTripDtoForUser;
 import id.holigo.services.holigoairlinesservice.web.model.ContactPersonDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -19,6 +16,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AirlinesTransactionDtoForUser implements Serializable {
     private Long id;
 

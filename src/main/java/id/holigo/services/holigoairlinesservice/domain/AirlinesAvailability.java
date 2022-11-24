@@ -9,9 +9,9 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -55,16 +55,16 @@ public class AirlinesAvailability {
     private String destinationAirportId;
 
     @Id
-    private LocalDate departureDate;
+    private Date departureDate;
 
     @Id
-    private LocalTime departureTime;
+    private Time departureTime;
 
     @Id
-    private LocalDate arrivalDate;
+    private Date arrivalDate;
 
     @Id
-    private LocalTime arrivalTime;
+    private Time arrivalTime;
 
     @Id
     @Column(length = 1)

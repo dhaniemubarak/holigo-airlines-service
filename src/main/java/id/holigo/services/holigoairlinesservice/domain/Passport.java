@@ -13,8 +13,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
@@ -32,9 +32,9 @@ public class Passport {
     private UUID id;
     @Column(length = 50, columnDefinition = "varchar(50)")
     private String passportNumber;
-    private LocalDate issueDate;
+    private Date issueDate;
 
-    private LocalDate expiryDate;
+    private Date expiryDate;
 
     @Column(length = 50, columnDefinition = "varchar(50)")
     private String issueCountry;

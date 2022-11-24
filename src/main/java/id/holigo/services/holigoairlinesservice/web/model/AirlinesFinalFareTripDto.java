@@ -6,13 +6,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,10 +26,10 @@ public class AirlinesFinalFareTripDto implements Serializable {
     private String flightNumber;
     private AirportDto originAirport;
     private AirportDto destinationAirport;
-    private LocalDate departureDate;
-    private LocalTime departureTime;
-    private LocalDate arrivalDate;
-    private LocalTime arrivalTime;
+    private Date departureDate;
+    private Time departureTime;
+    private Date arrivalDate;
+    private Time arrivalTime;
     private Integer duration;
     private String imageUrl;
     private Integer transit;

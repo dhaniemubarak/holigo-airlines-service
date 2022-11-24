@@ -11,8 +11,6 @@ import javax.persistence.*;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.UUID;
 
 @Getter
@@ -45,13 +43,13 @@ public class AirlinesFinalFareTripItinerary {
     @ManyToOne
     private Airport destinationAirport;
 
-    private LocalDate departureDate;
+    private Date departureDate;
 
-    private LocalTime departureTime;
+    private Time departureTime;
 
-    private LocalDate arrivalDate;
+    private Date arrivalDate;
 
-    private LocalTime arrivalTime;
+    private Time arrivalTime;
 
     private Integer duration;
 

@@ -2,22 +2,35 @@ package id.holigo.services.holigoairlinesservice.services.retross;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.holigo.services.common.model.TripType;
+import id.holigo.services.common.model.*;
+import id.holigo.services.holigoairlinesservice.config.KafkaTopicConfig;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesTransaction;
+import id.holigo.services.holigoairlinesservice.domain.AirlinesTransactionTripPassenger;
+import id.holigo.services.holigoairlinesservice.events.OrderStatusEvent;
+import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionRepository;
 import id.holigo.services.holigoairlinesservice.repositories.AirlinesTransactionTripPassengerRepository;
+import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.services.logs.LogService;
+import id.holigo.services.holigoairlinesservice.services.transaction.TransactionService;
 import id.holigo.services.holigoairlinesservice.web.mappers.PassengerMapper;
 import id.holigo.services.holigoairlinesservice.web.model.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.statemachine.StateMachine;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
 
 
@@ -29,6 +42,14 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
 
     private RetrossAirlinesServiceFeignClient retrossAirlinesServiceFeignClient;
 
+    private AirlinesTransactionRepository airlinesTransactionRepository;
+
+    private OrderAirlinesTransactionService orderAirlinesTransactionService;
+
+    private final KafkaTemplate<String, AirlinesTransactionDtoForUser> airlinesKafkaTemplate;
+
+    private TransactionService transactionService;
+
     private LogService logService;
 
     @Autowired
@@ -37,8 +58,23 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
     }
 
     @Autowired
+    public void setTransactionService(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+
+    @Autowired
     public void setRetrossAirlinesServiceFeignClient(RetrossAirlinesServiceFeignClient retrossAirlinesServiceFeignClient) {
         this.retrossAirlinesServiceFeignClient = retrossAirlinesServiceFeignClient;
+    }
+
+    @Autowired
+    public void setAirlinesTransactionRepository(AirlinesTransactionRepository airlinesTransactionRepository) {
+        this.airlinesTransactionRepository = airlinesTransactionRepository;
+    }
+
+    @Autowired
+    public void setOrderAirlinesTransactionService(OrderAirlinesTransactionService orderAirlinesTransactionService) {
+        this.orderAirlinesTransactionService = orderAirlinesTransactionService;
     }
 
     private ObjectMapper objectMapper;
@@ -75,7 +111,6 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .supplier("retross")
                 .code("AIR")
                 .build();
-        log.info("Request body -> {}", objectMapper.writeValueAsString(requestScheduleDto));
         if (requestScheduleDto.getAc().equals("IA")) {
             if (requestScheduleDto.getCabin().equals("E")) {
                 requestScheduleDto.setCabin("economy");
@@ -95,7 +130,6 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         supplierLogDto.setLogResponse(responseEntity.getBody());
         logService.sendSupplierLog(supplierLogDto);
         responseScheduleDto = objectMapper.readValue(responseEntity.getBody(), ResponseScheduleDto.class);
-        log.info("Response body -> {}", responseEntity.getBody());
         return responseScheduleDto;
     }
 
@@ -128,7 +162,6 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .code("AIR")
                 .url("http://ws.retross.com/airline/domestik/")
                 .build();
-        log.info("Request body -> {}", objectMapper.writeValueAsString(requestFareDto));
         if (tripDto.getInquiry().getAirlinesCode().equals("IA")) {
             supplierLogDto.setUrl("http://ws.retross.com/airline/international/");
             requestFareDto.setCabin(tripDto.getInquiry().getSeatClass().equals("E") ? "economy" : "business");
@@ -136,7 +169,6 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         } else {
             responseEntity = retrossAirlinesServiceFeignClient.getFare(requestFareDto);
         }
-        log.info("Response body -> {}", responseEntity.getBody());
         requestFareDto.setMmid("holivers");
         requestFareDto.setRqid("HOLI**********************GO");
         supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestFareDto));
@@ -177,9 +209,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .code("AIR")
                 .url("http://ws.retross.com/airline/domestik/")
                 .build();
-        log.info("Request body -> {}", objectMapper.writeValueAsString(requestBookDto));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.book(objectMapper.writeValueAsString(requestBookDto.build()));
-        log.info("Response body -> {}", responseEntity.getBody());
         requestBookDto.setMmid("holivers");
         requestBookDto.setRqid("HOLI**********************GO");
         supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestBookDto));
@@ -205,9 +235,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .code("AIR")
                 .url("http://ws.retross.com/airline/domestik/")
                 .build();
-        log.info("Request body -> {}", objectMapper.writeValueAsString(requestCancelDto));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.cancel(objectMapper.writeValueAsString(requestCancelDto));
-        log.info("Request body -> {}", responseEntity.getBody());
         requestCancelDto.setMmid("holivers");
         requestCancelDto.setRqid("HOLI**********************GO");
         supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestCancelDto));
@@ -230,14 +258,48 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .code("AIR")
                 .url("http://ws.retross.com/airline/domestik/")
                 .build();
-        log.info("Request body -> {}", objectMapper.writeValueAsString(requestIssuedDto));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.issued(objectMapper.writeValueAsString(requestIssuedDto));
         requestIssuedDto.setMmid("holivers");
         requestIssuedDto.setRqid("HOLI**********************GO");
         supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestIssuedDto));
-        supplierLogDto.setLogResponse(responseEntity.getBody());
+//        supplierLogDto.setLogResponse(responseEntity.getBody());
         logService.sendSupplierLog(supplierLogDto);
-        log.info(responseEntity.getBody());
-        log.info("Response body -> {}", objectMapper.writeValueAsString(responseEntity.getBody()));
+//        log.info("Response body -> {}", objectMapper.writeValueAsString(responseEntity.getBody()));
+        ResponseIssuedDto responseIssuedDto = objectMapper.readValue(responseEntity.getBody(), ResponseIssuedDto.class);
+//        ResponseIssuedDto responseIssuedDto = objectMapper.readValue("{\"error_code\":\"000\",\"error_msg\":\"\",\"notrx\":\"AIR221120479282\",\"mmid\":\"mastersip\",\"status\":\"ISSUED\",\"acDep\":\"JT\",\"acRet\":\"JT\",\"PNRDep\":\"ZYPAID\",\"PNRRet\":\"ZYPAID\",\"TotalAmount\":\"10621440\",\"NTA\":\"10486200\",\"saldo\":\"-587920\",\"penumpang\":[{\"jns\":\"A\",\"title\":\"MR\",\"fn\":\"Mochamad\",\"ln\":\"Ramdhanie\",\"birth\":\"0000-00-00\",\"hp\":\"081347459776\",\"noticket\":\"9902146454424\",\"noticket_ret\":\"9902146454424\"},{\"jns\":\"A\",\"title\":\"MRS\",\"fn\":\"Anisa\",\"ln\":\"Nursantika\",\"birth\":\"0000-00-00\",\"hp\":\"085248790078\",\"noticket\":\"9902146454425\",\"noticket_ret\":\"9902146454425\"}]}", ResponseIssuedDto.class);
+        if (responseIssuedDto.getError_code().equals("001")) {
+            airlinesTransaction.setSupplierMessage(responseIssuedDto.getError_msg());
+            airlinesTransactionRepository.save(airlinesTransaction);
+            StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.issuedFailed(airlinesTransaction.getId());
+            if (sm.getState().getId().equals(OrderStatusEnum.ISSUED_FAILED)) {
+                airlinesKafkaTemplate.send(KafkaTopicConfig.UPDATE_ORDER_STATUS_AIRLINES_TRANSACTION, AirlinesTransactionDtoForUser.builder().id(airlinesTransaction.getId())
+                        .orderStatus(OrderStatusEnum.ISSUED_FAILED).build());
+            }
+        }
+        if (responseIssuedDto.getError_code().equals("000")) {
+            if (responseIssuedDto.getStatus().equalsIgnoreCase("ISSUED")) {
+                AtomicInteger indexTrip = new AtomicInteger();
+                airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                    List<AirlinesTransactionTripPassenger> tripPassengers = airlinesTransactionTripPassengerRepository.findAllByTripId(airlinesTransactionTrip.getId());
+                    AtomicInteger indexPassenger = new AtomicInteger();
+                    for (AirlinesTransactionTripPassenger tripPassenger : tripPassengers) {
+                        if (indexTrip.get() == 0) {
+                            tripPassenger.setTicketNumber(responseIssuedDto.getPenumpang().get(indexPassenger.get()).getNoticket());
+                        } else {
+                            tripPassenger.setTicketNumber(responseIssuedDto.getPenumpang().get(indexPassenger.get()).getNoticket_ret());
+                        }
+                        airlinesTransactionTripPassengerRepository.save(tripPassenger);
+                        indexPassenger.getAndIncrement();
+                    }
+                    indexTrip.getAndIncrement();
+                });
+                StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.issued(airlinesTransaction.getId());
+                if (sm.getState().getId().equals(OrderStatusEnum.ISSUED)) {
+                    transactionService.updateOrderStatusTransaction(TransactionDto.builder()
+                            .orderStatus(OrderStatusEnum.ISSUED)
+                            .id(airlinesTransaction.getTransactionId()).build());
+                }
+            }
+        }
     }
 }

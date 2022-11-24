@@ -14,6 +14,8 @@ public interface OrderAirlinesTransactionService {
 
     StateMachine<OrderStatusEnum, OrderStatusEvent> issued(Long id);
 
+    StateMachine<OrderStatusEnum, OrderStatusEvent> issuedFailed(Long id);
+
     StateMachine<OrderStatusEnum, OrderStatusEvent> orderHasExpired(Long id);
 
     StateMachine<OrderStatusEnum, OrderStatusEvent> orderHasCanceled(Long id);

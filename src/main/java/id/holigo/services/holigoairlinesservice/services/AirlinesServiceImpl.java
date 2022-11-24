@@ -2,13 +2,14 @@ package id.holigo.services.holigoairlinesservice.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.holigo.services.common.model.FareDetailDto;
+import id.holigo.services.common.model.*;
 import id.holigo.services.common.model.FareDto;
-import id.holigo.services.common.model.TripType;
 import id.holigo.services.holigoairlinesservice.domain.*;
+import id.holigo.services.holigoairlinesservice.events.OrderStatusEvent;
 import id.holigo.services.holigoairlinesservice.repositories.*;
 import id.holigo.services.holigoairlinesservice.services.fare.FareService;
 import id.holigo.services.holigoairlinesservice.services.retross.RetrossAirlinesService;
+import id.holigo.services.holigoairlinesservice.services.transaction.TransactionService;
 import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
 import id.holigo.services.holigoairlinesservice.web.exceptions.BookException;
 import id.holigo.services.holigoairlinesservice.web.exceptions.ConflictException;
@@ -16,6 +17,7 @@ import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.statemachine.StateMachine;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +51,20 @@ public class AirlinesServiceImpl implements AirlinesService {
     private AirlinesTransactionRepository airlinesTransactionRepository;
 
     private AirlinesTransactionTripRepository airlinesTransactionTripRepository;
+
+    private OrderAirlinesTransactionService orderAirlinesTransactionService;
+
+    private TransactionService transactionService;
+
+    @Autowired
+    public void setTransactionService(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+
+    @Autowired
+    public void setOrderAirlinesTransactionService(OrderAirlinesTransactionService orderAirlinesTransactionService) {
+        this.orderAirlinesTransactionService = orderAirlinesTransactionService;
+    }
 
     @Autowired
     public void setAirlinesTransactionTripRepository(AirlinesTransactionTripRepository airlinesTransactionTripRepository) {
@@ -134,7 +150,7 @@ public class AirlinesServiceImpl implements AirlinesService {
         return listAvailabilityDto;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = ConflictException.class)
     @Override
     public AirlinesFinalFare createFinalFares(RequestFinalFareDto requestFinalFareDto, Long userId) {
 
@@ -151,15 +167,15 @@ public class AirlinesServiceImpl implements AirlinesService {
                 Map<String, String> roundTrip = setRoundTripVariable(requestFinalFareDto, tripType);
                 try {
                     responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip, userId);
-                    if (!responseFareDto.getError_code().equals("000")) {
-                        throw new Exception("Failed get final fare from airlines");
-                    }
-                    retrossFinalFares.add(responseFareDto.getSchedule().getDepartures());
-                    if (tripType.equals(TripType.R)) {
-                        retrossFinalFares.add(responseFareDto.getSchedule().getReturns());
-                    }
-                } catch (Exception e) {
-                    catchFinalFare(tripDto, tripType, e);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                if (!responseFareDto.getError_code().equals("000")) {
+                    catchFinalFare(tripDto, tripType);
+                }
+                retrossFinalFares.add(responseFareDto.getSchedule().getDepartures());
+                if (tripType.equals(TripType.R)) {
+                    retrossFinalFares.add(responseFareDto.getSchedule().getReturns());
                 }
             }
         }
@@ -168,7 +184,6 @@ public class AirlinesServiceImpl implements AirlinesService {
             FareDto fareDto;
             TripDto tripDto = requestFinalFareDto.getTrips().get(i);
             try {
-                log.info("Loop ke -> {}", i);
                 BigDecimal ntaAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare();
                 if (ntaAmount.equals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP))) {
                     ntaAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare();
@@ -182,7 +197,6 @@ public class AirlinesServiceImpl implements AirlinesService {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
-            log.info("airlines availability id -> {}", tripDto.getTrip().getId().toString());
             AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
                     .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
             AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
@@ -198,9 +212,11 @@ public class AirlinesServiceImpl implements AirlinesService {
             setFinalFare(airlinesFinalFareTrip, fareDto);
             airlinesFinalFareTrips.add(airlinesFinalFareTrip);
         }
+        assert responseFareDto != null;
         return getAirlinesFinalFare(userId, airlinesFinalFareTrips, tripType, responseFareDto, false);
     }
 
+    @Transactional
     @Override
     public AirlinesFinalFare createInternationalFinalFare(RequestFinalFareDto requestFinalFareDto, long userId) {
         Set<AirlinesFinalFareTrip> airlinesFinalFareTrips = new HashSet<>();
@@ -209,17 +225,16 @@ public class AirlinesServiceImpl implements AirlinesService {
         for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
             TripDto tripDto = requestFinalFareDto.getTrips().get(i);
             tripType = tripDto.getInquiry().getTripType();
-
             if ((tripType != TripType.R && i != 1)
                     || (tripType.equals(TripType.R) && i == 0)) {
                 Map<String, String> roundTrip = setRoundTripVariable(requestFinalFareDto, tripType);
                 try {
                     responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip, userId);
-                    if (!responseFareDto.getError_code().equals("000")) {
-                        throw new Exception("Failed get final fare from airlines");
-                    }
-                } catch (Exception e) {
-                    catchFinalFare(tripDto, tripType, e);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                if (!responseFareDto.getError_code().equals("000")) {
+                    catchFinalFare(tripDto, tripType);
                 }
             }
         }
@@ -267,18 +282,17 @@ public class AirlinesServiceImpl implements AirlinesService {
         return getAirlinesFinalFare(userId, airlinesFinalFareTrips, tripType, responseFareDto, true);
     }
 
-    private void catchFinalFare(TripDto tripDto, TripType tripType, Exception e) {
+    private void catchFinalFare(TripDto tripDto, TripType tripType) {
         airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                 tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getOriginAirport().getId(), tripDto.getInquiry().getDestinationAirport().getId(),
-                tripDto.getInquiry().getDepartureDate().toString()
-        );
+                tripDto.getInquiry().getDepartureDate());
+//        airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere();
         if (tripType.equals(TripType.R)) {
             airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                     tripDto.getTrip().getAirlinesCode(), tripDto.getInquiry().getDestinationAirport().getId(), tripDto.getInquiry().getOriginAirport().getId(),
-                    tripDto.getInquiry().getReturnDate().toString()
-            );
+                    tripDto.getInquiry().getReturnDate());
         }
-        throw new ConflictException(e.getMessage());
+        throw new ConflictException();
     }
 
     private AirlinesFinalFare getAirlinesFinalFare(long userId, Set<AirlinesFinalFareTrip> airlinesFinalFareTrips, TripType tripType, ResponseFareDto responseFareDto, Boolean isInternational) {
@@ -338,37 +352,48 @@ public class AirlinesServiceImpl implements AirlinesService {
     }
 
     @Override
-    public void createBook(Long airlinesTransactionId) throws JsonProcessingException {
+    public AirlinesTransaction createBook(Long airlinesTransactionId) throws JsonProcessingException {
         AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(airlinesTransactionId);
         ResponseBookDto responseBookDto = retrossAirlinesService.createBook(airlinesTransaction);
         if (responseBookDto.getError_code().equals("000")) {
-            var wrapper = new Object() {
-                int i = 0;
-            };
+            AtomicInteger i = new AtomicInteger();
             List<AirlinesTransactionTripItinerary> airlinesTransactionTripItineraries = new ArrayList<>();
             List<AirlinesTransactionTrip> airlinesTransactionTrips = new ArrayList<>();
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
                 airlinesTransactionTrip.setSupplierTransactionId(responseBookDto.getNotrx());
                 airlinesTransactionTrips.add(airlinesTransactionTrip);
                 for (AirlinesTransactionTripItinerary airlinesTransactionTripItinerary : airlinesTransactionTrip.getItineraries()) {
-                    if (wrapper.i == 0) {
+                    if (i.get() == 0) {
                         airlinesTransactionTripItinerary.setPnr(responseBookDto.getPnrDep());
                     } else {
                         airlinesTransactionTripItinerary.setPnr(responseBookDto.getPnrRet());
                     }
                     airlinesTransactionTripItineraries.add(airlinesTransactionTripItinerary);
                 }
-                wrapper.i++;
+                i.getAndIncrement();
             });
             airlinesTransaction.setExpiredAt(responseBookDto.getTimelimit());
             airlinesTransactionRepository.save(airlinesTransaction);
             airlinesTransactionTripRepository.saveAll(airlinesTransactionTrips);
             airlinesTransactionTripItineraryRepository.saveAll(airlinesTransactionTripItineraries);
+            StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.booked(airlinesTransaction.getId());
+            if (sm.getState().getId().equals(OrderStatusEnum.BOOKED)) {
+                transactionService.updateOrderStatusTransaction(TransactionDto.builder()
+                        .orderStatus(OrderStatusEnum.BOOKED)
+                        .id(airlinesTransaction.getTransactionId()).build());
+            }
         } else {
             airlinesTransaction.setSupplierMessage(responseBookDto.getError_msg());
             airlinesTransactionRepository.save(airlinesTransaction);
+            StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.bookFailed(airlinesTransaction.getId());
+            if (sm.getState().getId().equals(OrderStatusEnum.BOOK_FAILED)) {
+                transactionService.updateOrderStatusTransaction(TransactionDto.builder()
+                        .orderStatus(OrderStatusEnum.BOOK_FAILED)
+                        .id(airlinesTransaction.getTransactionId()).build());
+            }
             throw new BookException(responseBookDto.getError_msg(), null, false, false);
         }
+        return airlinesTransaction;
     }
 
     @Override

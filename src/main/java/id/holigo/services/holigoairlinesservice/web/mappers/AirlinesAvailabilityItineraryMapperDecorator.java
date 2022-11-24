@@ -9,8 +9,9 @@ import id.holigo.services.holigoairlinesservice.web.model.InquiryDto;
 import id.holigo.services.holigoairlinesservice.web.model.RetrossFlightDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,13 +66,12 @@ public abstract class AirlinesAvailabilityItineraryMapperDecorator implements Ai
         airlinesAvailabilityItineraryDto.setAirlinesCode(airlinesMap.get("code"));
         airlinesAvailabilityItineraryDto.setAirlinesName(airlinesMap.get("name"));
         airlinesAvailabilityItineraryDto.setImageUrl(airlinesMap.get("imageUrl"));
-        airlinesAvailabilityItineraryDto.setDepartureDate(
-                LocalDate.parse(retrossFlightDto.getEtd().substring(0, 10)));
-        airlinesAvailabilityItineraryDto.setDepartureTime(
-                LocalTime.parse(retrossFlightDto.getEtd().substring(11, 16)));
-        airlinesAvailabilityItineraryDto.setArrivalDate(LocalDate.parse(retrossFlightDto.getEta().substring(0, 10)));
-        airlinesAvailabilityItineraryDto.setArrivalTime(
-                LocalTime.parse(retrossFlightDto.getEta().substring(11, 16)));
+        Timestamp etd = Timestamp.valueOf(retrossFlightDto.getEtd() + ":00");
+        Timestamp eta = Timestamp.valueOf(retrossFlightDto.getEta() + ":00");
+        airlinesAvailabilityItineraryDto.setDepartureDate(new Date(etd.getTime()));
+        airlinesAvailabilityItineraryDto.setDepartureTime(new Time(etd.getTime()));
+        airlinesAvailabilityItineraryDto.setArrivalDate(new Date(eta.getTime()));
+        airlinesAvailabilityItineraryDto.setArrivalTime(new Time(eta.getTime()));
         if (retrossFlightDto.getTransit() != null && (!retrossFlightDto.getTransit().equals(""))) {
             airlinesAvailabilityItineraryDto.setTransit(Integer.parseInt(retrossFlightDto.getTransit()));
         }

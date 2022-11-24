@@ -12,6 +12,7 @@ public class JmsConfig {
 
     public static final String CREATE_NEW_TRANSACTION = "create-new-transaction";
     public static final String GET_DETAIL_FARE_PRODUCT = "get-detail-fare-product";
+    public static final String SET_ORDER_STATUS_BY_TRANSACTION_ID_TYPE = "set-order-status-transaction-by-transaction-id-type";
 
     @Bean
     public MessageConverter jacksonJmsMessageConverter(ObjectMapper objectMapper) {

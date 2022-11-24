@@ -33,8 +33,6 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
 
     private final AirlinesTransactionTripRepository airlinesTransactionTripRepository;
 
-    private final OrderAirlinesTransactionService orderAirlinesTransactionService;
-
 
     @Override
     public void configure(StateMachineStateConfigurer<PaymentStatusEnum, PaymentStatusEvent> states) throws Exception {
@@ -49,7 +47,9 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
     @Override
     public void configure(StateMachineTransitionConfigurer<PaymentStatusEnum, PaymentStatusEvent> transitions)
             throws Exception {
-        transitions.withExternal().source(PaymentStatusEnum.WAITING_PAYMENT).target(PaymentStatusEnum.PAID)
+        transitions.withExternal().source(PaymentStatusEnum.SELECTING_PAYMENT).target(PaymentStatusEnum.WAITING_PAYMENT)
+                .event(PaymentStatusEvent.PAYMENT_SELECTED).action(paymentHasSelected())
+                .and().withExternal().source(PaymentStatusEnum.WAITING_PAYMENT).target(PaymentStatusEnum.PAID)
                 .event(PaymentStatusEvent.PAYMENT_PAID).action(paymentHasPaid())
                 .and().withExternal().source(PaymentStatusEnum.SELECTING_PAYMENT).target(PaymentStatusEnum.PAYMENT_EXPIRED)
                 .event(PaymentStatusEvent.PAYMENT_EXPIRED).action(paymentHasExpired())
@@ -83,7 +83,7 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
                 airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.PAID);
                 airlinesTransactionTripRepository.save(airlinesTransactionTrip);
             });
-            orderAirlinesTransactionService.processIssued(airlinesTransaction.getId());
+
         };
     }
 
@@ -108,6 +108,19 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
                             OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
                 airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.PAYMENT_CANCELED);
+                airlinesTransactionTripRepository.save(airlinesTransactionTrip);
+            });
+        };
+    }
+
+    @Bean
+    public Action<PaymentStatusEnum, PaymentStatusEvent> paymentHasSelected() {
+        return stateContext -> {
+            AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(
+                    Long.parseLong(stateContext.getMessageHeader(
+                            OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.WAITING_PAYMENT);
                 airlinesTransactionTripRepository.save(airlinesTransactionTrip);
             });
         };

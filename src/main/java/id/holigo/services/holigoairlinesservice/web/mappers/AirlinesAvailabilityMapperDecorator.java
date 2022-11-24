@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.*;
 
 @Slf4j
@@ -92,11 +92,15 @@ public abstract class AirlinesAvailabilityMapperDecorator
         airlinesAvailabilityDto.setAirlinesName(airlinesMap.get("name"));
         airlinesAvailabilityDto.setImageUrl(airlinesMap.get("imageUrl"));
         airlinesAvailabilityDto.setFlightNumber(retrossDepartureDto.getFlights().get(0).getFlightNumber());
-        airlinesAvailabilityDto.setDepartureDate(LocalDate.parse(retrossDepartureDto.getFlights().get(0).getEtd().substring(0, 10)));
-        airlinesAvailabilityDto.setDepartureTime(LocalTime.parse(retrossDepartureDto.getFlights().get(0).getEtd().substring(11, 16)));
-        airlinesAvailabilityDto.setArrivalDate((LocalDate.parse(retrossDepartureDto.getFlights()
-                .get(flightCounter - 1).getEta().substring(0, 10))));
-        airlinesAvailabilityDto.setArrivalTime(LocalTime.parse(retrossDepartureDto.getFlights().get(flightCounter - 1).getEta().substring(11, 16)));
+        log.error("Error : {}", retrossDepartureDto.getFlights().get(0).getEtd());
+        log.error("Error : {}", retrossDepartureDto.getFlights().get(0).getFlightNumber());
+        log.error("Error : {}", retrossDepartureDto.getFlights().get(0).getEtd().substring(11, 16));
+        Timestamp etd = Timestamp.valueOf(retrossDepartureDto.getFlights().get(0).getEtd() + ":00");
+        Timestamp eta = Timestamp.valueOf(retrossDepartureDto.getFlights().get(flightCounter - 1).getEta() + ":00");
+        airlinesAvailabilityDto.setDepartureDate(new Date(etd.getTime()));
+        airlinesAvailabilityDto.setDepartureTime(new Time(etd.getTime()));
+        airlinesAvailabilityDto.setArrivalDate(new Date(eta.getTime()));
+        airlinesAvailabilityDto.setArrivalTime(new Time(eta.getTime()));
         airlinesAvailabilityDto.setDuration(duration);
         airlinesAvailabilityDto.setTransit(transit);
         airlinesAvailabilityDto.setSeatClass(inquiryDto.getSeatClass());

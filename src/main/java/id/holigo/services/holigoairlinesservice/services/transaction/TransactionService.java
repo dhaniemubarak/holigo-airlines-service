@@ -7,4 +7,6 @@ import javax.jms.JMSException;
 
 public interface TransactionService {
     TransactionDto createNewTransaction(TransactionDto transactionDto) throws JMSException, JsonProcessingException;
+
+    void updateOrderStatusTransaction(TransactionDto transactionDto);
 }

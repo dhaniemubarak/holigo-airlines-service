@@ -19,7 +19,6 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public void sendSupplierLog(SupplierLogDto supplierLogDto) {
-        log.info("sendSupplierLog ... is running");
         try {
             logServiceFeignClient.sendLog(supplierLogDto);
         } catch (Exception e) {

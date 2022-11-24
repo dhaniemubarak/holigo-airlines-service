@@ -32,8 +32,6 @@ public class OrderAirlinesTransactionTransactionInterceptor
                                StateMachine<OrderStatusEnum, OrderStatusEvent> stateMachine) {
         Optional.ofNullable(message).flatMap(msg -> Optional.of(
                 Long.parseLong(Objects.requireNonNull(msg.getHeaders().get(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER)).toString()))).ifPresent(id -> {
-            log.info("OrderStatusTransactionInterceptor is running ...");
-            log.info("with state id : {}", state.getId());
             AirlinesTransaction transaction = airlinesTransactionRepository.getById(id);
             transaction.setOrderStatus(state.getId());
             airlinesTransactionRepository.save(transaction);

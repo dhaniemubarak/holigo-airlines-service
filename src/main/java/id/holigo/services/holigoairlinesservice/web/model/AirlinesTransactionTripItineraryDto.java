@@ -5,18 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import javax.persistence.Column;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
 import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -36,13 +28,13 @@ public class AirlinesTransactionTripItineraryDto implements Serializable {
 
     private AirportDto destinationAirport;
 
-    private LocalDate departureDate;
+    private Date departureDate;
 
-    private LocalTime departureTime;
+    private Time departureTime;
 
-    private LocalDate arrivalDate;
+    private Date arrivalDate;
 
-    private LocalTime arrivalTime;
+    private Time arrivalTime;
 
     private Integer duration;
 

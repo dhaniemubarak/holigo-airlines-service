@@ -1,6 +1,5 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
-import id.holigo.services.holigoairlinesservice.domain.Airport;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,8 +8,6 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Time;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.UUID;
 
 @Getter
@@ -31,13 +28,13 @@ public class AirlinesFinalFareTripItineraryDto implements Serializable {
 
     private AirportDto destinationAirport;
 
-    private LocalDate departureDate;
+    private Date departureDate;
 
-    private LocalTime departureTime;
+    private Time departureTime;
 
-    private LocalDate arrivalDate;
+    private Date arrivalDate;
 
-    private LocalTime arrivalTime;
+    private Time arrivalTime;
 
     private Integer duration;
 

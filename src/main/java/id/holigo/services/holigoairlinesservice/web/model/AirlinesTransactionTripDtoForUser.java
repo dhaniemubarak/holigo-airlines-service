@@ -12,8 +12,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 @Getter
@@ -35,13 +33,13 @@ public class AirlinesTransactionTripDtoForUser implements Serializable {
 
     private AirportDto destinationAirport;
 
-    private LocalDate departureDate;
+    private Date departureDate;
 
-    private LocalTime departureTime;
+    private Time departureTime;
 
-    private LocalDate arrivalDate;
+    private Date arrivalDate;
 
-    private LocalTime arrivalTime;
+    private Time arrivalTime;
 
     private Integer duration;
 

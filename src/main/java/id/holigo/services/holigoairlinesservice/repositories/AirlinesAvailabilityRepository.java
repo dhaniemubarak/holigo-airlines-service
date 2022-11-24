@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.sql.Date;
 import java.util.List;
-import java.util.UUID;
 
 public interface AirlinesAvailabilityRepository extends JpaRepository<AirlinesAvailability, AirlinesScheduleId> {
 
@@ -27,18 +27,24 @@ public interface AirlinesAvailabilityRepository extends JpaRepository<AirlinesAv
             @Param("departureDate") String departureDate,
             @Param("seatClass") String seatClass);
 
+    //    @Modifying
+//    @Query(
+//            nativeQuery = true,
+//            value = "DELETE FROM airlines_availabilities " +
+//                    "WHERE airlines_code = :airlinesCode " +
+//                    "AND origin_airport_id = :originAirportId " +
+//                    "AND destination_airport_id = :destinationAirportId " +
+//                    "AND departure_date = :departureDate")
+//    void deleteAllAirlinesAvailabilityWhere(@Param("airlinesCode") String airlinesCode,
+//                                            @Param("originAirportId") String originAirportId,
+//                                            @Param("destinationAirportId") String destinationAirportId,
+//                                            @Param("departureDate") String departureDate);
     @Modifying
-    @Query(
-            nativeQuery = true,
-            value = "DELETE FROM airlines_availabilities " +
-                    "WHERE airlines_code = :airlinesCode " +
-                    "AND origin_airport_id = :originAirportId " +
-                    "AND destination_airport_id = :destinationAirportId " +
-                    "AND departure_date = :departureDate")
+    @Query("delete from airlines_availabilities a where a.airlinesCode=:airlinesCode and a.originAirportId=:originAirportId and a.destinationAirportId=:destinationAirportId and a.departureDate=:departureDate")
     void deleteAllAirlinesAvailabilityWhere(@Param("airlinesCode") String airlinesCode,
                                             @Param("originAirportId") String originAirportId,
                                             @Param("destinationAirportId") String destinationAirportId,
-                                            @Param("departureDate") String departureDate);
+                                            @Param("departureDate") Date departureDate);
 
     @Query(
             nativeQuery = true,
