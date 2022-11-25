@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @Setter
@@ -55,6 +56,9 @@ public class RequestBookDto implements Serializable {
             map.put("tgl_ret", getTgl_ret());
             map.put("selectedIDret", getSelectedIdRet());
         }
+        AtomicInteger adultCounter = new AtomicInteger(1);
+        AtomicInteger childCounter = new AtomicInteger(1);
+        AtomicInteger infantCounter = new AtomicInteger(1);
         for (int i = 0; i < getPassengers().size(); i++) {
             System.out.println("Index -> " + i);
             PassengerDto passengerDto = getPassengers().get(i);
@@ -89,53 +93,59 @@ public class RequestBookDto implements Serializable {
 
             switch (passengerDto.getType()) {
                 case ADULT -> {
-                    map.put("titadt_" + (i + 1), passengerDto.getTitle().toString());
-                    map.put("fnadt_" + (i + 1), firstName);
-                    map.put("lnadt_" + (i + 1), lastName.toString());
-                    map.put("hpadt_" + (i + 1), "085718187373");
-                    map.put("birthadt_" + (i + 1), (passengerDto.getBirthDate() != null) ? passengerDto.getBirthDate().toString() : null);
+                    map.put("titadt_" + (adultCounter.get()), passengerDto.getTitle().toString());
+                    map.put("fnadt_" + (adultCounter.get()), firstName);
+                    map.put("lnadt_" + (adultCounter.get()), lastName.toString());
+                    map.put("hpadt_" + (adultCounter.get()), getCptlp());
+                    if (passengerDto.getPhoneNumber() != null) {
+                        map.put("hpadt_" + (adultCounter.get()), passengerDto.getPhoneNumber());
+                    }
+                    map.put("birthadt_" + (adultCounter.get()), (passengerDto.getBirthDate() != null) ? passengerDto.getBirthDate() : null);
 
                     if (passengerDto.getIdentityCard() != null) {
-                        map.put("nikadt_" + (i + 1), passengerDto.getIdentityCard().getIdCardNumber());
+                        map.put("nikadt_" + (adultCounter.get()), passengerDto.getIdentityCard().getIdCardNumber());
                     }
                     if (passengerDto.getPassport() != null) {
-                        map.put("passnoadt_" + (i + 1), passengerDto.getPassport().getPassportNumber());
-                        map.put("passnatadt_" + (i + 1), passengerDto.getPassport().getIssueCountry());
-                        map.put("natadt_" + (i + 1), passengerDto.getPassport().getIssueCountry());
-                        map.put("passenddateadt_" + (i + 1), passengerDto.getPassport().getExpiryDate().toString());
+                        map.put("passnoadt_" + (adultCounter.get()), passengerDto.getPassport().getPassportNumber());
+                        map.put("passnatadt_" + (adultCounter.get()), passengerDto.getPassport().getIssueCountry());
+                        map.put("natadt_" + (adultCounter.get()), passengerDto.getPassport().getIssueCountry());
+                        map.put("passenddateadt_" + (adultCounter.get()), passengerDto.getPassport().getExpiryDate().toString());
                     }
+                    adultCounter.getAndIncrement();
                 }
                 case CHILD -> {
-                    map.put("titchd_" + (i + 1), passengerDto.getTitle().toString());
-                    map.put("fnchd_" + (i + 1), firstName);
-                    map.put("lnchd_" + (i + 1), lastName.toString());
-                    map.put("hpchd_" + (i + 1), passengerDto.getPhoneNumber());
-                    map.put("birthchd_" + (i + 1), passengerDto.getBirthDate().toString());
+                    map.put("titchd_" + (childCounter.get()), passengerDto.getTitle().toString());
+                    map.put("fnchd_" + (childCounter.get()), firstName);
+                    map.put("lnchd_" + (childCounter.get()), lastName.toString());
+//                    map.put("hpchd_" + (childCounter.get()), passengerDto.getPhoneNumber());
+                    map.put("birthchd_" + (childCounter.get()), passengerDto.getBirthDate());
                     if (passengerDto.getIdentityCard() != null) {
-                        map.put("nikadt_" + (i + 1), passengerDto.getIdentityCard().getIdCardNumber());
+                        map.put("nikchd_" + (childCounter.get()), passengerDto.getIdentityCard().getIdCardNumber());
                     }
                     if (passengerDto.getPassport() != null) {
-                        map.put("passnochd_" + (i + 1), passengerDto.getPassport().getPassportNumber());
-                        map.put("passnatchd_" + (i + 1), passengerDto.getPassport().getIssueCountry());
-                        map.put("natchd_" + (i + 1), passengerDto.getPassport().getIssueCountry());
-                        map.put("passenddatechd_" + (i + 1), passengerDto.getPassport().getExpiryDate().toString());
+                        map.put("passnochd_" + (childCounter.get()), passengerDto.getPassport().getPassportNumber());
+                        map.put("passnatchd_" + (childCounter.get()), passengerDto.getPassport().getIssueCountry());
+                        map.put("natchd_" + (childCounter.get()), passengerDto.getPassport().getIssueCountry());
+                        map.put("passenddatechd_" + (childCounter.get()), passengerDto.getPassport().getExpiryDate().toString());
                     }
+                    childCounter.getAndIncrement();
                 }
                 case INFANT -> {
-                    map.put("titinf_" + (i + 1), passengerDto.getTitle().toString());
-                    map.put("fninf_" + (i + 1), firstName);
-                    map.put("lninf_" + (i + 1), lastName.toString());
-                    map.put("hpinf_" + (i + 1), passengerDto.getPhoneNumber());
-                    map.put("birthinf_" + (i + 1), passengerDto.getBirthDate().toString());
+                    map.put("titinf_" + (infantCounter.get()), passengerDto.getTitle().toString());
+                    map.put("fninf_" + (infantCounter.get()), firstName);
+                    map.put("lninf_" + (infantCounter.get()), lastName.toString());
+//                    map.put("hpinf_" + (infantCounter.get()), passengerDto.getPhoneNumber());
+                    map.put("birthinf_" + (infantCounter.get()), passengerDto.getBirthDate());
                     if (passengerDto.getIdentityCard() != null) {
-                        map.put("nikinf_" + (i + 1), passengerDto.getIdentityCard().getIdCardNumber());
+                        map.put("nikinf_" + (infantCounter.get()), passengerDto.getIdentityCard().getIdCardNumber());
                     }
                     if (passengerDto.getPassport() != null) {
-                        map.put("passnoinf_" + (i + 1), passengerDto.getPassport().getPassportNumber());
-                        map.put("passnatinf_" + (i + 1), passengerDto.getPassport().getIssueCountry());
-                        map.put("natinf_" + (i + 1), passengerDto.getPassport().getIssueCountry());
-                        map.put("passenddateinf_" + (i + 1), passengerDto.getPassport().getExpiryDate().toString());
+                        map.put("passnoinf_" + (infantCounter.get()), passengerDto.getPassport().getPassportNumber());
+                        map.put("passnatinf_" + (infantCounter.get()), passengerDto.getPassport().getIssueCountry());
+                        map.put("natinf_" + (infantCounter.get()), passengerDto.getPassport().getIssueCountry());
+                        map.put("passenddateinf_" + (infantCounter.get()), passengerDto.getPassport().getExpiryDate().toString());
                     }
+                    infantCounter.getAndIncrement();
                 }
             }
         }

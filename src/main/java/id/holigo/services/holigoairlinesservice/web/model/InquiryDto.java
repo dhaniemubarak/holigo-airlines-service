@@ -1,10 +1,7 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
 import id.holigo.services.common.model.TripType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.sql.Date;
@@ -14,6 +11,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class InquiryDto implements Serializable {
 
     private UUID id;

@@ -2,7 +2,9 @@ package id.holigo.services.holigoairlinesservice.web.model;
 
 import id.holigo.services.holigoairlinesservice.domain.PassengerTitle;
 import id.holigo.services.holigoairlinesservice.domain.PassengerType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -11,7 +13,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
-
+@AllArgsConstructor
+@NoArgsConstructor
 public class PassengerDto implements Serializable {
 
     private UUID id;
@@ -32,5 +35,5 @@ public class PassengerDto implements Serializable {
 
     private String seatCode;
 
-    private Date birthDate;
+    private String birthDate;
 }

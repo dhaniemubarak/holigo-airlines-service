@@ -45,6 +45,7 @@ public class AirlinesAvailabilityController {
     private InquiryMapper inquiryMapper;
 
     private AirportRepository airportRepository;
+
     @Autowired
     public void setAirlinesService(AirlinesService airlinesService) {
         this.airlinesService = airlinesService;
@@ -113,7 +114,7 @@ public class AirlinesAvailabilityController {
             }
         }
 
-
+        log.info("START 1");
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
         listAvailabilityDto.setInquiry(inquiryDto);
 
@@ -121,6 +122,7 @@ public class AirlinesAvailabilityController {
                 inquiry.getAirlinesCode(), inquiry.getOriginAirport().getId(), inquiry.getDestinationAirport().getId(),
                 inquiry.getDepartureDate().toString(), inquiry.getSeatClass()
         );
+        log.info("departures -> {}", airlinesAvailabilityDepartures);
         if (airlinesAvailabilityDepartures.size() > 0) {
             try {
                 listAvailabilityDto.setDepartures(
@@ -143,14 +145,23 @@ public class AirlinesAvailabilityController {
         }
 
         if (inquiry.getTripType() == TripType.R) {
+            log.info("START 2");
             List<AirlinesAvailability> airlinesAvailabilityReturns = airlinesAvailabilityRepository.getAirlinesAvailability(
                     inquiry.getAirlinesCode(), inquiry.getDestinationAirport().getId(), inquiry.getOriginAirport().getId(),
                     inquiry.getReturnDate().toString(), inquiry.getSeatClass()
             );
 
+            log.info("returns -> {}", airlinesAvailabilityReturns);
+
             if (airlinesAvailabilityReturns.size() > 0) {
                 try {
-                    listAvailabilityDto.setReturns(airlinesAvailabilityReturns.stream().map(airlinesAvailability -> airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability, userId, inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount())).toList());
+                    listAvailabilityDto.setReturns(airlinesAvailabilityReturns.stream().map(
+                            airlinesAvailability -> airlinesAvailabilityMapper
+                                    .airlinesAvailabilityToAirlinesAvailabilityDto(
+                                            airlinesAvailability,
+                                            userId,
+                                            inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount())
+                    ).toList());
                 } catch (NoSuchElementException e) {
                     airlinesAvailabilityRepository.deleteAllAirlinesAvailabilityWhere(
                             inquiryDto.getAirlinesCode(),
@@ -162,7 +173,6 @@ public class AirlinesAvailabilityController {
 
             }
             if (airlinesAvailabilityDepartures.isEmpty() && airlinesAvailabilityReturns.isEmpty()) {
-
                 try {
                     listAvailabilityDto = airlinesService.getAvailabilities(inquiryDto);
                 } catch (JsonProcessingException e) {
@@ -173,23 +183,40 @@ public class AirlinesAvailabilityController {
                 }
             } else {
                 if (airlinesAvailabilityDepartures.isEmpty()) {
-                    inquiryDto.setReturnDate(null);
-                    inquiryDto.setTripType(TripType.O);
+                    InquiryDto departureInquiry = InquiryDto.builder()
+                            .airlinesCode(inquiryDto.getAirlinesCode())
+                            .userId(inquiryDto.getUserId())
+                            .originAirport(inquiryDto.getOriginAirport())
+                            .destinationAirport(inquiryDto.getDestinationAirport())
+                            .departureDate(inquiryDto.getDepartureDate())
+                            .tripType(TripType.O)
+                            .adultAmount(inquiryDto.getAdultAmount())
+                            .childAmount(inquiryDto.getChildAmount())
+                            .infantAmount(inquiryDto.getInfantAmount())
+                            .seatClass(inquiryDto.getSeatClass())
+                            .build();
                     try {
-                        listAvailabilityDto.setDepartures(airlinesService.getAvailabilities(inquiryDto).getDepartures());
+                        listAvailabilityDto.setDepartures(airlinesService.getAvailabilities(departureInquiry).getDepartures());
                     } catch (JsonProcessingException e) {
                         throw new AvailabilitiesException();
                     }
 
                 }
                 if (airlinesAvailabilityReturns.isEmpty()) {
-                    inquiryDto.setOriginAirportId(inquiry.getDestinationAirportId());
-                    inquiryDto.setDestinationAirportId(inquiry.getOriginAirportId());
-                    inquiryDto.setDepartureDate(inquiry.getReturnDate());
-                    inquiryDto.setReturnDate(null);
-                    inquiryDto.setTripType(TripType.O);
+                    InquiryDto returnInquiry = InquiryDto.builder()
+                            .airlinesCode(inquiryDto.getAirlinesCode())
+                            .userId(inquiryDto.getUserId())
+                            .originAirport(inquiryDto.getDestinationAirport())
+                            .destinationAirport(inquiryDto.getOriginAirport())
+                            .departureDate(inquiryDto.getDepartureDate())
+                            .tripType(TripType.O)
+                            .adultAmount(inquiryDto.getAdultAmount())
+                            .childAmount(inquiryDto.getChildAmount())
+                            .infantAmount(inquiryDto.getInfantAmount())
+                            .seatClass(inquiryDto.getSeatClass())
+                            .build();
                     try {
-                        listAvailabilityDto.setReturns(airlinesService.getAvailabilities(inquiryDto).getDepartures());
+                        listAvailabilityDto.setReturns(airlinesService.getAvailabilities(returnInquiry).getDepartures());
                     } catch (JsonProcessingException e) {
                         throw new AvailabilitiesException();
                     }
