@@ -92,7 +92,7 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
         return stateContext -> {
             AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(
                     Long.parseLong(stateContext.getMessageHeader(
-                            OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+                            PaymentAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
                 airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.PAYMENT_EXPIRED);
                 airlinesTransactionTripRepository.save(airlinesTransactionTrip);
@@ -105,7 +105,7 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
         return stateContext -> {
             AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(
                     Long.parseLong(stateContext.getMessageHeader(
-                            OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+                            PaymentAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
                 airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.PAYMENT_CANCELED);
                 airlinesTransactionTripRepository.save(airlinesTransactionTrip);
@@ -118,7 +118,7 @@ public class PaymentAirlinesTransactionSMConfig extends StateMachineConfigurerAd
         return stateContext -> {
             AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(
                     Long.parseLong(stateContext.getMessageHeader(
-                            OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+                            PaymentAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
                 airlinesTransactionTrip.setPaymentStatus(PaymentStatusEnum.WAITING_PAYMENT);
                 airlinesTransactionTripRepository.save(airlinesTransactionTrip);
