@@ -1,7 +1,6 @@
 package id.holigo.services.holigoairlinesservice.web.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
 import id.holigo.services.holigoairlinesservice.domain.Airport;
 import id.holigo.services.holigoairlinesservice.domain.Inquiry;
@@ -25,8 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.sql.Date;
 import java.util.*;
 
 @Slf4j
@@ -113,24 +110,19 @@ public class AirlinesAvailabilityController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
         }
-
-        log.info("START 1");
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
         listAvailabilityDto.setInquiry(inquiryDto);
-
         List<AirlinesAvailability> airlinesAvailabilityDepartures = airlinesAvailabilityRepository.getAirlinesAvailability(
                 inquiry.getAirlinesCode(), inquiry.getOriginAirport().getId(), inquiry.getDestinationAirport().getId(),
                 inquiry.getDepartureDate().toString(), inquiry.getSeatClass()
         );
-        log.info("departures -> {}", airlinesAvailabilityDepartures);
         if (airlinesAvailabilityDepartures.size() > 0) {
             try {
                 listAvailabilityDto.setDepartures(
                         airlinesAvailabilityDepartures.stream().map(
                                 airlinesAvailability -> airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(
                                         airlinesAvailability,
-                                        userId,
-                                        inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount())
+                                        userId, inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount())
                         ).toList()
                 );
             } catch (NoSuchElementException e) {

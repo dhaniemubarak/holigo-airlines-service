@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.*;
 
 @Slf4j
@@ -92,9 +91,6 @@ public abstract class AirlinesAvailabilityMapperDecorator
         airlinesAvailabilityDto.setAirlinesName(airlinesMap.get("name"));
         airlinesAvailabilityDto.setImageUrl(airlinesMap.get("imageUrl"));
         airlinesAvailabilityDto.setFlightNumber(retrossDepartureDto.getFlights().get(0).getFlightNumber());
-        log.error("Error : {}", retrossDepartureDto.getFlights().get(0).getEtd());
-        log.error("Error : {}", retrossDepartureDto.getFlights().get(0).getFlightNumber());
-        log.error("Error : {}", retrossDepartureDto.getFlights().get(0).getEtd().substring(11, 16));
         Timestamp etd = Timestamp.valueOf(retrossDepartureDto.getFlights().get(0).getEtd() + ":00");
         Timestamp eta = Timestamp.valueOf(retrossDepartureDto.getFlights().get(flightCounter - 1).getEta() + ":00");
         airlinesAvailabilityDto.setDepartureDate(new Date(etd.getTime()));
@@ -111,8 +107,6 @@ public abstract class AirlinesAvailabilityMapperDecorator
             airlinesAvailabilityDto.setOriginAirport(inquiryDto.getDestinationAirport());
             airlinesAvailabilityDto.setDestinationAirport(inquiryDto.getOriginAirport());
         }
-
-
         List<AirlinesAvailabilityFareDto> fares = new ArrayList<>();
         if (inquiryDto.getAirlinesCode().equals("IA")) {
             retrossDepartureDto.getFares().forEach(value -> {
@@ -135,21 +129,23 @@ public abstract class AirlinesAvailabilityMapperDecorator
         } else {
             for (JsonNode faresNode : retrossDepartureDto.getFares()) {
                 faresNode.forEach(value -> {
+                    String seatClass;
                     try {
                         AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper
                                 .retrossFareToAirlinesAvailabilityFareDto(objectMapper.readValue(value.toString(), RetrossFareDto.class));
-                        if (airlinesAvailabilityDto.getFare() == null) {
-                            // Check for promo, economy, business, and first class
-                            airlinesAvailabilityDto.setFare(
-                                    airlinesAvailabilityPriceMapper
-                                            .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
-                            );
+                        seatClass = subclassToSeatClass(airlinesAvailabilityDto.getFlightNumber().substring(0, 2), airlinesAvailabilityFareDto.getSubclass());
+                        if (inquiryDto.getSeatClass().equals(seatClass)) {
+                            if (airlinesAvailabilityDto.getFare() == null) {
+                                airlinesAvailabilityDto.setFare(
+                                        airlinesAvailabilityPriceMapper
+                                                .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
+                                );
+                            }
+                            fares.add(airlinesAvailabilityFareDto);
                         }
-                        fares.add(airlinesAvailabilityFareDto);
                     } catch (JsonProcessingException e) {
                         throw new AvailabilitiesException(e);
                     }
-
                 });
             }
         }
@@ -172,9 +168,10 @@ public abstract class AirlinesAvailabilityMapperDecorator
         List<AirlinesAvailabilityDto> airlinesAvailabilityDtoList = new ArrayList<>();
         for (int i = 0; i < responseScheduleDto.getSchedule().getDepartures().size(); i++) {
             RetrossDepartureDto retrossDepartureDto = responseScheduleDto.getSchedule().getDepartures().get(i);
-            airlinesAvailabilityDtoList.add(retrossDepartureDtoToAirlinesAvailabilityDto(
-                    retrossDepartureDto, inquiryDto
-            ));
+            AirlinesAvailabilityDto airlinesAvailabilityDto = retrossDepartureDtoToAirlinesAvailabilityDto(retrossDepartureDto, inquiryDto);
+            if (airlinesAvailabilityDto.getFare() != null) {
+                airlinesAvailabilityDtoList.add(airlinesAvailabilityDto);
+            }
         }
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
         listAvailabilityDto.setDepartures(airlinesAvailabilityDtoList);
@@ -226,5 +223,26 @@ public abstract class AirlinesAvailabilityMapperDecorator
         return airlinesAvailabilityDto;
     }
 
-
+    private String subclassToSeatClass(String airlinesCode, String subclass) {
+        String seatClass = "E";
+        switch (airlinesCode) {
+            case "SJ" -> {
+                switch (subclass) {
+                    case "C", "D", "I" -> seatClass = "B";
+                }
+            }
+            case "GA" -> {
+                switch (subclass) {
+                    case "F", "A" -> seatClass = "F";
+                    case "C", "J", "D", "I" -> seatClass = "B";
+                }
+            }
+            case "JT", "ID", "IW" -> {
+                switch (subclass) {
+                    case "C", "J", "D", "I", "Z" -> seatClass = "B";
+                }
+            }
+        }
+        return seatClass;
+    }
 }
