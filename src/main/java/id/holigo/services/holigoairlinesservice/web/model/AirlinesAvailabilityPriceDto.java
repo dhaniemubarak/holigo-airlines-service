@@ -1,9 +1,6 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -12,6 +9,7 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AirlinesAvailabilityPriceDto implements Serializable {
 
     private BigDecimal normalFare;

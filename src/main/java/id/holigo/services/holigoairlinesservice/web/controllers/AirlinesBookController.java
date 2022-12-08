@@ -49,12 +49,6 @@ public class AirlinesBookController {
     @PostMapping(PATH)
     public ResponseEntity<HttpStatus> createBook(@RequestBody AirlinesBookDto airlinesBookDto,
                                                  @RequestHeader("user-id") Long userId) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            log.info("Book DTO -> {}", objectMapper.writeValueAsString(airlinesBookDto));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
         TransactionDto transactionDto = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
         try {
             AirlinesTransaction airlinesTransaction = airlinesService.createBook(Long.valueOf(transactionDto.getTransactionId()));

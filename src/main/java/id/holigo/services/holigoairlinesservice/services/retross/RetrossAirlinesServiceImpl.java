@@ -209,7 +209,6 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
                 .code("AIR")
                 .url("http://ws.retross.com/airline/domestik/")
                 .build();
-        log.info("Request Book to supplier -> {}", objectMapper.writeValueAsString(requestBookDto.build()));
         ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.book(objectMapper.writeValueAsString(requestBookDto.build()));
         requestBookDto.setMmid("holivers");
         requestBookDto.setRqid("HOLI**********************GO");

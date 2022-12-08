@@ -44,6 +44,8 @@ public class AirlinesAvailabilityFare {
 
     private String selectedId;
 
+    private Integer leg;
+
     @CreationTimestamp
     private Timestamp createdAt;
 

@@ -137,14 +137,10 @@ public class AirlinesAvailabilityController {
         }
 
         if (inquiry.getTripType() == TripType.R) {
-            log.info("START 2");
             List<AirlinesAvailability> airlinesAvailabilityReturns = airlinesAvailabilityRepository.getAirlinesAvailability(
                     inquiry.getAirlinesCode(), inquiry.getDestinationAirport().getId(), inquiry.getOriginAirport().getId(),
                     inquiry.getReturnDate().toString(), inquiry.getSeatClass()
             );
-
-            log.info("returns -> {}", airlinesAvailabilityReturns);
-
             if (airlinesAvailabilityReturns.size() > 0) {
                 try {
                     listAvailabilityDto.setReturns(airlinesAvailabilityReturns.stream().map(

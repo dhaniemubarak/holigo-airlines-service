@@ -24,4 +24,6 @@ public class AirlinesAvailabilityFareDto {
     private Integer seatAvailable;
 
     private String selectedId;
+
+    private Integer leg;
 }
