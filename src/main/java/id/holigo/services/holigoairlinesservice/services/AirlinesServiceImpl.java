@@ -158,49 +158,42 @@ public class AirlinesServiceImpl implements AirlinesService {
         List<List<RetrossFinalFareDepartureDto>> retrossFinalFares = new ArrayList<>();
         ResponseFareDto responseFareDto = null;
         TripType tripType = TripType.O;
-        for (int i = 0; i < requestFinalFareDto.getTrips().size(); i++) {
-            TripDto tripDto = requestFinalFareDto.getTrips().get(i);
+        AtomicInteger indexTrip = new AtomicInteger();
+        for (TripDto tripDto : requestFinalFareDto.getTrips()) {
             tripType = tripDto.getInquiry().getTripType();
-
-            if ((tripType != TripType.R && i != 1)
-                    || (tripType.equals(TripType.R) && i == 0)) {
-                Map<String, String> roundTrip = setRoundTripVariable(requestFinalFareDto, tripType);
-                try {
-                    responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip, userId);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-                if (!responseFareDto.getError_code().equals("000")) {
-                    catchFinalFare(tripDto, tripType);
-                }
+            if ((tripType != TripType.R && indexTrip.get() != 1)
+                    || (tripType.equals(TripType.R) && indexTrip.get() == 0)) {
+                responseFareDto = getResponseFareDto(requestFinalFareDto, userId, tripType, tripDto);
                 retrossFinalFares.add(responseFareDto.getSchedule().getDepartures());
                 if (tripType.equals(TripType.R)) {
                     retrossFinalFares.add(responseFareDto.getSchedule().getReturns());
                 }
             }
+            indexTrip.getAndIncrement();
         }
-        for (int i = 0; i < retrossFinalFares.size(); i++) {
+        AtomicInteger indexFinalFare = new AtomicInteger();
+        for (List<RetrossFinalFareDepartureDto> retrossFinalFareDepartureDtoList : retrossFinalFares) {
             String fares;
             FareDto fareDto;
-            TripDto tripDto = requestFinalFareDto.getTrips().get(i);
+            TripDto tripDto = requestFinalFareDto.getTrips().get(indexFinalFare.get());
             try {
-                BigDecimal ntaAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare();
+                BigDecimal ntaAmount = retrossFinalFareDepartureDtoList.get(0).getFares().get(0).getTotalFare();
                 if (ntaAmount.equals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP))) {
-                    ntaAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare();
+                    ntaAmount = retrossFinalFareDepartureDtoList.get(0).getFares().get(0).getTotalFare();
                 }
-                BigDecimal nraAmount = retrossFinalFares.get(i).get(0).getFares().get(0).getTotalFare().subtract(ntaAmount);
+                BigDecimal nraAmount = retrossFinalFareDepartureDtoList.get(0).getFares().get(0).getTotalFare().subtract(ntaAmount);
                 fareDto = fareService.getFareDetail(FareDetailDto.builder()
                         .ntaAmount(ntaAmount)
                         .nraAmount(nraAmount)
                         .productId(1).userId(userId).build());
-                fares = objectMapper.writeValueAsString(retrossFinalFares.get(i).get(0).getFares());
+                fares = objectMapper.writeValueAsString(retrossFinalFareDepartureDtoList.get(0).getFares());
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
             AirlinesAvailability airlinesAvailability = airlinesAvailabilityRepository
                     .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
             AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
-                    .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability, i + 1);
+                    .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability, indexFinalFare.get() + 1);
             responseFareDto.getSchedule().getDepartures().forEach(departureDto -> {
                 RetrossFareDto retrossFareDto = departureDto.getFares().get(0);
                 airlinesFinalFareTrip.setSupplierId(retrossFareDto.getSelectedIdDep() != null ? retrossFareDto.getSelectedIdDep() : retrossFareDto.getSelectedIdRet());
@@ -211,9 +204,24 @@ public class AirlinesServiceImpl implements AirlinesService {
             airlinesFinalFareTrip.setFares(fares);
             setFinalFare(airlinesFinalFareTrip, fareDto);
             airlinesFinalFareTrips.add(airlinesFinalFareTrip);
+            indexFinalFare.getAndIncrement();
         }
         assert responseFareDto != null;
         return getAirlinesFinalFare(userId, airlinesFinalFareTrips, tripType, responseFareDto, false);
+    }
+
+    private ResponseFareDto getResponseFareDto(RequestFinalFareDto requestFinalFareDto, Long userId, TripType tripType, TripDto tripDto) {
+        ResponseFareDto responseFareDto;
+        Map<String, String> roundTrip = setRoundTripVariable(requestFinalFareDto, tripType);
+        try {
+            responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip, userId);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        if (!responseFareDto.getError_code().equals("000")) {
+            catchFinalFare(tripDto, tripType);
+        }
+        return responseFareDto;
     }
 
     @Transactional
@@ -227,15 +235,7 @@ public class AirlinesServiceImpl implements AirlinesService {
             tripType = tripDto.getInquiry().getTripType();
             if ((tripType != TripType.R && i != 1)
                     || (tripType.equals(TripType.R) && i == 0)) {
-                Map<String, String> roundTrip = setRoundTripVariable(requestFinalFareDto, tripType);
-                try {
-                    responseFareDto = retrossAirlinesService.getFare(tripDto, roundTrip, userId);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-                if (!responseFareDto.getError_code().equals("000")) {
-                    catchFinalFare(tripDto, tripType);
-                }
+                responseFareDto = getResponseFareDto(requestFinalFareDto, userId, tripType, tripDto);
             }
         }
         ResponseFareDto finalResponseFareDto = responseFareDto;

@@ -34,4 +34,7 @@ public class RetrossFareDto {
 
     @JsonProperty("selectedIDret")
     private String selectedIdRet;
+
+    @JsonProperty("DetailPrice")
+    private RetrossFareDetailDto fareDetail;
 }

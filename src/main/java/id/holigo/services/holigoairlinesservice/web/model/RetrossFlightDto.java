@@ -15,7 +15,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties
-public class RetrossFlightDto {
+public class RetrossFlightDto implements Serializable {
 
     @JsonProperty(value = "FlightNo")
     private String flightNumber;

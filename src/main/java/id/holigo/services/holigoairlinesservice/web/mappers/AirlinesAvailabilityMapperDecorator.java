@@ -19,7 +19,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AirlinesAvailabilityMapperDecorator
@@ -113,47 +113,6 @@ public abstract class AirlinesAvailabilityMapperDecorator
             airlinesAvailabilityDto.setDestinationAirport(inquiryDto.getOriginAirport());
         }
         List<AirlinesAvailabilityFareDto> fares = new ArrayList<>();
-//        if (inquiryDto.getAirlinesCode().equals("IA")) {
-//            retrossDepartureDto.getFares().forEach(value -> {
-//                AirlinesAvailabilityFareDto airlinesAvailabilityFareDto;
-//                try {
-//                    airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper
-//                            .retrossFareToAirlinesAvailabilityFareDto(objectMapper.readValue(value.toString(), RetrossFareDto.class));
-//                    fares.add(airlinesAvailabilityFareDto);
-//                } catch (JsonProcessingException e) {
-//                    throw new AvailabilitiesException(e);
-//                }
-//                if (airlinesAvailabilityDto.getFare() == null) {
-//                    airlinesAvailabilityDto.setFare(
-//                            airlinesAvailabilityPriceMapper
-//                                    .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
-//                    );
-//                }
-//
-//            });
-//        } else {
-//            for (JsonNode faresNode : retrossDepartureDto.getFares()) {
-//                faresNode.forEach(value -> {
-//                    String seatClass;
-//                    try {
-//                        AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper
-//                                .retrossFareToAirlinesAvailabilityFareDto(objectMapper.readValue(value.toString(), RetrossFareDto.class));
-//                        seatClass = subclassToSeatClass(airlinesAvailabilityDto.getFlightNumber().substring(0, 2), airlinesAvailabilityFareDto.getSubclass());
-//                        if (inquiryDto.getSeatClass().equals(seatClass)) {
-//                            if (airlinesAvailabilityDto.getFare() == null) {
-//                                airlinesAvailabilityDto.setFare(
-//                                        airlinesAvailabilityPriceMapper
-//                                                .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
-//                                );
-//                            }
-//                            fares.add(airlinesAvailabilityFareDto);
-//                        }
-//                    } catch (JsonProcessingException e) {
-//                        throw new AvailabilitiesException(e);
-//                    }
-//                });
-//            }
-//        }
         List<String> selectedId = new ArrayList<>();
         List<String> selectedSubclass = new ArrayList<>();
         AirlinesAvailabilityPriceDto airlinesAvailabilityPriceDto = AirlinesAvailabilityPriceDto.builder()
@@ -169,7 +128,6 @@ public abstract class AirlinesAvailabilityMapperDecorator
         for (RetrossFlightDto retrossFlightDto : retrossDepartureDto.getFlights()) {
             AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto = airlinesAvailabilityItineraryMapper.retrossFlightDtoToAirlinesAvailabilityItineraryDto(retrossFlightDto, inquiryDto);
             airlinesAvailabilityItineraryDto.setLeg(indexFlight.get() + 1);
-            airlinesAvailabilityItineraryDtoList.add(airlinesAvailabilityItineraryDto);
             if (inquiryDto.getAirlinesCode().equals("IA")) {
                 retrossDepartureDto.getFares().forEach(value -> {
                     AirlinesAvailabilityFareDto airlinesAvailabilityFareDto;
@@ -190,6 +148,14 @@ public abstract class AirlinesAvailabilityMapperDecorator
                 });
             } else {
                 if (flightCounter != fareCounter && indexFlight.get() != 0) {
+                    airlinesAvailabilityItineraryDto.setFareAmount(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setNtaAmount(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setNraAmount(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setAdultRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setChildRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setInfantRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setBasicRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setIsPriceInclude(true);
                     continue;
                 }
                 AtomicInteger fareIndex = new AtomicInteger();
@@ -210,22 +176,25 @@ public abstract class AirlinesAvailabilityMapperDecorator
                                 if (indexFlight.get() == 0) {
                                     airlinesAvailabilityPriceDto.setSeatAvailable(temp.getSeatAvailable());
                                 }
+                                airlinesAvailabilityItineraryDto.setNtaAmount(airlinesAvailabilityFareDto.getNtaAmount());
+                                airlinesAvailabilityItineraryDto.setNraAmount(airlinesAvailabilityFareDto.getNraAmount());
+                                airlinesAvailabilityItineraryDto.setSubclass(airlinesAvailabilityFareDto.getSubclass());
+                                airlinesAvailabilityItineraryDto.setSeatAvailable(airlinesAvailabilityFareDto.getSeatAvailable());
+                                airlinesAvailabilityItineraryDto.setSelectedId(airlinesAvailabilityFareDto.getSelectedId());
+                                airlinesAvailabilityItineraryDto.setAdultRates(airlinesAvailabilityFareDto.getAdultRates());
+                                airlinesAvailabilityItineraryDto.setChildRates(airlinesAvailabilityFareDto.getChildRates());
+                                airlinesAvailabilityItineraryDto.setInfantRates(airlinesAvailabilityFareDto.getInfantRates());
+                                airlinesAvailabilityItineraryDto.setBasicRates(airlinesAvailabilityFareDto.getBasicRates());
+                                airlinesAvailabilityItineraryDto.setIsPriceInclude(false);
+                                airlinesAvailabilityItineraryDto.setNormalFare(temp.getNormalFare());
+                                airlinesAvailabilityItineraryDto.setFareAmount(temp.getFareAmount());
+                                airlinesAvailabilityItineraryDto.setHpAmount(temp.getHpAmount());
+                                airlinesAvailabilityItineraryDto.setHpcAmount(temp.getHpcAmount());
                                 airlinesAvailabilityPriceDto.setFareAmount(airlinesAvailabilityPriceDto.getFareAmount().add(temp.getFareAmount()).setScale(2, RoundingMode.UP));
                                 airlinesAvailabilityPriceDto.setHpAmount(airlinesAvailabilityPriceDto.getHpAmount().add(temp.getHpAmount()).setScale(2, RoundingMode.UP));
                                 airlinesAvailabilityPriceDto.setHpcAmount(airlinesAvailabilityPriceDto.getHpcAmount().add(temp.getHpcAmount()).setScale(2, RoundingMode.UP));
                                 airlinesAvailabilityPriceDto.setNormalFare(airlinesAvailabilityPriceDto.getNormalFare().add(temp.getNormalFare()).setScale(2, RoundingMode.UP));
-//                                airlinesAvailabilityDto.setFare(
-//                                        airlinesAvailabilityPriceMapper
-//                                                .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
-//                                );
                             }
-//                            if (airlinesAvailabilityDto.getFare() == null) {
-//                                airlinesAvailabilityDto.setFare(
-//                                        airlinesAvailabilityPriceMapper
-//                                                .airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId())
-//                                );
-
-//                            }
                             fares.add(airlinesAvailabilityFareDto);
                         }
                     } catch (JsonProcessingException e) {
@@ -235,6 +204,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
                 });
                 airlinesAvailabilityDto.setFares(fares);
             }
+            airlinesAvailabilityItineraryDtoList.add(airlinesAvailabilityItineraryDto);
             indexFlight.getAndIncrement();
         }
         airlinesAvailabilityPriceDto.setSelectedId(String.join(",", selectedId));
@@ -298,9 +268,30 @@ public abstract class AirlinesAvailabilityMapperDecorator
         airlinesAvailabilityDto.setOriginAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailability.getOriginAirportId())));
         airlinesAvailabilityDto.setDestinationAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailability.getDestinationAirportId())));
         if (!airlinesAvailability.getAirlinesCode().equals("IA")) {
-            AirlinesAvailabilityFare airlinesAvailabilityFare = airlinesAvailability.getFares().stream().filter(fare -> fare.getSeatAvailable() >= passengerAmount).findFirst().orElseThrow();
-            AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper.airlinesAvailabilityFareToAirlinesAvailabilityFareDto(airlinesAvailabilityFare);
-            airlinesAvailabilityDto.setFare(airlinesAvailabilityPriceMapper.airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, userId));
+            List<String> selectedId = new ArrayList<>();
+            List<String> subclasses = new ArrayList<>();
+            AirlinesAvailabilityPriceDto airlinesAvailabilityFareDto = AirlinesAvailabilityPriceDto.builder()
+                    .hpcAmount(BigDecimal.ZERO)
+                    .hpAmount(BigDecimal.ZERO)
+                    .normalFare(BigDecimal.ZERO)
+                    .fareAmount(BigDecimal.ZERO)
+                    .build();
+            airlinesAvailabilityDto.setItineraries(airlinesAvailability.getItineraries().stream().map(airlinesAvailabilityItinerary -> airlinesAvailabilityItineraryMapper.airlinesAvailabilityItineraryToAirlinesAvailabilityItineraryDto(airlinesAvailabilityItinerary, userId)).collect(Collectors.toList()));
+            airlinesAvailabilityDto.getItineraries().forEach(airlinesAvailabilityItineraryDto -> {
+                selectedId.add(airlinesAvailabilityItineraryDto.getSelectedId());
+                subclasses.add(airlinesAvailabilityDto.getSeatClass());
+                airlinesAvailabilityFareDto.setSeatAvailable(airlinesAvailabilityItineraryDto.getSeatAvailable());
+                airlinesAvailabilityFareDto.setFareAmount(airlinesAvailabilityFareDto.getFareAmount().add(airlinesAvailabilityItineraryDto.getFareAmount()).setScale(2, RoundingMode.UP));
+                airlinesAvailabilityFareDto.setHpcAmount(airlinesAvailabilityFareDto.getHpcAmount().add(airlinesAvailabilityItineraryDto.getHpcAmount()).setScale(2, RoundingMode.UP));
+                airlinesAvailabilityFareDto.setHpAmount(airlinesAvailabilityFareDto.getHpAmount().add(airlinesAvailabilityItineraryDto.getHpAmount()).setScale(2, RoundingMode.UP));
+                airlinesAvailabilityFareDto.setNormalFare(airlinesAvailabilityFareDto.getNormalFare().add(airlinesAvailabilityItineraryDto.getNormalFare()).setScale(2, RoundingMode.UP));
+            });
+
+//            AirlinesAvailabilityFare airlinesAvailabilityFare = airlinesAvailability.getFares().stream().filter(fare -> fare.getSeatAvailable() >= passengerAmount).findFirst().orElseThrow();
+//            AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper.airlinesAvailabilityFareToAirlinesAvailabilityFareDto(airlinesAvailabilityFare);
+            airlinesAvailabilityFareDto.setSelectedId(String.join(",", selectedId));
+            airlinesAvailabilityFareDto.setSubclass(String.join(",", subclasses));
+            airlinesAvailabilityDto.setFare(airlinesAvailabilityFareDto);
         }
         return airlinesAvailabilityDto;
     }

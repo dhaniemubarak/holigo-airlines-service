@@ -10,6 +10,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -67,6 +68,29 @@ public class AirlinesAvailabilityItinerary {
     private Integer transit;
 
     private Integer leg;
+
+    @Column(length = 10, columnDefinition = "varchar(10)")
+    private String subclass;
+
+    private Integer seatAvailable;
+
+    private BigDecimal normalFare;
+
+    private BigDecimal ntaAmount;
+
+    private BigDecimal nraAmount;
+    
+    private BigDecimal adultRates;
+
+    private BigDecimal childRates;
+
+    private BigDecimal infantRates;
+
+    private BigDecimal basicRates;
+
+    private String selectedId;
+
+    private Boolean isPriceInclude;
 
     @CreationTimestamp
     private Timestamp createdAt;

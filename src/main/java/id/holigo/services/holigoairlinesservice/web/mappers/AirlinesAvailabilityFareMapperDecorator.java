@@ -2,6 +2,7 @@ package id.holigo.services.holigoairlinesservice.web.mappers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
+import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityItinerary;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityFareDto;
 import id.holigo.services.holigoairlinesservice.web.model.RetrossFareDto;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,11 @@ public abstract class AirlinesAvailabilityFareMapperDecorator implements Airline
             airlinesAvailabilityFareDto.setSelectedId(fare.getSelectedIdRet());
         }
         return airlinesAvailabilityFareDto;
+    }
+
+    @Override
+    public AirlinesAvailabilityFareDto airlinesAvailabilityItineraryToAirlinesAvailabilityFareDto(AirlinesAvailabilityItinerary airlinesAvailabilityItinerary) {
+        return airlinesAvailabilityFareMapper.airlinesAvailabilityItineraryToAirlinesAvailabilityFareDto(airlinesAvailabilityItinerary);
     }
 
     @Override

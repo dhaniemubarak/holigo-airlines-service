@@ -3,7 +3,9 @@ package id.holigo.services.holigoairlinesservice.web.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 
@@ -11,34 +13,62 @@ import java.sql.Time;
 @Setter
 public class AirlinesAvailabilityItineraryDto implements Serializable {
 
-    private String airlinesCode; //
+    private String airlinesCode;
 
-    private String airlinesName; //
+    private String airlinesName;
 
     private String flightNumber;
 
-    private AirportDto originAirport; //
+    private AirportDto originAirport;
 
-    private String originAirportId; //
+    private String originAirportId;
 
-    private AirportDto destinationAirport; //
+    private AirportDto destinationAirport;
 
-    private String destinationAirportId; //
+    private String destinationAirportId;
 
-    private Date departureDate; //
+    private Date departureDate;
 
-    private Time departureTime; //
+    private Time departureTime;
 
-    private Date arrivalDate; //
+    private Date arrivalDate;
 
-    private Time arrivalTime; //
+    private Time arrivalTime;
 
-    private Integer duration; //
+    private Integer duration;
 
-    private Integer transit; //
+    private Integer transit;
 
     private Integer leg;
 
-    private String imageUrl; //
+    private String subclass;
+
+    private Integer seatAvailable;
+
+    private BigDecimal normalFare;
+
+    private BigDecimal hpAmount;
+
+    private BigDecimal hpcAmount;
+
+    private BigDecimal fareAmount;
+
+    private BigDecimal ntaAmount;
+
+    private BigDecimal nraAmount;
+
+    private BigDecimal adultRates;
+
+    private BigDecimal childRates;
+
+    private BigDecimal infantRates;
+
+    private BigDecimal basicRates;
+
+    private String selectedId;
+
+    private Boolean isPriceInclude;
+
+    private String imageUrl;
 
 }

@@ -1,8 +1,11 @@
 package id.holigo.services.holigoairlinesservice.web.mappers;
 
+import id.holigo.services.common.model.FareDetailDto;
+import id.holigo.services.common.model.FareDto;
 import id.holigo.services.holigoairlinesservice.components.Airlines;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityItinerary;
 import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
+import id.holigo.services.holigoairlinesservice.services.fare.FareService;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityItineraryDto;
 import id.holigo.services.holigoairlinesservice.web.model.AirportDto;
 import id.holigo.services.holigoairlinesservice.web.model.InquiryDto;
@@ -22,9 +25,16 @@ public abstract class AirlinesAvailabilityItineraryMapperDecorator implements Ai
 
     private AirportMapper airportMapper;
 
+    private FareService fareService;
+
     private AirportRepository airportRepository;
 
     private AirlinesAvailabilityItineraryMapper airlinesAvailabilityItineraryMapper;
+
+    @Autowired
+    public void setFareService(FareService fareService) {
+        this.fareService = fareService;
+    }
 
     @Autowired
     public void setAirportRepository(AirportRepository airportRepository) {
@@ -86,5 +96,22 @@ public abstract class AirlinesAvailabilityItineraryMapperDecorator implements Ai
     @Override
     public AirlinesAvailabilityItinerary airlinesAvailabilityItineraryDtoToAirlinesAvailabilityItinerary(AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto) {
         return airlinesAvailabilityItineraryMapper.airlinesAvailabilityItineraryDtoToAirlinesAvailabilityItinerary(airlinesAvailabilityItineraryDto);
+    }
+
+    @Override
+    public AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryToAirlinesAvailabilityItineraryDto(AirlinesAvailabilityItinerary airlinesAvailabilityItinerary, Long userId) {
+        AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto = airlinesAvailabilityItineraryMapper.airlinesAvailabilityItineraryToAirlinesAvailabilityItineraryDto(airlinesAvailabilityItinerary, userId);
+        FareDetailDto fareDetailDto = FareDetailDto.builder()
+                .userId(userId)
+                .productId(1)
+                .nraAmount(airlinesAvailabilityItinerary.getNraAmount())
+                .ntaAmount(airlinesAvailabilityItinerary.getNtaAmount()).build();
+        FareDto fareDto;
+        fareDto = fareService.getFareDetail(fareDetailDto);
+        assert fareDto != null;
+        airlinesAvailabilityItineraryDto.setHpAmount(fareDto.getHpAmount());
+        airlinesAvailabilityItineraryDto.setHpcAmount(fareDto.getHpcAmount());
+        airlinesAvailabilityItineraryDto.setFareAmount(fareDto.getFareAmount());
+        return airlinesAvailabilityItineraryDto;
     }
 }

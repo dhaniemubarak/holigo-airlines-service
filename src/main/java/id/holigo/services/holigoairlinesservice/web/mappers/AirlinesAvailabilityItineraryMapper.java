@@ -22,8 +22,8 @@ public interface AirlinesAvailabilityItineraryMapper {
     @Mapping(target = "imageUrl", ignore = true)
     @Mapping(target = "originAirport", ignore = true)
     @Mapping(target = "destinationAirport", ignore = true)
-    @Mapping(target = "originAirportId", source = "retrossFlightDto.std")
-    @Mapping(target = "destinationAirportId", source = "retrossFlightDto.sta")
+    @Mapping(target = "originAirportId", ignore = true)
+    @Mapping(target = "destinationAirportId", ignore = true)
     AirlinesAvailabilityItineraryDto retrossFlightDtoToAirlinesAvailabilityItineraryDto(RetrossFlightDto retrossFlightDto, InquiryDto inquiryDto);
 
     @Mapping(target = "updatedAt", ignore = true)
@@ -33,4 +33,6 @@ public interface AirlinesAvailabilityItineraryMapper {
     AirlinesAvailabilityItinerary airlinesAvailabilityItineraryDtoToAirlinesAvailabilityItinerary(AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto);
 
     AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryToAirlinesAvailabilityItineraryDto(AirlinesAvailabilityItinerary airlinesAvailabilityItinerary);
+
+    AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryToAirlinesAvailabilityItineraryDto(AirlinesAvailabilityItinerary airlinesAvailabilityItinerary, Long userId);
 }

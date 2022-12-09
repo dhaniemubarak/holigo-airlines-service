@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.*;
 
 @Slf4j
@@ -95,7 +96,6 @@ public class AirlinesAvailabilityController {
                 inquiryObject.setDestinationAirport(destinationAirport);
                 inquiry = inquiryRepository.save(inquiryObject);
             } catch (Exception e) {
-                // TODO Need message
                 throw new AvailabilitiesException(e.getMessage(), null, false, false);
             }
 
@@ -122,7 +122,7 @@ public class AirlinesAvailabilityController {
                         airlinesAvailabilityDepartures.stream().map(
                                 airlinesAvailability -> airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(
                                         airlinesAvailability,
-                                        userId, inquiry.getAdultAmount() + inquiry.getChildAmount() + inquiry.getInfantAmount())
+                                        userId, inquiry.getAdultAmount())//+ inquiry.getChildAmount() + inquiry.getInfantAmount())
                         ).toList()
                 );
             } catch (NoSuchElementException e) {

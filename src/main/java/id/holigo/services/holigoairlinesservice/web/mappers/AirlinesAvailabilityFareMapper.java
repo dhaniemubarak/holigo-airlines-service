@@ -1,6 +1,7 @@
 package id.holigo.services.holigoairlinesservice.web.mappers;
 
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
+import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityItinerary;
 import id.holigo.services.holigoairlinesservice.web.model.AirlinesAvailabilityFareDto;
 import id.holigo.services.holigoairlinesservice.web.model.RetrossFareDto;
 import org.mapstruct.DecoratedWith;
@@ -17,13 +18,21 @@ public interface AirlinesAvailabilityFareMapper {
     @Mapping(target = "seatAvailable", source = "seatAvb")
     @Mapping(target = "ntaAmount", source = "nta")
     @Mapping(target = "fareAmount", source = "totalFare")
+    @Mapping(target = "adultRates", source = "fareDetail.adultRates")
+    @Mapping(target = "childRates", source = "fareDetail.childRates")
+    @Mapping(target = "infantRates", source = "fareDetail.infantRates")
+    @Mapping(target = "basicRates", source = "fareDetail.basicRates")
     AirlinesAvailabilityFareDto retrossFareToAirlinesAvailabilityFareDto(RetrossFareDto fare);
 
     AirlinesAvailabilityFareDto airlinesAvailabilityFareToAirlinesAvailabilityFareDto(AirlinesAvailabilityFare airlinesAvailabilityFare);
+
+    AirlinesAvailabilityFareDto airlinesAvailabilityItineraryToAirlinesAvailabilityFareDto(AirlinesAvailabilityItinerary airlinesAvailabilityItinerary);
 
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "airlinesAvailability", ignore = true)
     AirlinesAvailabilityFare airlinesAvailabilityFareDtoToAirlinesAvailabilityFare(AirlinesAvailabilityFareDto airlinesAvailabilityFareDto);
+
+
 }

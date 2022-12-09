@@ -19,6 +19,14 @@ public class AirlinesAvailabilityFareDto {
 
     private BigDecimal fareAmount;
 
+    private BigDecimal adultRates;
+
+    private BigDecimal childRates;
+
+    private BigDecimal infantRates;
+
+    private BigDecimal basicRates;
+
     private String subclass;
 
     private Integer seatAvailable;
