@@ -156,6 +156,8 @@ public abstract class AirlinesAvailabilityMapperDecorator
                     airlinesAvailabilityItineraryDto.setInfantRates(BigDecimal.valueOf(0.00));
                     airlinesAvailabilityItineraryDto.setBasicRates(BigDecimal.valueOf(0.00));
                     airlinesAvailabilityItineraryDto.setIsPriceInclude(true);
+                    airlinesAvailabilityItineraryDtoList.add(airlinesAvailabilityItineraryDto);
+                    indexFlight.getAndIncrement();
                     continue;
                 }
                 AtomicInteger fareIndex = new AtomicInteger();

@@ -297,7 +297,7 @@ public class AirlinesServiceImpl implements AirlinesService {
 
     private AirlinesFinalFare getAirlinesFinalFare(long userId, Set<AirlinesFinalFareTrip> airlinesFinalFareTrips, TripType tripType, ResponseFareDto responseFareDto, Boolean isInternational) {
         FareDto fareDto = fareService.getFareDetail(FareDetailDto.builder()
-                .ntaAmount(responseFareDto.getTotalAmount())
+                .ntaAmount(responseFareDto.getNtaAmount())
                 .nraAmount(responseFareDto.getTotalAmount().subtract(responseFareDto.getNtaAmount()))
                 .productId(1).userId(userId).build());
         AirlinesFinalFare airlinesFinalFare = AirlinesFinalFare.builder()
