@@ -60,7 +60,6 @@ public class RequestBookDto implements Serializable {
         AtomicInteger childCounter = new AtomicInteger(1);
         AtomicInteger infantCounter = new AtomicInteger(1);
         for (int i = 0; i < getPassengers().size(); i++) {
-            System.out.println("Index -> " + i);
             PassengerDto passengerDto = getPassengers().get(i);
             List<String> names = Arrays.asList(passengerDto.getName().split(" "));
             String firstName = "";

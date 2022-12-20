@@ -105,6 +105,19 @@ public class AirlinesTransaction {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
+    @Lob
+    private String indexUser;
+
+    @Lob
+    private String indexProduct;
+
+    @Lob
+    private String indexPassenger;
+
+    private String supplierTransactionId;
+
+    private String invoiceNumber;
+
     public void addTrip(AirlinesTransactionTrip airlinesTransactionTrip) {
         airlinesTransactionTrip.setTransaction(this);
         this.trips.add(airlinesTransactionTrip);

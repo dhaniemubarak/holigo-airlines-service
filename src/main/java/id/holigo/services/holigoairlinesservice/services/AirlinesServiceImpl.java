@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.common.model.*;
 import id.holigo.services.common.model.FareDto;
 import id.holigo.services.holigoairlinesservice.domain.*;
-import id.holigo.services.holigoairlinesservice.events.OrderStatusEvent;
 import id.holigo.services.holigoairlinesservice.repositories.*;
 import id.holigo.services.holigoairlinesservice.services.fare.FareService;
 import id.holigo.services.holigoairlinesservice.services.retross.RetrossAirlinesService;
@@ -17,7 +16,6 @@ import id.holigo.services.holigoairlinesservice.web.mappers.*;
 import id.holigo.services.holigoairlinesservice.web.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.statemachine.StateMachine;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +23,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -53,13 +52,6 @@ public class AirlinesServiceImpl implements AirlinesService {
     private AirlinesTransactionTripRepository airlinesTransactionTripRepository;
 
     private OrderAirlinesTransactionService orderAirlinesTransactionService;
-
-    private TransactionService transactionService;
-
-    @Autowired
-    public void setTransactionService(TransactionService transactionService) {
-        this.transactionService = transactionService;
-    }
 
     @Autowired
     public void setOrderAirlinesTransactionService(OrderAirlinesTransactionService orderAirlinesTransactionService) {
@@ -194,10 +186,18 @@ public class AirlinesServiceImpl implements AirlinesService {
                     .getAirlinesAvailabilityById(tripDto.getTrip().getId().toString());
             AirlinesFinalFareTrip airlinesFinalFareTrip = airlinesFinalFareTripMapper
                     .airlinesAvailabilityToAirlinesFinalFareTrip(airlinesAvailability, indexFinalFare.get() + 1);
-            responseFareDto.getSchedule().getDepartures().forEach(departureDto -> {
-                RetrossFareDto retrossFareDto = departureDto.getFares().get(0);
-                airlinesFinalFareTrip.setSupplierId(retrossFareDto.getSelectedIdDep() != null ? retrossFareDto.getSelectedIdDep() : retrossFareDto.getSelectedIdRet());
-            });
+            if (airlinesFinalFareTrip.getSegment() == 1) {
+                responseFareDto.getSchedule().getDepartures().forEach(departureDto -> {
+                    RetrossFareDto retrossFareDto = departureDto.getFares().get(0);
+                    airlinesFinalFareTrip.setSupplierId(retrossFareDto.getSelectedIdDep());
+                });
+            }
+            if (airlinesFinalFareTrip.getSegment() == 2) {
+                responseFareDto.getSchedule().getReturns().forEach(departureDto -> {
+                    RetrossFareDto retrossFareDto = departureDto.getFares().get(0);
+                    airlinesFinalFareTrip.setSupplierId(retrossFareDto.getSelectedIdRet());
+                });
+            }
             airlinesFinalFareTrip.setAdultAmount(tripDto.getInquiry().getAdultAmount());
             airlinesFinalFareTrip.setChildAmount(tripDto.getInquiry().getChildAmount());
             airlinesFinalFareTrip.setInfantAmount(tripDto.getInquiry().getInfantAmount());
@@ -355,42 +355,52 @@ public class AirlinesServiceImpl implements AirlinesService {
     public AirlinesTransaction createBook(Long airlinesTransactionId) throws JsonProcessingException {
         AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(airlinesTransactionId);
         ResponseBookDto responseBookDto = retrossAirlinesService.createBook(airlinesTransaction);
+        AtomicReference<String> pnr = new AtomicReference<>();
+        AtomicReference<String> supplierTransactionId = new AtomicReference<>();
         if (responseBookDto.getError_code().equals("000")) {
             AtomicInteger i = new AtomicInteger();
             List<AirlinesTransactionTripItinerary> airlinesTransactionTripItineraries = new ArrayList<>();
             List<AirlinesTransactionTrip> airlinesTransactionTrips = new ArrayList<>();
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                supplierTransactionId.set(responseBookDto.getNotrx());
                 airlinesTransactionTrip.setSupplierTransactionId(responseBookDto.getNotrx());
                 airlinesTransactionTrips.add(airlinesTransactionTrip);
                 for (AirlinesTransactionTripItinerary airlinesTransactionTripItinerary : airlinesTransactionTrip.getItineraries()) {
                     if (i.get() == 0) {
                         airlinesTransactionTripItinerary.setPnr(responseBookDto.getPnrDep());
+                        pnr.set(responseBookDto.getPnrDep());
                     } else {
                         airlinesTransactionTripItinerary.setPnr(responseBookDto.getPnrRet());
+                        pnr.set(pnr.get() + "," + responseBookDto.getPnrRet());
                     }
                     airlinesTransactionTripItineraries.add(airlinesTransactionTripItinerary);
                 }
                 i.getAndIncrement();
             });
             airlinesTransaction.setExpiredAt(responseBookDto.getTimelimit());
+            airlinesTransaction.setSupplierTransactionId(supplierTransactionId.get());
+            airlinesTransaction.setIndexProduct(airlinesTransaction.getIndexProduct() + pnr.get());
             airlinesTransactionRepository.save(airlinesTransaction);
             airlinesTransactionTripRepository.saveAll(airlinesTransactionTrips);
             airlinesTransactionTripItineraryRepository.saveAll(airlinesTransactionTripItineraries);
-            StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.booked(airlinesTransaction.getId());
-            if (sm.getState().getId().equals(OrderStatusEnum.BOOKED)) {
-                transactionService.updateOrderStatusTransaction(TransactionDto.builder()
-                        .orderStatus(OrderStatusEnum.BOOKED)
-                        .id(airlinesTransaction.getTransactionId()).build());
-            }
+            orderAirlinesTransactionService.booked(airlinesTransaction.getId());
+//            StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.booked(airlinesTransaction.getId());
+//            if (sm.getState().getId().equals(OrderStatusEnum.BOOKED)) {
+//                transactionService.updateOrderStatusTransaction(TransactionDto.builder()
+//                        .orderStatus(OrderStatusEnum.BOOKED)
+//                        .id(airlinesTransaction.getTransactionId()).build());
+//            }
         } else {
+            airlinesTransaction.setIndexProduct(airlinesTransaction.getIndexProduct() + "######");
             airlinesTransaction.setSupplierMessage(responseBookDto.getError_msg());
             airlinesTransactionRepository.save(airlinesTransaction);
-            StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.bookFailed(airlinesTransaction.getId());
-            if (sm.getState().getId().equals(OrderStatusEnum.BOOK_FAILED)) {
-                transactionService.updateOrderStatusTransaction(TransactionDto.builder()
-                        .orderStatus(OrderStatusEnum.BOOK_FAILED)
-                        .id(airlinesTransaction.getTransactionId()).build());
-            }
+            orderAirlinesTransactionService.bookFailed(airlinesTransaction.getId());
+//            StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.bookFailed(airlinesTransaction.getId());
+//            if (sm.getState().getId().equals(OrderStatusEnum.BOOK_FAILED)) {
+//                transactionService.updateOrderStatusTransaction(TransactionDto.builder()
+//                        .orderStatus(OrderStatusEnum.BOOK_FAILED)
+//                        .id(airlinesTransaction.getTransactionId()).build());
+//            }
             throw new BookException(responseBookDto.getError_msg(), null, false, false);
         }
         return airlinesTransaction;

@@ -30,12 +30,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AirlinesBookController {
 
     private AirlinesTransactionService airlinesTransactionService;
-    private AirlinesService airlinesService;
-
-    @Autowired
-    public void setAirlinesService(AirlinesService airlinesService) {
-        this.airlinesService = airlinesService;
-    }
 
     private final static String PATH = "/api/v1/airlines/book";
 
@@ -50,17 +44,6 @@ public class AirlinesBookController {
     public ResponseEntity<HttpStatus> createBook(@RequestBody AirlinesBookDto airlinesBookDto,
                                                  @RequestHeader("user-id") Long userId) {
         TransactionDto transactionDto = airlinesTransactionService.createTransaction(airlinesBookDto, userId);
-        try {
-            AirlinesTransaction airlinesTransaction = airlinesService.createBook(Long.valueOf(transactionDto.getTransactionId()));
-            if (!airlinesTransaction.getOrderStatus().equals(OrderStatusEnum.BOOKED)) {
-
-                throw new BookException("Gagal booking, Silahkan pilih kembali penerbangan Anda", null, false, false);
-            }
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setLocation(UriComponentsBuilder.fromPath(TRANSACTION_PATH)
                 .buildAndExpand(transactionDto.getId().toString()).toUri());

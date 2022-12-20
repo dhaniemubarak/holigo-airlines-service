@@ -21,13 +21,6 @@ public abstract class AirlinesTransactionMapperDecorator implements AirlinesTran
 
     private AirlinesTransactionTripMapper airlinesTransactionTripMapper;
 
-    private UserService userService;
-
-    @Autowired
-    public void setUserService(UserService userService) {
-        this.userService = userService;
-    }
-
     @Autowired
     public void setAirlinesTransactionMapper(AirlinesTransactionMapper airlinesTransactionMapper) {
         this.airlinesTransactionMapper = airlinesTransactionMapper;
@@ -54,17 +47,14 @@ public abstract class AirlinesTransactionMapperDecorator implements AirlinesTran
     @Override
     public TransactionDto airlinesTransactionToTransactionDto(AirlinesTransaction airlinesTransaction) {
         TransactionDto transactionDto = this.airlinesTransactionMapper.airlinesTransactionToTransactionDto(airlinesTransaction);
-        UserDtoForUser userDtoForUser = userService.getUser(airlinesTransaction.getUserId());
         AirlinesTransactionTrip airlinesTransactionTrip = airlinesTransaction.getTrips().get(0);
         transactionDto.setTransactionType("AIR");
         transactionDto.setServiceId(1);
         transactionDto.setProductId(1);
         transactionDto.setPointAmount(BigDecimal.valueOf(0.0));
         transactionDto.setTransactionId(airlinesTransaction.getId().toString());
-        transactionDto.setIndexProduct(airlinesTransaction.getTripType().toString() + "|"
-                + airlinesTransactionTrip.getOriginAirport().getCity() + " - " + airlinesTransactionTrip.getDestinationAirport().getCity() + "|"
-                + airlinesTransactionTrip.getDepartureDate().toString() + " " + airlinesTransactionTrip.getDepartureTime().toString() + "|");
-        transactionDto.setIndexUser(userDtoForUser.getName() + "|" + userDtoForUser.getPhoneNumber() + "|" + userDtoForUser.getEmail());
+        transactionDto.setIndexProduct(airlinesTransaction.getIndexProduct());
+        transactionDto.setIndexUser(airlinesTransaction.getIndexUser());
         return transactionDto;
     }
 }
