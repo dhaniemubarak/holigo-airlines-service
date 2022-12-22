@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Time;
@@ -41,4 +42,6 @@ public class AirlinesTransactionTripItineraryDto implements Serializable {
     private String imageUrl;
 
     private Integer transit;
+
+    private String subclass;
 }
