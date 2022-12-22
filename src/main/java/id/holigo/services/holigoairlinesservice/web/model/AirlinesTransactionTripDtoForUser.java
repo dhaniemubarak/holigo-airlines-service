@@ -2,7 +2,6 @@ package id.holigo.services.holigoairlinesservice.web.model;
 
 import id.holigo.services.common.model.OrderStatusEnum;
 import id.holigo.services.common.model.PaymentStatusEnum;
-import id.holigo.services.holigoairlinesservice.domain.AirlinesTransactionTripPassenger;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +27,8 @@ public class AirlinesTransactionTripDtoForUser implements Serializable {
     private List<AirlinesTransactionTripPassengerDto> passengers;
 
     private String airlinesCode;
+
+    private String seatClass;
 
     private AirportDto originAirport;
 

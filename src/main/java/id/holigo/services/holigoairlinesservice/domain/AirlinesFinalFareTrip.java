@@ -41,6 +41,9 @@ public class AirlinesFinalFareTrip {
     private String airlinesName;
     @Column(columnDefinition = "varchar(20)")
     private String flightNumber;
+    @Column(length = 1)
+    private String seatClass;
+
     @ManyToOne
     private Airport originAirport;
     @ManyToOne

@@ -24,6 +24,7 @@ public class AirlinesFinalFareTripDto implements Serializable {
     private List<AirlinesFinalFareTripItineraryDto> itineraries = new ArrayList<>();
     private String airlinesName;
     private String flightNumber;
+    private String seatClass;
     private AirportDto originAirport;
     private AirportDto destinationAirport;
     private Date departureDate;
@@ -36,11 +37,9 @@ public class AirlinesFinalFareTripDto implements Serializable {
     private Integer adultAmount;
     private Integer childAmount;
     private Integer infantAmount;
-
     private Boolean isBookable;
     private Boolean isInternational;
     private Boolean isPriceIncluded;
-
     private Boolean isIdentityNumberRequired;
     private BigDecimal fareAmount;
     private BigDecimal hpAmount;

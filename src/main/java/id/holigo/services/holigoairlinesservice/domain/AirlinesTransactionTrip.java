@@ -49,6 +49,9 @@ public class AirlinesTransactionTrip {
     @Column(columnDefinition = "varchar(4)", length = 4, nullable = false)
     private String airlinesCode;
 
+    @Column(length = 1)
+    private String seatClass;
+
     @ManyToOne
     private Airport originAirport;
 
