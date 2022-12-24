@@ -265,11 +265,18 @@ public class AirlinesServiceImpl implements AirlinesService {
             airlinesFinalFareTrip.setLossAmount(BigDecimal.ZERO);
             if (i == 0) {
                 assert finalResponseFareDto != null;
-                BigDecimal ntaAmount = finalResponseFareDto.getNtaAmount();
-                if (ntaAmount.compareTo(BigDecimal.ZERO) == 0) {
-                    ntaAmount = finalResponseFareDto.getTotalAmount();
+                BigDecimal totalAmount = finalResponseFareDto.getTotalAmount();
+                if (finalResponseFareDto.getTotalAmountRet() != null) {
+                    totalAmount = totalAmount.add(finalResponseFareDto.getTotalAmountRet());
                 }
-                BigDecimal nraAmount = finalResponseFareDto.getTotalAmount().subtract(ntaAmount);
+                BigDecimal ntaAmount = finalResponseFareDto.getNtaAmount();
+                if (finalResponseFareDto.getNtaAmountRet() != null) {
+                    ntaAmount = ntaAmount.add(finalResponseFareDto.getNtaAmountRet());
+                }
+                if (ntaAmount.compareTo(BigDecimal.ZERO) == 0) {
+                    ntaAmount = totalAmount;
+                }
+                BigDecimal nraAmount = totalAmount.subtract(ntaAmount);
                 FareDto fareDto = fareService.getFareDetail(FareDetailDto.builder()
                         .ntaAmount(ntaAmount)
                         .nraAmount(nraAmount)

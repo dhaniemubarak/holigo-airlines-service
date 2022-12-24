@@ -32,8 +32,12 @@ public class ResponseFareDto implements Serializable {
     private String bookNote;
     @JsonProperty("TotalAmount")
     private BigDecimal totalAmount;
+    @JsonProperty("TotalAmountRet")
+    private BigDecimal totalAmountRet;
     @JsonProperty("NTA")
     private BigDecimal ntaAmount;
+    @JsonProperty("NTARet")
+    private BigDecimal ntaAmountRet;
     private RetrossFinalFareDto schedule;
     private String cabin;
     private String trxId;

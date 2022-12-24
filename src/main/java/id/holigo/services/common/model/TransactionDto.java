@@ -91,4 +91,6 @@ public class TransactionDto implements Serializable {
     private BigDecimal prcAmount;
 
     private BigDecimal lossAmount;
+
+    private String supplierTransactionId;
 }
