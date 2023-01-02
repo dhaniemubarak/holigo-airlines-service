@@ -85,7 +85,12 @@ public class Airlines {
                 airlines.put("name", "NAM Air");
                 airlines.put("imageUrl", "https://www.gstatic.com/flights/airline_logos/70px/IN.png");
             }
-            case "IU", "IW" -> {
+            case "IU" -> {
+                airlines.put("code", "JT");
+                airlines.put("name", "Super Air Jet");
+                airlines.put("imageUrl", "https://ik.imagekit.io/holigo/transportasi/IU_bHZZxngpm4.png?ik-sdk-version=javascript-1.4.3&updatedAt=1672679824071");
+            }
+            case "IW" -> {
                 airlines.put("code", "JT");
                 airlines.put("name", "Wings Air");
                 airlines.put("imageUrl", "https://ik.imagekit.io/holigo/transportasi/wings_ZFKnGYa3N.png?ik-sdk-version=javascript-1.4.3&updatedAt=1660178242989");
@@ -118,8 +123,13 @@ public class Airlines {
                 airlines.put("name", "SILKAIR");
                 airlines.put("imageUrl", "https://www.gstatic.com/flights/airline_logos/70px/MI.png");
             }
+            case "8B" -> {
+                airlines.put("code", "MV");
+                airlines.put("name", "TransNusa");
+                airlines.put("imageUrl", "https://ik.imagekit.io/holigo/transportasi/1651724293186-ee122b2d6b66f97e7262b4e2db977e1b_A60xjMi78.png?ik-sdk-version=javascript-1.4.3&updatedAt=1672680575034");
+            }
             case "MV" -> {
-                airlines.put("name", "Batik Air");
+                airlines.put("name", "TransNusa");
                 airlines.put("imageUrl", "https://www.gstatic.com/flights/airline_logos/70px/MV.png");
             }
             case "NH" -> {

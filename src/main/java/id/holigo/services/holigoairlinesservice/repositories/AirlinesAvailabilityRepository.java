@@ -28,6 +28,20 @@ public interface AirlinesAvailabilityRepository extends JpaRepository<AirlinesAv
             @Param("departureDate") String departureDate,
             @Param("seatClass") String seatClass);
 
+    @Query(
+            nativeQuery = true,
+            value = "SELECT * FROM airlines_availabilities " +
+                    "WHERE is_international = 1 " +
+                    "AND origin_airport_id = :originAirportId " +
+                    "AND destination_airport_id = :destinationAirportId " +
+                    "AND departure_date = :departureDate " +
+                    "AND seat_class= :seatClass")
+    List<AirlinesAvailability> getAirlinesInternationalAvailability(
+            @Param("originAirportId") String originAirportId,
+            @Param("destinationAirportId") String destinationAirportId,
+            @Param("departureDate") String departureDate,
+            @Param("seatClass") String seatClass);
+
     @Modifying
     @Query("delete from airlines_availabilities a where a.airlinesCode=:airlinesCode and a.originAirportId=:originAirportId and a.destinationAirportId=:destinationAirportId and a.departureDate=:departureDate")
     void deleteAllAirlinesAvailabilityWhere(@Param("airlinesCode") String airlinesCode,

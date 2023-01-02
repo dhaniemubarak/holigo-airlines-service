@@ -46,6 +46,8 @@ public class AirlinesAvailabilityDto implements Serializable {
 
     private String seatClass;
 
+    private Boolean isInternational;
+
     private AirlinesAvailabilityPriceDto fare;
 
     private List<AirlinesAvailabilityTagsDto> tags = new ArrayList<>();

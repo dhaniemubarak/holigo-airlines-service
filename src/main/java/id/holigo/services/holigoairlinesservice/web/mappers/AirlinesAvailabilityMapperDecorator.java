@@ -17,6 +17,7 @@ import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -81,14 +82,11 @@ public abstract class AirlinesAvailabilityMapperDecorator
             RetrossDepartureDto retrossDepartureDto, InquiryDto inquiryDto) {
         int flightCounter = retrossDepartureDto.getFlights().size();
         int fareCounter = retrossDepartureDto.getFares().size();
-        int duration = 0;
-        int transit = 0;
-        if (!inquiryDto.getAirlinesCode().equals("IA")) {
-            duration = retrossDepartureDto.getFlights().stream()
-                    .mapToInt(dto -> Integer.parseInt(dto.getDuration())).sum();
-            transit = retrossDepartureDto.getFlights().size() - 1;
-
-        }
+        int duration;
+        int transit;
+        duration = retrossDepartureDto.getFlights().stream()
+                .mapToInt(dto -> Integer.parseInt(dto.getDuration())).sum();
+        transit = retrossDepartureDto.getFlights().size() - 1;
         Map<String, String> airlinesMap = airlines.getAirlines(retrossDepartureDto.getFlights().get(0).getFlightNumber().substring(0, 2));
         AirlinesAvailabilityDto airlinesAvailabilityDto = new AirlinesAvailabilityDto();
         airlinesAvailabilityDto.setId(UUID.randomUUID());
@@ -129,11 +127,49 @@ public abstract class AirlinesAvailabilityMapperDecorator
             AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto = airlinesAvailabilityItineraryMapper.retrossFlightDtoToAirlinesAvailabilityItineraryDto(retrossFlightDto, inquiryDto);
             airlinesAvailabilityItineraryDto.setLeg(indexFlight.get() + 1);
             if (inquiryDto.getAirlinesCode().equals("IA")) {
+                airlinesAvailabilityDto.setIsInternational(true);
+                if (flightCounter != fareCounter && indexFlight.get() != 0) {
+                    airlinesAvailabilityItineraryDto.setNormalFare(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setFareAmount(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setNtaAmount(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setNraAmount(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setAdultRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setChildRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setInfantRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setBasicRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setIsPriceInclude(true);
+                    airlinesAvailabilityItineraryDtoList.add(airlinesAvailabilityItineraryDto);
+                    indexFlight.getAndIncrement();
+                    continue;
+                }
                 retrossDepartureDto.getFares().forEach(value -> {
                     AirlinesAvailabilityFareDto airlinesAvailabilityFareDto;
                     try {
                         airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper
-                                .retrossFareToAirlinesAvailabilityFareDto(objectMapper.readValue(value.toString(), RetrossFareDto.class));
+                                .retrossInternationalFareToAirlinesAvailabilityFareDto(objectMapper.readValue(value.toString(), RetrossInternationalFareDto.class));
+                        airlinesAvailabilityFareDto.setLeg(airlinesAvailabilityItineraryDto.getLeg());
+                        AirlinesAvailabilityPriceDto temp = airlinesAvailabilityPriceMapper.airlinesAvailabilityFareDtoToAirlinesAvailabilityPriceDto(airlinesAvailabilityFareDto, inquiryDto.getUserId());
+                        selectedId.add(temp.getSelectedId());
+                        selectedSubclass.add(temp.getSubclass());
+                        airlinesAvailabilityPriceDto.setSeatAvailable(temp.getSeatAvailable());
+                        airlinesAvailabilityItineraryDto.setNtaAmount(airlinesAvailabilityFareDto.getNtaAmount());
+                        airlinesAvailabilityItineraryDto.setNraAmount(airlinesAvailabilityFareDto.getNraAmount());
+                        airlinesAvailabilityItineraryDto.setSubclass(airlinesAvailabilityFareDto.getSubclass());
+                        airlinesAvailabilityItineraryDto.setSeatAvailable(airlinesAvailabilityFareDto.getSeatAvailable());
+                        airlinesAvailabilityItineraryDto.setSelectedId(airlinesAvailabilityFareDto.getSelectedId());
+                        airlinesAvailabilityItineraryDto.setAdultRates(airlinesAvailabilityFareDto.getAdultRates());
+                        airlinesAvailabilityItineraryDto.setChildRates(airlinesAvailabilityFareDto.getChildRates());
+                        airlinesAvailabilityItineraryDto.setInfantRates(airlinesAvailabilityFareDto.getInfantRates());
+                        airlinesAvailabilityItineraryDto.setBasicRates(airlinesAvailabilityFareDto.getBasicRates());
+                        airlinesAvailabilityItineraryDto.setIsPriceInclude(false);
+                        airlinesAvailabilityItineraryDto.setNormalFare(temp.getNormalFare());
+                        airlinesAvailabilityItineraryDto.setFareAmount(temp.getFareAmount());
+                        airlinesAvailabilityItineraryDto.setHpAmount(temp.getHpAmount());
+                        airlinesAvailabilityItineraryDto.setHpcAmount(temp.getHpcAmount());
+                        airlinesAvailabilityPriceDto.setFareAmount(airlinesAvailabilityPriceDto.getFareAmount().add(temp.getFareAmount()).setScale(2, RoundingMode.UP));
+                        airlinesAvailabilityPriceDto.setHpAmount(airlinesAvailabilityPriceDto.getHpAmount().add(temp.getHpAmount()).setScale(2, RoundingMode.UP));
+                        airlinesAvailabilityPriceDto.setHpcAmount(airlinesAvailabilityPriceDto.getHpcAmount().add(temp.getHpcAmount()).setScale(2, RoundingMode.UP));
+                        airlinesAvailabilityPriceDto.setNormalFare(airlinesAvailabilityPriceDto.getNormalFare().add(temp.getNormalFare()).setScale(2, RoundingMode.UP));
                         fares.add(airlinesAvailabilityFareDto);
                     } catch (JsonProcessingException e) {
                         throw new AvailabilitiesException(e);
@@ -146,8 +182,11 @@ public abstract class AirlinesAvailabilityMapperDecorator
                     }
 
                 });
+                airlinesAvailabilityDto.setFares(fares);
             } else {
+                airlinesAvailabilityDto.setIsInternational(false);
                 if (flightCounter != fareCounter && indexFlight.get() != 0) {
+                    airlinesAvailabilityItineraryDto.setNormalFare(BigDecimal.valueOf(0.00));
                     airlinesAvailabilityItineraryDto.setFareAmount(BigDecimal.valueOf(0.00));
                     airlinesAvailabilityItineraryDto.setNtaAmount(BigDecimal.valueOf(0.00));
                     airlinesAvailabilityItineraryDto.setNraAmount(BigDecimal.valueOf(0.00));
@@ -245,6 +284,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
     @Override
     public AirlinesAvailability airlinesAvailabilityDtoToAirlinesAvailability(AirlinesAvailabilityDto airlinesAvailabilityDto) {
         AirlinesAvailability airlinesAvailability = airlinesAvailabilityMapper.airlinesAvailabilityDtoToAirlinesAvailability(airlinesAvailabilityDto);
+        airlinesAvailability.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
         try {
             airlinesAvailabilityDto.getFares().forEach(airlinesAvailabilityFareDto ->
                     airlinesAvailability.addToFares(
@@ -269,32 +309,33 @@ public abstract class AirlinesAvailabilityMapperDecorator
         AirlinesAvailabilityDto airlinesAvailabilityDto = this.airlinesAvailabilityMapper.airlinesAvailabilityToAirlinesAvailabilityDto(airlinesAvailability, userId, passengerAmount);
         airlinesAvailabilityDto.setOriginAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailability.getOriginAirportId())));
         airlinesAvailabilityDto.setDestinationAirport(airportMapper.airportToAirportDto(airportRepository.getById(airlinesAvailability.getDestinationAirportId())));
-        if (!airlinesAvailability.getAirlinesCode().equals("IA")) {
-            List<String> selectedId = new ArrayList<>();
-            List<String> subclasses = new ArrayList<>();
-            AirlinesAvailabilityPriceDto airlinesAvailabilityFareDto = AirlinesAvailabilityPriceDto.builder()
-                    .hpcAmount(BigDecimal.ZERO)
-                    .hpAmount(BigDecimal.ZERO)
-                    .normalFare(BigDecimal.ZERO)
-                    .fareAmount(BigDecimal.ZERO)
-                    .build();
-            airlinesAvailabilityDto.setItineraries(airlinesAvailability.getItineraries().stream().map(airlinesAvailabilityItinerary -> airlinesAvailabilityItineraryMapper.airlinesAvailabilityItineraryToAirlinesAvailabilityItineraryDto(airlinesAvailabilityItinerary, userId)).collect(Collectors.toList()));
-            airlinesAvailabilityDto.getItineraries().forEach(airlinesAvailabilityItineraryDto -> {
-                selectedId.add(airlinesAvailabilityItineraryDto.getSelectedId());
-                subclasses.add(airlinesAvailabilityDto.getSeatClass());
-                airlinesAvailabilityFareDto.setSeatAvailable(airlinesAvailabilityItineraryDto.getSeatAvailable());
-                airlinesAvailabilityFareDto.setFareAmount(airlinesAvailabilityFareDto.getFareAmount().add(airlinesAvailabilityItineraryDto.getFareAmount()).setScale(2, RoundingMode.UP));
-                airlinesAvailabilityFareDto.setHpcAmount(airlinesAvailabilityFareDto.getHpcAmount().add(airlinesAvailabilityItineraryDto.getHpcAmount()).setScale(2, RoundingMode.UP));
-                airlinesAvailabilityFareDto.setHpAmount(airlinesAvailabilityFareDto.getHpAmount().add(airlinesAvailabilityItineraryDto.getHpAmount()).setScale(2, RoundingMode.UP));
-                airlinesAvailabilityFareDto.setNormalFare(airlinesAvailabilityFareDto.getNormalFare().add(airlinesAvailabilityItineraryDto.getNormalFare()).setScale(2, RoundingMode.UP));
-            });
+//        if (!airlinesAvailability.getAirlinesCode().equals("IA")) {
+        List<String> selectedId = new ArrayList<>();
+        List<String> subclasses = new ArrayList<>();
+        AirlinesAvailabilityPriceDto airlinesAvailabilityFareDto = AirlinesAvailabilityPriceDto.builder()
+                .hpcAmount(BigDecimal.ZERO)
+                .hpAmount(BigDecimal.ZERO)
+                .normalFare(BigDecimal.ZERO)
+                .fareAmount(BigDecimal.ZERO)
+                .build();
+        airlinesAvailabilityDto.setItineraries(airlinesAvailability.getItineraries().stream().map(airlinesAvailabilityItinerary -> airlinesAvailabilityItineraryMapper.airlinesAvailabilityItineraryToAirlinesAvailabilityItineraryDto(airlinesAvailabilityItinerary, userId)).collect(Collectors.toList()));
+        airlinesAvailabilityDto.getItineraries().forEach(airlinesAvailabilityItineraryDto -> {
+            selectedId.add(airlinesAvailabilityItineraryDto.getSelectedId());
+            subclasses.add(airlinesAvailabilityDto.getSeatClass());
+            airlinesAvailabilityFareDto.setSeatAvailable(airlinesAvailabilityItineraryDto.getSeatAvailable());
+            airlinesAvailabilityFareDto.setFareAmount(airlinesAvailabilityFareDto.getFareAmount().add(airlinesAvailabilityItineraryDto.getFareAmount()).setScale(2, RoundingMode.UP));
+            airlinesAvailabilityFareDto.setHpcAmount(airlinesAvailabilityFareDto.getHpcAmount().add(airlinesAvailabilityItineraryDto.getHpcAmount()).setScale(2, RoundingMode.UP));
+            airlinesAvailabilityFareDto.setHpAmount(airlinesAvailabilityFareDto.getHpAmount().add(airlinesAvailabilityItineraryDto.getHpAmount()).setScale(2, RoundingMode.UP));
+            airlinesAvailabilityFareDto.setNormalFare(airlinesAvailabilityFareDto.getNormalFare().add(airlinesAvailabilityItineraryDto.getNormalFare()).setScale(2, RoundingMode.UP));
+
+        });
 
 //            AirlinesAvailabilityFare airlinesAvailabilityFare = airlinesAvailability.getFares().stream().filter(fare -> fare.getSeatAvailable() >= passengerAmount).findFirst().orElseThrow();
 //            AirlinesAvailabilityFareDto airlinesAvailabilityFareDto = airlinesAvailabilityFareMapper.airlinesAvailabilityFareToAirlinesAvailabilityFareDto(airlinesAvailabilityFare);
-            airlinesAvailabilityFareDto.setSelectedId(String.join(",", selectedId));
-            airlinesAvailabilityFareDto.setSubclass(String.join(",", subclasses));
-            airlinesAvailabilityDto.setFare(airlinesAvailabilityFareDto);
-        }
+        airlinesAvailabilityFareDto.setSelectedId(String.join(",", selectedId));
+        airlinesAvailabilityFareDto.setSubclass(String.join(",", subclasses));
+        airlinesAvailabilityDto.setFare(airlinesAvailabilityFareDto);
+//        }
         return airlinesAvailabilityDto;
     }
 

@@ -25,7 +25,7 @@ public class ResponseBookDto implements Serializable {
     private String mmid;
     private String acDep;
     @JsonProperty("Timelimit")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Jakarta")
     private Timestamp timelimit;
     private BigDecimal totalAmount;
     @JsonProperty("NTA")

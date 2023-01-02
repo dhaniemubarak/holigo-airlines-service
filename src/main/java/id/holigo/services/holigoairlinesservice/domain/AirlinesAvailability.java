@@ -79,6 +79,8 @@ public class AirlinesAvailability {
     @CreationTimestamp
     private Timestamp createdAt;
 
+    private Boolean isInternational;
+
     @UpdateTimestamp
     private Timestamp updatedAt;
 

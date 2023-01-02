@@ -77,9 +77,6 @@ public class AirlinesAvailabilityController {
     @Transactional
     @GetMapping("/api/v1/airlines/availabilities")
     public ResponseEntity<ListAvailabilityDto> getAvailabilities(InquiryDto inquiryDto, @RequestHeader("user-id") Long userId) {
-        if (inquiryDto.getAirlinesCode().equals("MV")) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         Inquiry inquiry;
         List<AirlinesAvailabilityDto> availabilityDeparturesDto = new ArrayList<>();
         Optional<Inquiry> fetchInquiry = inquiryRepository.getInquiry(inquiryDto.getAirlinesCode(),
@@ -110,12 +107,26 @@ public class AirlinesAvailabilityController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
         }
+        if (!inquiryDto.getOriginAirport().getCountry().equalsIgnoreCase("indonesia") || !inquiryDto.getDestinationAirport().getCountry().equalsIgnoreCase("indonesia")) {
+            if (!inquiryDto.getAirlinesCode().equals("IA")) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        }
         ListAvailabilityDto listAvailabilityDto = new ListAvailabilityDto();
         listAvailabilityDto.setInquiry(inquiryDto);
-        List<AirlinesAvailability> airlinesAvailabilityDepartures = airlinesAvailabilityRepository.getAirlinesAvailability(
-                inquiry.getAirlinesCode(), inquiry.getOriginAirport().getId(), inquiry.getDestinationAirport().getId(),
-                inquiry.getDepartureDate().toString(), inquiry.getSeatClass()
-        );
+        List<AirlinesAvailability> airlinesAvailabilityDepartures;
+        if (inquiryDto.getAirlinesCode().equals("IA")) {
+            airlinesAvailabilityDepartures = airlinesAvailabilityRepository.getAirlinesInternationalAvailability(
+                    inquiry.getOriginAirport().getId(), inquiry.getDestinationAirport().getId(),
+                    inquiry.getDepartureDate().toString(), inquiry.getSeatClass()
+            );
+        } else {
+            airlinesAvailabilityDepartures = airlinesAvailabilityRepository.getAirlinesAvailability(
+                    inquiry.getAirlinesCode(), inquiry.getOriginAirport().getId(), inquiry.getDestinationAirport().getId(),
+                    inquiry.getDepartureDate().toString(), inquiry.getSeatClass()
+            );
+        }
+
         if (airlinesAvailabilityDepartures.size() > 0) {
             try {
                 listAvailabilityDto.setDepartures(
@@ -133,7 +144,6 @@ public class AirlinesAvailabilityController {
                         inquiryDto.getDepartureDate());
                 throw new AvailabilitiesException(e.getMessage(), null, false, false);
             }
-
         }
 
         if (inquiry.getTripType() == TripType.R) {
