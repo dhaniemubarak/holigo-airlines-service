@@ -206,13 +206,13 @@ public class AirlinesTransactionServiceImpl implements AirlinesTransactionServic
         // CREATE INDEX PRODUCT
         if (airlinesTransaction.getTripType().equals(TripType.O)) {
             indexProduct = airlinesTransaction.getTripType().toString() + "|"
-                    + airlinesFinalFare.getTrips().get(0).getOriginAirport().getId() + "-" + airlinesFinalFare.getTrips().get(0).getDestinationAirport().getId() + "|"
+                    + airlinesFinalFare.getTrips().get(0).getOriginAirport().getCity() + "-" + airlinesFinalFare.getTrips().get(0).getDestinationAirport().getCity() + "|"
                     + airlinesFinalFare.getTrips().get(0).getDepartureDate().toString() + " " + airlinesFinalFare.getTrips().get(0).getDepartureTime().toString() + "|"
                     + airlinesFinalFare.getTrips().get(0).getAirlinesName() + "|"
                     + airlinesFinalFare.getTrips().get(0).getAdultAmount() + "," + airlinesFinalFare.getTrips().get(0).getChildAmount() + "," + airlinesFinalFare.getTrips().get(0).getInfantAmount() + "|";
         } else {
             indexProduct = airlinesTransaction.getTripType().toString() + "|"
-                    + airlinesFinalFare.getTrips().get(0).getOriginAirport().getId() + "-" + airlinesFinalFare.getTrips().get(0).getDestinationAirport().getId() + "|"
+                    + airlinesFinalFare.getTrips().get(0).getOriginAirport().getCity() + "-" + airlinesFinalFare.getTrips().get(0).getDestinationAirport().getCity() + "|"
                     + airlinesFinalFare.getTrips().get(0).getDepartureDate().toString() + " " + airlinesFinalFare.getTrips().get(0).getDepartureTime().toString() + "," + airlinesFinalFare.getTrips().get(1).getDepartureDate().toString() + " " + airlinesFinalFare.getTrips().get(1).getDepartureTime().toString() + "|"
                     + airlinesFinalFare.getTrips().get(0).getAirlinesName() + "," + airlinesFinalFare.getTrips().get(1).getAirlinesName() + "|"
                     + airlinesFinalFare.getTrips().get(0).getAdultAmount() + "," + airlinesFinalFare.getTrips().get(0).getChildAmount() + "," + airlinesFinalFare.getTrips().get(0).getInfantAmount() + "|";
