@@ -129,6 +129,11 @@ public class AirlinesServiceImpl implements AirlinesService {
                 .chd(inquiryDto.getChildAmount())
                 .inf(inquiryDto.getInfantAmount())
                 .cabin(inquiryDto.getSeatClass()).build();
+        if (inquiryDto.getAirlinesCode().equals("IA")) {
+            requestScheduleDto.setAdt(1);
+            requestScheduleDto.setChd(0);
+            requestScheduleDto.setInf(0);
+        }
         ResponseScheduleDto responseScheduleDto = retrossAirlinesService.getSchedule(requestScheduleDto, inquiryDto.getUserId());
         if (responseScheduleDto.getError_code().equals("001")) {
             throw new AvailabilitiesException(responseScheduleDto.getError_msg());

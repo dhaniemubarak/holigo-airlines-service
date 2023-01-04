@@ -262,11 +262,9 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         requestIssuedDto.setMmid("holivers");
         requestIssuedDto.setRqid("HOLI**********************GO");
         supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestIssuedDto));
-//        supplierLogDto.setLogResponse(responseEntity.getBody());
+        supplierLogDto.setLogResponse(responseEntity.getBody());
         logService.sendSupplierLog(supplierLogDto);
-//        log.info("Response body -> {}", objectMapper.writeValueAsString(responseEntity.getBody()));
         ResponseIssuedDto responseIssuedDto = objectMapper.readValue(responseEntity.getBody(), ResponseIssuedDto.class);
-//        ResponseIssuedDto responseIssuedDto = objectMapper.readValue("{\"error_code\":\"000\",\"error_msg\":\"\",\"notrx\":\"AIR221120479282\",\"mmid\":\"mastersip\",\"status\":\"ISSUED\",\"acDep\":\"JT\",\"acRet\":\"JT\",\"PNRDep\":\"ZYPAID\",\"PNRRet\":\"ZYPAID\",\"TotalAmount\":\"10621440\",\"NTA\":\"10486200\",\"saldo\":\"-587920\",\"penumpang\":[{\"jns\":\"A\",\"title\":\"MR\",\"fn\":\"Mochamad\",\"ln\":\"Ramdhanie\",\"birth\":\"0000-00-00\",\"hp\":\"081347459776\",\"noticket\":\"9902146454424\",\"noticket_ret\":\"9902146454424\"},{\"jns\":\"A\",\"title\":\"MRS\",\"fn\":\"Anisa\",\"ln\":\"Nursantika\",\"birth\":\"0000-00-00\",\"hp\":\"085248790078\",\"noticket\":\"9902146454425\",\"noticket_ret\":\"9902146454425\"}]}", ResponseIssuedDto.class);
         if (responseIssuedDto.getError_code().equals("001")) {
             airlinesTransaction.setSupplierMessage(responseIssuedDto.getError_msg());
             airlinesTransactionRepository.save(airlinesTransaction);
@@ -302,4 +300,6 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
             }
         }
     }
+
+//    public void bookIssued(AirlinesTransaction airlinesTransaction)
 }

@@ -10,7 +10,7 @@
     </parent>
     <groupId>id.holigo.services</groupId>
     <artifactId>holigo-airlines-service</artifactId>
-    <version>1.0.33</version>
+    <version>1.0.34</version>
     <name>holigo-airlines-service</name>
     <description>holigo-airlines-service</description>
     <properties>
