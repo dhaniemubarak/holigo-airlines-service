@@ -114,11 +114,11 @@ public abstract class AirlinesAvailabilityMapperDecorator
         List<String> selectedId = new ArrayList<>();
         List<String> selectedSubclass = new ArrayList<>();
         AirlinesAvailabilityPriceDto airlinesAvailabilityPriceDto = AirlinesAvailabilityPriceDto.builder()
-                .fareAmount(BigDecimal.ZERO)
-                .hpAmount(BigDecimal.ZERO)
-                .hpcAmount(BigDecimal.ZERO)
-                .normalFare(BigDecimal.ZERO)
-                .fareAmount(BigDecimal.ZERO)
+                .fareAmount(BigDecimal.ZERO.setScale(2, RoundingMode.UP))
+                .hpAmount(BigDecimal.ZERO.setScale(2, RoundingMode.UP))
+                .hpcAmount(BigDecimal.ZERO.setScale(2, RoundingMode.UP))
+                .normalFare(BigDecimal.ZERO.setScale(2, RoundingMode.UP))
+                .fareAmount(BigDecimal.ZERO.setScale(2, RoundingMode.UP))
                 .seatAvailable(0)
                 .build();
         List<AirlinesAvailabilityItineraryDto> airlinesAvailabilityItineraryDtoList = new ArrayList<>();
@@ -129,14 +129,14 @@ public abstract class AirlinesAvailabilityMapperDecorator
             if (inquiryDto.getAirlinesCode().equals("IA")) {
                 airlinesAvailabilityDto.setIsInternational(true);
                 if (flightCounter != fareCounter && indexFlight.get() != 0) {
-                    airlinesAvailabilityItineraryDto.setNormalFare(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setFareAmount(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setNtaAmount(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setNraAmount(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setAdultRates(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setChildRates(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setInfantRates(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setBasicRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setNormalFare(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setFareAmount(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setNtaAmount(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setNraAmount(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setAdultRates(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setChildRates(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setInfantRates(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setBasicRates(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
                     airlinesAvailabilityItineraryDto.setIsPriceInclude(true);
                     airlinesAvailabilityItineraryDtoList.add(airlinesAvailabilityItineraryDto);
                     indexFlight.getAndIncrement();
@@ -186,14 +186,14 @@ public abstract class AirlinesAvailabilityMapperDecorator
             } else {
                 airlinesAvailabilityDto.setIsInternational(false);
                 if (flightCounter != fareCounter && indexFlight.get() != 0) {
-                    airlinesAvailabilityItineraryDto.setNormalFare(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setFareAmount(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setNtaAmount(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setNraAmount(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setAdultRates(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setChildRates(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setInfantRates(BigDecimal.valueOf(0.00));
-                    airlinesAvailabilityItineraryDto.setBasicRates(BigDecimal.valueOf(0.00));
+                    airlinesAvailabilityItineraryDto.setNormalFare(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setFareAmount(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setNtaAmount(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setNraAmount(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setAdultRates(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setChildRates(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setInfantRates(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setBasicRates(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
                     airlinesAvailabilityItineraryDto.setIsPriceInclude(true);
                     airlinesAvailabilityItineraryDtoList.add(airlinesAvailabilityItineraryDto);
                     indexFlight.getAndIncrement();
@@ -342,7 +342,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
     private String subclassToSeatClass(String airlinesCode, String subclass) {
         String seatClass = "E";
         switch (airlinesCode) {
-            case "SJ" -> {
+            case "SJ", "IN" -> {
                 switch (subclass) {
                     case "C", "D", "I" -> seatClass = "B";
                 }

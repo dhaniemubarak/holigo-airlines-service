@@ -416,6 +416,10 @@ public class AirlinesServiceImpl implements AirlinesService {
     @Override
     public AirlinesTransaction createBook(Long airlinesTransactionId) throws JsonProcessingException {
         AirlinesTransaction airlinesTransaction = airlinesTransactionRepository.getById(airlinesTransactionId);
+        if (airlinesTransaction.getIsInternational()) {
+            orderAirlinesTransactionService.booked(airlinesTransaction.getId());
+            return airlinesTransaction;
+        }
         ResponseBookDto responseBookDto = retrossAirlinesService.createBook(airlinesTransaction);
         AtomicReference<String> pnr = new AtomicReference<>();
         AtomicReference<String> supplierTransactionId = new AtomicReference<>();

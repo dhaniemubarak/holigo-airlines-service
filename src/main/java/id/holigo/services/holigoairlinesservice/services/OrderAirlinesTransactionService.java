@@ -6,11 +6,13 @@ import org.springframework.statemachine.StateMachine;
 
 public interface OrderAirlinesTransactionService {
 
-    StateMachine<OrderStatusEnum, OrderStatusEvent> booked(Long id);
+    void booked(Long id);
 
-    StateMachine<OrderStatusEnum, OrderStatusEvent> bookFailed(Long id);
+    void bookFailed(Long id);
 
     StateMachine<OrderStatusEnum, OrderStatusEvent> processIssued(Long id);
+
+    StateMachine<OrderStatusEnum, OrderStatusEvent> waitingIssued(Long id);
 
     StateMachine<OrderStatusEnum, OrderStatusEvent> issued(Long id);
 

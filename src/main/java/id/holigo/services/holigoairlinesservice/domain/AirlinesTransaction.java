@@ -118,6 +118,8 @@ public class AirlinesTransaction {
 
     private String invoiceNumber;
 
+    private Boolean isInternational;
+
     public void addTrip(AirlinesTransactionTrip airlinesTransactionTrip) {
         airlinesTransactionTrip.setTransaction(this);
         this.trips.add(airlinesTransactionTrip);

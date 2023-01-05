@@ -16,9 +16,9 @@ import javax.ws.rs.core.Response;
 @FeignClient(name = "retross-airlines", url = "http://ws.retross.com")
 public interface RetrossAirlinesServiceFeignClient {
 
-    public static final String DOMESTIC_URI = "/airline/domestik/";
+    String DOMESTIC_URI = "/airline/domestik/";
 
-    public static final String INTERNATIONAL_URI = "/airline/international/";
+    String INTERNATIONAL_URI = "/airline/international/";
 
     @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> getSchedule(@RequestBody RequestScheduleDto requestScheduleDto);
@@ -34,6 +34,9 @@ public interface RetrossAirlinesServiceFeignClient {
 
     @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> book(@RequestBody String request);
+
+    @RequestMapping(method = RequestMethod.POST, value = INTERNATIONAL_URI)
+    ResponseEntity<String> bookIssuedInternational(@RequestBody String request);
 
     @RequestMapping(method = RequestMethod.POST, value = DOMESTIC_URI)
     ResponseEntity<String> cancel(@RequestBody String request);

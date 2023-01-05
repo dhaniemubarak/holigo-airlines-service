@@ -10,6 +10,7 @@ import id.holigo.services.holigoairlinesservice.services.OrderAirlinesTransactio
 import id.holigo.services.holigoairlinesservice.services.PaymentAirlinesTransactionService;
 import id.holigo.services.holigoairlinesservice.web.mappers.AirlinesTransactionMapper;
 import id.holigo.services.common.model.AirlinesTransactionDtoForUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+@Slf4j
 @RestController
 public class AirlinesTransactionController {
-
     private AirlinesTransactionRepository airlinesTransactionRepository;
 
     private AirlinesService airlinesService;
@@ -58,17 +59,23 @@ public class AirlinesTransactionController {
 
     @PutMapping("/api/v1/airlines/transactions/{id}")
     public ResponseEntity<AirlinesTransactionDtoForUser> updateTransaction(@PathVariable("id") Long id) {
+        log.info("updateTransaction is running...");
         Optional<AirlinesTransaction> fetchAirlinesTransaction = airlinesTransactionRepository.findById(id);
         if (fetchAirlinesTransaction.isEmpty()) {
+            log.info("transaction is empty...");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         AirlinesTransaction airlinesTransaction = fetchAirlinesTransaction.get();
         StateMachine<OrderStatusEnum, OrderStatusEvent> sm = orderAirlinesTransactionService.orderHasCanceled(airlinesTransaction.getId());
+        log.info("sm -> {}", sm.getState().getId());
         if (sm.getState().getId().equals(OrderStatusEnum.ORDER_CANCELED)) {
+            log.info("ORDER CANCELED");
             paymentAirlinesTransactionService.paymentHasCanceled(airlinesTransaction.getId());
             try {
+                log.info("Try cancel book");
                 airlinesService.cancelBook(airlinesTransaction);
             } catch (JsonProcessingException e) {
+                log.info("Exception");
                 throw new RuntimeException(e);
             }
         }
@@ -86,5 +93,20 @@ public class AirlinesTransactionController {
         return new ResponseEntity<>(airlinesTransactionMapper.airlinesTransactionToAirlinesTransactionDtoForUser(airlinesTransaction), HttpStatus.OK);
     }
 
+
+//    @GetMapping("/api/v1/airlines/transactions/{id}/issued")
+//    public ResponseEntity<AirlinesTransactionDtoForUser> issuedTransaction(@PathVariable("id") Long id) {
+//        Optional<AirlinesTransaction> fetchAirlinesTransaction = airlinesTransactionRepository.findById(id);
+//        if (fetchAirlinesTransaction.isEmpty()) {
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
+//        AirlinesTransaction airlinesTransaction = fetchAirlinesTransaction.get();
+//        try {
+//            airlinesService.issued(airlinesTransaction);
+//        } catch (JsonLopProcessingException e) {
+//            throw new RuntimeException(e);
+//        }
+//        return new ResponseEntity<>(airlinesTransactionMapper.airlinesTransactionToAirlinesTransactionDtoForUser(airlinesTransaction), HttpStatus.OK);
+//    }
 
 }

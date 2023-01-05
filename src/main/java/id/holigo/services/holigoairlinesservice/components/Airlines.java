@@ -82,6 +82,7 @@ public class Airlines {
                 airlines.put("imageUrl", "https://www.gstatic.com/flights/airline_logos/70px/IL.png");
             }
             case "IN" -> {
+                airlines.put("code", "SJ");
                 airlines.put("name", "NAM Air");
                 airlines.put("imageUrl", "https://www.gstatic.com/flights/airline_logos/70px/IN.png");
             }

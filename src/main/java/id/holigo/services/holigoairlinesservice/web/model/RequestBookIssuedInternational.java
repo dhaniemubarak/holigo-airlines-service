@@ -1,6 +1,6 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
-import id.holigo.services.holigoairlinesservice.domain.Passenger;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @Setter
-public class RequestBookDto implements Serializable {
+public class RequestBookIssuedInternational implements Serializable {
     private String rqid;
     private String mmid;
     private String app;
@@ -25,14 +25,9 @@ public class RequestBookDto implements Serializable {
     private Integer chd;
     private Integer inf;
     private String tgl_dep;
-    private String selectedIdDep;
+    private String trxId;
     private String tgl_ret;
-    private String selectedIdRet;
-    private String acDep;
-    private String acRet;
-    private String trxNo;
     private List<PassengerDto> passengers = new ArrayList<>();
-
 
     public Map<String, Object> build() {
         HashMap<String, Object> map = new HashMap<>();
@@ -50,12 +45,9 @@ public class RequestBookDto implements Serializable {
         map.put("chd", getChd());
         map.put("inf", getInf());
         map.put("tgl_dep", getTgl_dep());
-        map.put("selectedIDdep", getSelectedIdDep());
-        map.put("acDep", getAcDep());
+        map.put("trxId", getTrxId());
         if (getFlight().equals("R")) {
-            map.put("acRet", getAcRet());
             map.put("tgl_ret", getTgl_ret());
-            map.put("selectedIDret", getSelectedIdRet());
         }
         AtomicInteger adultCounter = new AtomicInteger(1);
         AtomicInteger childCounter = new AtomicInteger(1);

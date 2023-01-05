@@ -59,7 +59,7 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
                 .event(OrderStatusEvent.ISSUED_FAIL).action(issuedFailed())
                 .and()
                 .withExternal().source(OrderStatusEnum.PROCESS_ISSUED).target(OrderStatusEnum.WAITING_ISSUED)
-                .event(OrderStatusEvent.WAITING_ISSUED)
+                .event(OrderStatusEvent.WAITING_ISSUED).action(waitingIssued())
                 .and()
                 .withExternal().source(OrderStatusEnum.PROCESS_ISSUED).target(OrderStatusEnum.RETRYING_ISSUED)
                 .event(OrderStatusEvent.RETRYING_ISSUED)
@@ -105,6 +105,19 @@ public class OrderAirlinesTransactionSMConfig extends StateMachineConfigurerAdap
                             .getMessageHeader(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
             airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
                 airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.PROCESS_ISSUED);
+                airlinesTransactionTripRepository.save(airlinesTransactionTrip);
+            });
+        };
+    }
+
+    @Bean
+    public Action<OrderStatusEnum, OrderStatusEvent> waitingIssued() {
+        return stateContext -> {
+            AirlinesTransaction airlinesTransaction = airlinesTransactionRepository
+                    .getById(Long.parseLong(stateContext
+                            .getMessageHeader(OrderAirlinesTransactionServiceImpl.AIRLINES_TRANSACTION_HEADER).toString()));
+            airlinesTransaction.getTrips().forEach(airlinesTransactionTrip -> {
+                airlinesTransactionTrip.setOrderStatus(OrderStatusEnum.WAITING_ISSUED);
                 airlinesTransactionTripRepository.save(airlinesTransactionTrip);
             });
         };

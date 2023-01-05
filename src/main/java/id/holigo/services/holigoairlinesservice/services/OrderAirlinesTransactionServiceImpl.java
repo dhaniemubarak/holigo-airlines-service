@@ -31,23 +31,28 @@ public class OrderAirlinesTransactionServiceImpl implements OrderAirlinesTransac
     }
 
     @Override
-    public StateMachine<OrderStatusEnum, OrderStatusEvent> booked(Long id) {
+    public void booked(Long id) {
         StateMachine<OrderStatusEnum, OrderStatusEvent> sm = build(id);
         sendEvent(id, sm, OrderStatusEvent.BOOK_SUCCESS);
-        return sm;
     }
 
     @Override
-    public StateMachine<OrderStatusEnum, OrderStatusEvent> bookFailed(Long id) {
+    public void bookFailed(Long id) {
         StateMachine<OrderStatusEnum, OrderStatusEvent> sm = build(id);
         sendEvent(id, sm, OrderStatusEvent.BOOK_FAIL);
-        return sm;
     }
 
     @Override
     public StateMachine<OrderStatusEnum, OrderStatusEvent> processIssued(Long id) {
         StateMachine<OrderStatusEnum, OrderStatusEvent> sm = build(id);
         sendEvent(id, sm, OrderStatusEvent.PROCESS_ISSUED);
+        return sm;
+    }
+
+    @Override
+    public StateMachine<OrderStatusEnum, OrderStatusEvent> waitingIssued(Long id) {
+        StateMachine<OrderStatusEnum, OrderStatusEvent> sm = build(id);
+        sendEvent(id, sm, OrderStatusEvent.WAITING_ISSUED);
         return sm;
     }
 
