@@ -1,6 +1,5 @@
 package id.holigo.services.holigoairlinesservice.web.model;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,6 +26,7 @@ public class RequestBookIssuedInternational implements Serializable {
     private String tgl_dep;
     private String trxId;
     private String tgl_ret;
+    private String cabin;
     private List<PassengerDto> passengers = new ArrayList<>();
 
     public Map<String, Object> build() {
@@ -46,6 +46,7 @@ public class RequestBookIssuedInternational implements Serializable {
         map.put("inf", getInf());
         map.put("tgl_dep", getTgl_dep());
         map.put("trxId", getTrxId());
+        map.put("cabin", getCabin());
         if (getFlight().equals("R")) {
             map.put("tgl_ret", getTgl_ret());
         }

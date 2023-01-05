@@ -323,6 +323,12 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         List<AirlinesTransactionTrip> trips = airlinesTransaction.getTrips().stream().sorted(Comparator.comparing(AirlinesTransactionTrip::getSegment)).toList();
         Set<String> transactionNumber = new HashSet<>();
         trips.forEach(airlinesTransactionTrip -> transactionNumber.add(airlinesTransactionTrip.getSupplierId()));
+        String cabin;
+        if ("B".equals(trips.get(0).getSeatClass())) {
+            cabin = "business";
+        } else {
+            cabin = "economy";
+        }
         RequestBookIssuedInternational requestBookDto = new RequestBookIssuedInternational();
         requestBookDto.setMmid(RETROSS_ID);
         requestBookDto.setRqid(RETROSS_PASSKEY);
@@ -339,6 +345,7 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
         requestBookDto.setInf(trips.get(0).getInfantAmount());
         requestBookDto.setTgl_dep(trips.get(0).getDepartureDate().toString());
         requestBookDto.setTrxId(String.join(",", transactionNumber));
+        requestBookDto.setCabin(cabin);
         requestBookDto.setPassengers(airlinesTransactionTripPassengerRepository.findAllByTripId(trips.get(0).getId()).stream().map(passengerMapper::airlinesTransactionTripPassengerToPassengerDto).toList());
         if (airlinesTransaction.getTripType().equals(TripType.R)) {
             requestBookDto.setTgl_ret(trips.get(1).getDepartureDate().toString());
