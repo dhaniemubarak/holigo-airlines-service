@@ -35,5 +35,5 @@ public class PassengerDto implements Serializable {
 
     private String seatCode;
 
-    private String birthDate;
+    private Date birthDate;
 }

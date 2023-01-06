@@ -103,7 +103,7 @@ public class AirlinesTransactionController {
 //        AirlinesTransaction airlinesTransaction = fetchAirlinesTransaction.get();
 //        try {
 //            airlinesService.issued(airlinesTransaction);
-//        } catch (JsonLopProcessingException e) {
+//        } catch (JsonProcessingException e) {
 //            throw new RuntimeException(e);
 //        }
 //        return new ResponseEntity<>(airlinesTransactionMapper.airlinesTransactionToAirlinesTransactionDtoForUser(airlinesTransaction), HttpStatus.OK);
