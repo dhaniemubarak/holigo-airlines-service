@@ -12,6 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface LogServiceFeignClient {
     String LOGS_URL = "/api/v1/supplier/message/logs";
 
-    @RequestMapping(method = RequestMethod.GET, value = LOGS_URL)
+    @RequestMapping(method = RequestMethod.POST, value = LOGS_URL)
     ResponseEntity<HttpStatus> sendLog(@RequestBody SupplierLogDto supplierLogDto);
 }

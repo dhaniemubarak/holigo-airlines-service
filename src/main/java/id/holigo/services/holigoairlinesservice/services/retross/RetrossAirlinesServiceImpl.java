@@ -361,24 +361,26 @@ public class RetrossAirlinesServiceImpl implements RetrossAirlinesService {
             requestBookDto.setMmid("holivers");
             requestBookDto.setRqid("HOLI**********************GO");
             supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestBookDto.build()));
+//            String dummy = "{\"error_code\":\"000\",\"error_msg\":\"\",\"notrx\":\"AIR1230106306072\",\"mmid\":\"holigo\",\"status\":\"MENUNGGU ISSUED\",\"TotalAmount\":\"1085810\",\"NTA\":\"1054475\"}";
 //        String dummy = "{\"error_code\":\"000\",\"error_msg\":\"\",\"notrx\":\"AIR1221214797819\",\"mmid\":\"mastersip\",\"status\":\"MENUNGGU ISSUED\",\"TotalAmount\":\"\",\"NTA\":\"\"}";
-//        ResponseBookDto responseBookDto = objectMapper.readValue(dummy, ResponseBookDto.class);
-            ResponseBookDto responseBookDto = objectMapper.readValue(responseEntity.getBody(), ResponseBookDto.class);
-//        supplierLogDto.setLogResponse(dummy);
+//            ResponseBookInternationalIssuedDto responseBookDto = objectMapper.readValue(dummy, ResponseBookInternationalIssuedDto.class);
+            ResponseBookInternationalIssuedDto responseBookDto = objectMapper.readValue(responseEntity.getBody(), ResponseBookInternationalIssuedDto.class);
+//            supplierLogDto.setLogResponse(dummy);
             supplierLogDto.setLogResponse(responseEntity.getBody());
-            logService.sendSupplierLog(supplierLogDto);
             if (responseBookDto.getError_code().equals("000")) {
                 waitingIssued(airlinesTransaction, responseBookDto.getNotrx());
+            } else {
+                supplierFailed(airlinesTransaction, responseBookDto.getError_code(), responseBookDto.getError_msg());
             }
-            supplierFailed(airlinesTransaction, responseBookDto.getError_code(), responseBookDto.getError_msg());
+            logService.sendSupplierLog(supplierLogDto);
         } catch (Exception e) {
             requestBookDto.setMmid("holivers");
             requestBookDto.setRqid("HOLI**********************GO");
             supplierLogDto.setLogRequest(objectMapper.writeValueAsString(requestBookDto.build()));
             supplierLogDto.setLogResponse(null);
             supplierLogDto.setMessage(e.getMessage());
-            logService.sendSupplierLog(supplierLogDto);
             waitingIssued(airlinesTransaction, null);
+            logService.sendSupplierLog(supplierLogDto);
         }
 //        ResponseEntity<String> responseEntity = retrossAirlinesServiceFeignClient.bookIssuedInternational(objectMapper.writeValueAsString(requestBookDto.build()));
 //        requestBookDto.setMmid("holivers");
