@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.holigo.services.holigoairlinesservice.components.Airlines;
 import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailability;
-import id.holigo.services.holigoairlinesservice.domain.AirlinesAvailabilityFare;
 import id.holigo.services.holigoairlinesservice.repositories.AirportRepository;
 import id.holigo.services.holigoairlinesservice.web.exceptions.AvailabilitiesException;
 import id.holigo.services.holigoairlinesservice.web.model.*;
@@ -102,7 +101,6 @@ public abstract class AirlinesAvailabilityMapperDecorator
         airlinesAvailabilityDto.setArrivalTime(new Time(eta.getTime()));
         airlinesAvailabilityDto.setDuration(duration);
         airlinesAvailabilityDto.setTransit(transit);
-        airlinesAvailabilityDto.setSeatClass(inquiryDto.getSeatClass());
         if (Objects.equals(retrossDepartureDto.getFlights().get(0).getStd(), inquiryDto.getOriginAirport().getId())) {
             airlinesAvailabilityDto.setOriginAirport(inquiryDto.getOriginAirport());
             airlinesAvailabilityDto.setDestinationAirport(inquiryDto.getDestinationAirport());
@@ -184,16 +182,17 @@ public abstract class AirlinesAvailabilityMapperDecorator
                 });
                 airlinesAvailabilityDto.setFares(fares);
             } else {
+                airlinesAvailabilityDto.setSeatClass(inquiryDto.getSeatClass());
                 airlinesAvailabilityDto.setIsInternational(false);
                 if (flightCounter != fareCounter && indexFlight.get() != 0) {
-                    airlinesAvailabilityItineraryDto.setNormalFare(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
-                    airlinesAvailabilityItineraryDto.setFareAmount(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
-                    airlinesAvailabilityItineraryDto.setNtaAmount(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
-                    airlinesAvailabilityItineraryDto.setNraAmount(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
-                    airlinesAvailabilityItineraryDto.setAdultRates(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
-                    airlinesAvailabilityItineraryDto.setChildRates(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
-                    airlinesAvailabilityItineraryDto.setInfantRates(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
-                    airlinesAvailabilityItineraryDto.setBasicRates(BigDecimal.valueOf(0.00).setScale(2,RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setNormalFare(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setFareAmount(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setNtaAmount(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setNraAmount(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setAdultRates(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setChildRates(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setInfantRates(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
+                    airlinesAvailabilityItineraryDto.setBasicRates(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
                     airlinesAvailabilityItineraryDto.setIsPriceInclude(true);
                     airlinesAvailabilityItineraryDtoList.add(airlinesAvailabilityItineraryDto);
                     indexFlight.getAndIncrement();
@@ -208,6 +207,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
                                 .retrossFareToAirlinesAvailabilityFareDto(objectMapper.readValue(value.toString(), RetrossFareDto.class));
                         seatClass = subclassToSeatClass(airlinesAvailabilityDto.getFlightNumber().substring(0, 2), airlinesAvailabilityFareDto.getSubclass());
                         if (inquiryDto.getSeatClass().equals(seatClass)) {
+                            airlinesAvailabilityDto.setSeatClass(inquiryDto.getSeatClass());
                             airlinesAvailabilityFareDto.setLeg(airlinesAvailabilityItineraryDto.getLeg());
                             // insert
                             if (fareIndex.get() == 0) {
@@ -262,7 +262,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
         AtomicInteger indexDeparture = new AtomicInteger();
         for (RetrossDepartureDto retrossDepartureDto : responseScheduleDto.getSchedule().getDepartures()) {
             AirlinesAvailabilityDto airlinesAvailabilityDto = retrossDepartureDtoToAirlinesAvailabilityDto(retrossDepartureDto, inquiryDto);
-            if (airlinesAvailabilityDto.getFare() != null || airlinesAvailabilityDto.getFare().getFareAmount().compareTo(BigDecimal.ZERO) != 0) {
+            if (airlinesAvailabilityDto.getFare() != null && airlinesAvailabilityDto.getFare().getFareAmount().compareTo(BigDecimal.ZERO) != 0) {
                 airlinesAvailabilityDtoList.add(airlinesAvailabilityDto);
             }
             indexDeparture.getAndIncrement();
