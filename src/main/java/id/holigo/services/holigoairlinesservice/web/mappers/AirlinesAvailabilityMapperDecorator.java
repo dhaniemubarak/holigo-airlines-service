@@ -125,6 +125,7 @@ public abstract class AirlinesAvailabilityMapperDecorator
             AirlinesAvailabilityItineraryDto airlinesAvailabilityItineraryDto = airlinesAvailabilityItineraryMapper.retrossFlightDtoToAirlinesAvailabilityItineraryDto(retrossFlightDto, inquiryDto);
             airlinesAvailabilityItineraryDto.setLeg(indexFlight.get() + 1);
             if (inquiryDto.getAirlinesCode().equals("IA")) {
+                airlinesAvailabilityDto.setSeatClass(inquiryDto.getSeatClass());
                 airlinesAvailabilityDto.setIsInternational(true);
                 if (flightCounter != fareCounter && indexFlight.get() != 0) {
                     airlinesAvailabilityItineraryDto.setNormalFare(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.UP));
